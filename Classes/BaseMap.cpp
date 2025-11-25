@@ -129,7 +129,8 @@ void BaseMap::onMouseDown(Event* event)
     EventMouse* e = (EventMouse*)event;
     if (e->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
         is_dragging_ = true;
-        last_mouse_pos_ = Director::getInstance()->convertToGL(e->getLocationInView());
+        last_mouse_pos_ = e->getLocationInView();
+        last_mouse_pos_.y = Director::getInstance()->getWinSize().height - last_mouse_pos_.y; // ×ª»»YÖá×ø±ê
     }
 }
 
