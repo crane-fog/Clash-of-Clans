@@ -1,4 +1,4 @@
-# Clash-of-ClansÆÚÄ©ÏîÄ¿
+# Clash-of-ClansæœŸæœ«é¡¹ç›®
 
 
 ## Build
