@@ -3,31 +3,31 @@
 
 #include "cocos2d.h"
 
-// ¼Ì³Ğ×Ô Node£¬×÷ÎªÕû¸öµØÍ¼ÊÀ½çµÄÈİÆ÷
+// ç»§æ‰¿è‡ª Nodeï¼Œä½œä¸ºæ•´ä¸ªåœ°å›¾ä¸–ç•Œçš„å®¹å™¨
 class BaseMap : public cocos2d::Node {
 private:
-    // ³õÊ¼»¯
+    // åˆå§‹åŒ–
     virtual bool init();
-    // µ±½Úµã½øÈëÎèÌ¨Ê±µ÷ÓÃ
+    // å½“èŠ‚ç‚¹è¿›å…¥èˆå°æ—¶è°ƒç”¨
     virtual void onEnter() override;
-    // ÓÃÓÚ´æ´¢µØÍ¼ÉÏËùÓĞ¾«ÁéµÄÈİÆ÷£¬ÆäÖĞ0¹Ì¶¨Îª±³¾°Í¼
-    // todo: ÔõÃ´¹ÜÀíÕâĞ©¾«Áé/ÕÒµ½Ä³¸ö¾ßÌåµÄ¾«Áé
+    // ç”¨äºå­˜å‚¨åœ°å›¾ä¸Šæ‰€æœ‰ç²¾çµçš„å®¹å™¨ï¼Œå…¶ä¸­0å›ºå®šä¸ºèƒŒæ™¯å›¾
+    // todo: æ€ä¹ˆç®¡ç†è¿™äº›ç²¾çµ/æ‰¾åˆ°æŸä¸ªå…·ä½“çš„ç²¾çµ
     std::vector<cocos2d::Sprite*> sprites_;
 
 protected:
-    // Êó±êÊÂ¼ş»Øµ÷
+    // é¼ æ ‡äº‹ä»¶å›è°ƒ
     void onMouseScroll(cocos2d::Event* event);
     void onMouseDown(cocos2d::Event* event);
     void onMouseUp(cocos2d::Event* event);
     void onMouseMove(cocos2d::Event* event);
-    // ¼ì²é±ß½ç²¢ĞŞÕıÎ»ÖÃ
+    // æ£€æŸ¥è¾¹ç•Œå¹¶ä¿®æ­£ä½ç½®
     void checkAndClampPosition();
 
 public:
-    // Ìæ´ú¹¹Ôìº¯Êı
+    // æ›¿ä»£æ„é€ å‡½æ•°
     static BaseMap* create();
 
-    // ÓÃÓÚÊó±ê¼àÌıÏà¹ØµÄ±äÁ¿
+    // ç”¨äºé¼ æ ‡ç›‘å¬ç›¸å…³çš„å˜é‡
     bool is_dragging_ = false;
     cocos2d::Vec2 last_mouse_pos_;
     cocos2d::EventListenerMouse* mouse_listener_ = nullptr;

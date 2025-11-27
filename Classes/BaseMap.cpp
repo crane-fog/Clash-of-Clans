@@ -16,39 +16,39 @@ BaseMap* BaseMap::create()
 
 bool BaseMap::init()
 {
-    // µ÷ÓÃ¸¸Àà³õÊ¼»¯
+    // è°ƒç”¨çˆ¶ç±»åˆå§‹åŒ–
     if (!Node::init()) {
         return false;
     }
 
-    // ´´½¨±³¾°Í¼ Sprite
+    // åˆ›å»ºèƒŒæ™¯å›¾ Sprite
     sprites_.push_back(Sprite::create("BaseMap.jpg"));
     if (sprites_.empty() || !sprites_.back()) {
         return false;
     }
-    // ±³¾°Í¼×óÏÂ½Ç¶ÔÆëÈÝÆ÷×óÏÂ½Ç
+    // èƒŒæ™¯å›¾å·¦ä¸‹è§’å¯¹é½å®¹å™¨å·¦ä¸‹è§’
     sprites_.front()->setAnchorPoint(Vec2::ZERO);
     sprites_.front()->setPosition(Vec2::ZERO);
 
     this->addChild(sprites_.front(), -1);
 
-    // ÈÝÆ÷µÄ ContentSize ÉèÖÃÎª±³¾°Í¼´óÐ¡
+    // å®¹å™¨çš„ ContentSize è®¾ç½®ä¸ºèƒŒæ™¯å›¾å¤§å°
     this->setContentSize(sprites_.front()->getContentSize());
 
-    // Ãªµã(0,0)
+    // é”šç‚¹(0,0)
     this->setAnchorPoint(Vec2::ZERO);
 
-    // ³õÊ¼»¯±äÁ¿
+    // åˆå§‹åŒ–å˜é‡
     is_dragging_ = false;
 
-    // ´´½¨²¢°ó¶¨Êó±ê¼àÌýÆ÷
+    // åˆ›å»ºå¹¶ç»‘å®šé¼ æ ‡ç›‘å¬å™¨
     mouse_listener_ = EventListenerMouse::create();
     mouse_listener_->onMouseScroll = CC_CALLBACK_1(BaseMap::onMouseScroll, this);
     mouse_listener_->onMouseDown = CC_CALLBACK_1(BaseMap::onMouseDown, this);
     mouse_listener_->onMouseUp = CC_CALLBACK_1(BaseMap::onMouseUp, this);
     mouse_listener_->onMouseMove = CC_CALLBACK_1(BaseMap::onMouseMove, this);
 
-    // ½«¼àÌýÆ÷°ó¶¨µ½µ±Ç°½Úµã
+    // å°†ç›‘å¬å™¨ç»‘å®šåˆ°å½“å‰èŠ‚ç‚¹
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouse_listener_, this);
 
     return true;
@@ -58,12 +58,12 @@ void BaseMap::onEnter()
 {
     Node::onEnter();
 
-    // »ñÈ¡ÆÁÄ»´óÐ¡
+    // èŽ·å–å±å¹•å¤§å°
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     Size map_size = sprites_.front()->getContentSize();
 
-    // ¼ÆËã²¢Ó¦ÓÃ×îÐ¡Ëõ·Å (ÌîÂúÆÁÄ»)
+    // è®¡ç®—å¹¶åº”ç”¨æœ€å°ç¼©æ”¾ (å¡«æ»¡å±å¹•)
     float scale_x = visible_size.width / map_size.width;
     float scale_y = visible_size.height / map_size.height;
     float min_scale = std::max(scale_x, scale_y);
@@ -72,12 +72,12 @@ void BaseMap::onEnter()
         this->setScale(min_scale);
     }
 
-    // ¼ÆËãËõ·ÅºóµÄµØÍ¼³ß´ç
+    // è®¡ç®—ç¼©æ”¾åŽçš„åœ°å›¾å°ºå¯¸
     float final_w = map_size.width * this->getScale();
     float final_h = map_size.height * this->getScale();
 
-    // ¼ÆËã¾ÓÖÐËùÐèµÄÎ»ÖÃ (ÆÁÄ»ÖÐÐÄ - µØÍ¼ÖÐÐÄ)
-    // ÒòÎªÈÝÆ÷ÃªµãÊÇ(0,0)£¬Position¾ÍÊÇÈÝÆ÷×óÏÂ½ÇÔÚÆÁÄ»µÄÎ»ÖÃ
+    // è®¡ç®—å±…ä¸­æ‰€éœ€çš„ä½ç½® (å±å¹•ä¸­å¿ƒ - åœ°å›¾ä¸­å¿ƒ)
+    // å› ä¸ºå®¹å™¨é”šç‚¹æ˜¯(0,0)ï¼ŒPositionå°±æ˜¯å®¹å™¨å·¦ä¸‹è§’åœ¨å±å¹•çš„ä½ç½®
     float x = origin.x + (visible_size.width - final_w) / 2.0f;
     float y = origin.y + (visible_size.height - final_h) / 2.0f;
 
@@ -85,7 +85,7 @@ void BaseMap::onEnter()
 
 
 
-    // ´´½¨Ò»¸ö½ÇÉ« Sprite
+    // åˆ›å»ºä¸€ä¸ªè§’è‰² Sprite
     sprites_.push_back(Sprite::create("Barbarian.png"));
     if (sprites_.back()) {
         sprites_.back()->setPosition(Vec2(this->_contentSize.width / 2, this->_contentSize.height / 2));
@@ -106,7 +106,7 @@ void BaseMap::checkAndClampPosition()
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    // µ±Ç°ÈÝÆ÷µÄËõ·Å±ÈÀý
+    // å½“å‰å®¹å™¨çš„ç¼©æ”¾æ¯”ä¾‹
     float scale = this->getScale();
     Size map_size = sprites_.front()->getContentSize();
     float actual_width = map_size.width * scale;
@@ -114,10 +114,10 @@ void BaseMap::checkAndClampPosition()
 
     Vec2 current_pos = this->getPosition();
 
-    // --- XÖá±ß½ç¼ÆËã ---
-    // ÈÝÆ÷Î»ÖÃ(×óÏÂ½Ç) ×î´ó²»ÄÜ³¬¹ý origin.x
+    // --- Xè½´è¾¹ç•Œè®¡ç®— ---
+    // å®¹å™¨ä½ç½®(å·¦ä¸‹è§’) æœ€å¤§ä¸èƒ½è¶…è¿‡ origin.x
     float max_x = origin.x;
-    // ÈÝÆ÷Î»ÖÃ ×îÐ¡²»ÄÜÐ¡ÓÚ (ÆÁÄ»¿í - µØÍ¼Êµ¼Ê¿í)
+    // å®¹å™¨ä½ç½® æœ€å°ä¸èƒ½å°äºŽ (å±å¹•å®½ - åœ°å›¾å®žé™…å®½)
     float min_x = origin.x + visible_size.width - actual_width;
 
     if (min_x > max_x) {
@@ -127,7 +127,7 @@ void BaseMap::checkAndClampPosition()
         current_pos.x = std::max(min_x, std::min(current_pos.x, max_x));
     }
 
-    // --- YÖá±ß½ç¼ÆËã ---
+    // --- Yè½´è¾¹ç•Œè®¡ç®— ---
     float max_y = origin.y;
     float min_y = origin.y + visible_size.height - actual_height;
 
@@ -148,9 +148,9 @@ void BaseMap::onMouseScroll(Event* event)
     if (scroll_y == 0) return;
 
     Vec2 mouse_location = e->getLocation();
-    mouse_location.y = Director::getInstance()->getWinSize().height - mouse_location.y; // ×ª»»YÖá×ø±ê
+    mouse_location.y = Director::getInstance()->getWinSize().height - mouse_location.y; // è½¬æ¢Yè½´åæ ‡
 
-    // ½«ÆÁÄ»×ø±ê×ª»»³É BaseMap ÄÚ²¿×ø±ê
+    // å°†å±å¹•åæ ‡è½¬æ¢æˆ BaseMap å†…éƒ¨åæ ‡
     Vec2 location_in_map = this->convertToNodeSpace(mouse_location);
 
 
@@ -158,17 +158,17 @@ void BaseMap::onMouseScroll(Event* event)
     float factor = 1.1f;
     float new_scale = (scroll_y < 0) ? (old_scale * factor) : (old_scale / factor);
 
-    // ¶¯Ì¬¼ÆËã×îÐ¡Ëõ·Å
+    // åŠ¨æ€è®¡ç®—æœ€å°ç¼©æ”¾
     auto visible_size = Director::getInstance()->getVisibleSize();
     Size map_size = sprites_.front()->getContentSize();
     float min_scale = std::max(visible_size.width / map_size.width, visible_size.height / map_size.height);
 
     new_scale = std::max(min_scale, std::min(new_scale, 3.0f));
 
-    // Ó¦ÓÃËõ·Å
+    // åº”ç”¨ç¼©æ”¾
     this->setScale(new_scale);
 
-    // Î»ÖÃ²¹³¥
+    // ä½ç½®è¡¥å¿
     Vec2 new_world_pos_of_point = this->convertToWorldSpace(location_in_map);
     Vec2 offset = mouse_location - new_world_pos_of_point;
     this->setPosition(this->getPosition() + offset);
@@ -182,7 +182,7 @@ void BaseMap::onMouseDown(Event* event)
     if (e->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
         is_dragging_ = true;
         last_mouse_pos_ = e->getLocation();
-        last_mouse_pos_.y = Director::getInstance()->getWinSize().height - last_mouse_pos_.y; // ×ª»»YÖá×ø±ê
+        last_mouse_pos_.y = Director::getInstance()->getWinSize().height - last_mouse_pos_.y; // è½¬æ¢Yè½´åæ ‡
     }
 }
 
@@ -200,7 +200,7 @@ void BaseMap::onMouseMove(Event* event)
 
     EventMouse* e = (EventMouse*)event;
     Vec2 currentMousePos = e->getLocation();
-    currentMousePos.y = Director::getInstance()->getWinSize().height - currentMousePos.y; // ×ª»»YÖá×ø±ê
+    currentMousePos.y = Director::getInstance()->getWinSize().height - currentMousePos.y; // è½¬æ¢Yè½´åæ ‡
     Vec2 delta = currentMousePos - last_mouse_pos_;
 
     this->setPosition(this->getPosition() + delta);

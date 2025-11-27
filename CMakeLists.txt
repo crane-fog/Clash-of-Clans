@@ -28,7 +28,7 @@ cmake_minimum_required(VERSION 3.6)
 set(APP_NAME Clash-of-Clans)
 
 project(${APP_NAME})
-
+add_compile_options(/utf-8)
 if(XCODE)
     if(NOT DEFINED CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET)
         SET (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 8.0)
