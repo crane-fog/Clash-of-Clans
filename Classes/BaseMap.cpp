@@ -3,29 +3,45 @@
 
 USING_NS_CC;
 
-BaseMap* BaseMap::create(const std::string& filename)
+BaseMap* BaseMap::create()
 {
-    BaseMap* sprite = new (std::nothrow) BaseMap();
-    if (sprite && sprite->initWithFile(filename)) {
-        sprite->autorelease();
-        return sprite;
+    BaseMap* node = new (std::nothrow) BaseMap();
+    if (node && node->init()) {
+        node->autorelease();
+        return node;
     }
-    CC_SAFE_DELETE(sprite);
+    CC_SAFE_DELETE(node);
     return nullptr;
 }
 
-bool BaseMap::initWithFile(const std::string& filename)
+bool BaseMap::init()
 {
     // 调用父类初始化
-    if (!Sprite::initWithFile(filename)) {
+    if (!Node::init()) {
         return false;
     }
 
+    // 创建背景图 Sprite
+    sprites_.push_back(Sprite::create("BaseMap.jpg"));
+    if (sprites_.empty() || !sprites_.back()) {
+        return false;
+    }
+    // 背景图左下角对齐容器左下角
+    sprites_.front()->setAnchorPoint(Vec2::ZERO);
+    sprites_.front()->setPosition(Vec2::ZERO);
+
+    this->addChild(sprites_.front(), -1);
+
+    // 容器的 ContentSize 设置为背景图大小
+    this->setContentSize(sprites_.front()->getContentSize());
+
+    // 锚点(0,0)
+    this->setAnchorPoint(Vec2::ZERO);
+
     // 初始化变量
     is_dragging_ = false;
-    this->setAnchorPoint(Vec2(0.5f, 0.5f)); // 强制中心锚点
 
-    // 创建并绑定监听器
+    // 创建并绑定鼠标监听器
     mouse_listener_ = EventListenerMouse::create();
     mouse_listener_->onMouseScroll = CC_CALLBACK_1(BaseMap::onMouseScroll, this);
     mouse_listener_->onMouseDown = CC_CALLBACK_1(BaseMap::onMouseDown, this);
@@ -40,17 +56,14 @@ bool BaseMap::initWithFile(const std::string& filename)
 
 void BaseMap::onEnter()
 {
-    Sprite::onEnter();
+    Node::onEnter();
 
     // 获取屏幕大小
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
-    // 初始居中
-    this->setPosition(Vec2(visible_size.width / 2 + origin.x, visible_size.height / 2 + origin.y));
+    Size map_size = sprites_.front()->getContentSize();
 
     // 计算并应用最小缩放 (填满屏幕)
-    Size map_size = this->getContentSize();
     float scale_x = visible_size.width / map_size.width;
     float scale_y = visible_size.height / map_size.height;
     float min_scale = std::max(scale_x, scale_y);
@@ -59,8 +72,33 @@ void BaseMap::onEnter()
         this->setScale(min_scale);
     }
 
-    // 确保初始状态不出界
-    checkAndClampPosition();
+    // 计算缩放后的地图尺寸
+    float final_w = map_size.width * this->getScale();
+    float final_h = map_size.height * this->getScale();
+
+    // 计算居中所需的位置 (屏幕中心 - 地图中心)
+    // 因为容器锚点是(0,0)，Position就是容器左下角在屏幕的位置
+    float x = origin.x + (visible_size.width - final_w) / 2.0f;
+    float y = origin.y + (visible_size.height - final_h) / 2.0f;
+
+    this->setPosition(Vec2(x, y));
+
+
+
+    // 创建一个角色 Sprite
+    sprites_.push_back(Sprite::create("Barbarian.png"));
+    if (sprites_.back()) {
+        sprites_.back()->setPosition(Vec2(this->_contentSize.width / 2, this->_contentSize.height / 2));
+        this->addChild(sprites_.back(), 2);
+    }
+    auto move_by1 = MoveBy::create(0.5, Vec2(400, 0));
+    auto move_by2 = MoveBy::create(0.5, Vec2(0, 400));
+    auto move_by3 = MoveBy::create(0.5, Vec2(-400, 0));
+    auto move_by4 = MoveBy::create(0.5, Vec2(0, -400));
+    auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
+    auto repeatAction = RepeatForever::create(seq_action);
+
+    sprites_.back()->runAction(repeatAction);
 }
 
 void BaseMap::checkAndClampPosition()
@@ -68,27 +106,37 @@ void BaseMap::checkAndClampPosition()
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    // 获取当前实际尺寸
-    Size map_size = this->getContentSize();
+    // 当前容器的缩放比例
     float scale = this->getScale();
+    Size map_size = sprites_.front()->getContentSize();
     float actual_width = map_size.width * scale;
     float actual_height = map_size.height * scale;
 
-    // 计算中心点允许的范围
-    float max_x = origin.x + actual_width / 2.0f;
-    float min_x = origin.x + visible_size.width - actual_width / 2.0f;
-    float max_y = origin.y + actual_height / 2.0f;
-    float min_y = origin.y + visible_size.height - actual_height / 2.0f;
-
     Vec2 current_pos = this->getPosition();
 
-    // X轴钳制
-    if (min_x > max_x) current_pos.x = origin.x + visible_size.width / 2.0f; // 如果图比屏小(理论不应发生)，居中
-    else current_pos.x = std::max(min_x, std::min(current_pos.x, max_x));
+    // --- X轴边界计算 ---
+    // 容器位置(左下角) 最大不能超过 origin.x
+    float max_x = origin.x;
+    // 容器位置 最小不能小于 (屏幕宽 - 地图实际宽)
+    float min_x = origin.x + visible_size.width - actual_width;
 
-    // Y轴钳制
-    if (min_y > max_y) current_pos.y = origin.y + visible_size.height / 2.0f;
-    else current_pos.y = std::max(min_y, std::min(current_pos.y, max_y));
+    if (min_x > max_x) {
+        current_pos.x = origin.x + (visible_size.width - actual_width) / 2.0f;
+    }
+    else {
+        current_pos.x = std::max(min_x, std::min(current_pos.x, max_x));
+    }
+
+    // --- Y轴边界计算 ---
+    float max_y = origin.y;
+    float min_y = origin.y + visible_size.height - actual_height;
+
+    if (min_y > max_y) {
+        current_pos.y = origin.y + (visible_size.height - actual_height) / 2.0f;
+    }
+    else {
+        current_pos.y = std::max(min_y, std::min(current_pos.y, max_y));
+    }
 
     this->setPosition(current_pos);
 }
@@ -101,24 +149,28 @@ void BaseMap::onMouseScroll(Event* event)
 
     Vec2 mouse_location = e->getLocation();
     mouse_location.y = Director::getInstance()->getWinSize().height - mouse_location.y; // 转换Y轴坐标
-    Vec2 location_in_node = this->convertToNodeSpace(mouse_location);
 
-    float oldScale = this->getScale();
+    // 将屏幕坐标转换成 BaseMap 内部坐标
+    Vec2 location_in_map = this->convertToNodeSpace(mouse_location);
+
+
+    float old_scale = this->getScale();
     float factor = 1.1f;
-    float newScale = (scroll_y < 0) ? (oldScale * factor) : (oldScale / factor);
+    float new_scale = (scroll_y < 0) ? (old_scale * factor) : (old_scale / factor);
 
     // 动态计算最小缩放
     auto visible_size = Director::getInstance()->getVisibleSize();
-    Size map_size = this->getContentSize();
+    Size map_size = sprites_.front()->getContentSize();
     float min_scale = std::max(visible_size.width / map_size.width, visible_size.height / map_size.height);
 
-    newScale = std::max(min_scale, std::min(newScale, 3.0f));
+    new_scale = std::max(min_scale, std::min(new_scale, 3.0f));
 
-    this->setScale(newScale);
+    // 应用缩放
+    this->setScale(new_scale);
 
     // 位置补偿
-    Vec2 newLocationInWorld = this->convertToWorldSpace(location_in_node);
-    Vec2 offset = mouse_location - newLocationInWorld;
+    Vec2 new_world_pos_of_point = this->convertToWorldSpace(location_in_map);
+    Vec2 offset = mouse_location - new_world_pos_of_point;
     this->setPosition(this->getPosition() + offset);
 
     checkAndClampPosition();
