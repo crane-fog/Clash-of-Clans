@@ -11,20 +11,20 @@ bool UI::init()
         return false;
     }
 
-    // »ñÈ¡ÆÁÄ»³ß´ç
+    // è·å–å±å¹•å°ºå¯¸
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    // ´´½¨¶à¸ö½ø¶ÈÌõ:½ğ±ÒºÍÊ¥Ë®
+    // åˆ›å»ºå¤šä¸ªè¿›åº¦æ¡:é‡‘å¸å’Œåœ£æ°´
     createProgressBarWithBackground("Gold", Color3B::YELLOW, "Gold.png", 50.0f, visibleSize.width - 500, visibleSize.height - 100, 100);
     createProgressBarWithBackground("Elixir", Color3B(128, 0, 158), "Elixir.png", 100.0f, visibleSize.width - 500, visibleSize.height - 200, 100);
 
 
-    // ´´½¨·µ»Ø°´Å¥ - ¹Ì¶¨ÔÚ×óÉÏ½Ç
+    // åˆ›å»ºè¿”å›æŒ‰é’® - å›ºå®šåœ¨å·¦ä¸Šè§’
     auto backButton = ui::Button::create("BackButton.png");
     backButton->setPosition(Vec2(80, visibleSize.height - 80));
     backButton->addClickEventListener([&](Ref* sender) {
-        // °´Å¥µã»÷ÊÂ¼ş
+        // æŒ‰é’®ç‚¹å‡»äº‹ä»¶
         });
     this->addChild(backButton);
 
@@ -52,27 +52,27 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
     ProgressBarData data;
     data.title = title;
 
-    // ´´½¨Í¼ÏñÍ¼±ê 
-    data.icon = Sprite::create(iconPath); // ÄãµÄÍ¼±êÍ¼Æ¬
+    // åˆ›å»ºå›¾åƒå›¾æ ‡ 
+    data.icon = Sprite::create(iconPath); // ä½ çš„å›¾æ ‡å›¾ç‰‡
     if (data.icon) {
-        data.icon->setPosition(Vec2(x + 450, y)); // »¬¶¯ÌõÓÒ±ß
-        data.icon->setScale(1.0f); // µ÷ÕûÍ¼±ê´óĞ¡
+        data.icon->setPosition(Vec2(x + 450, y)); // æ»‘åŠ¨æ¡å³è¾¹
+        data.icon->setScale(1.0f); // è°ƒæ•´å›¾æ ‡å¤§å°
         this->addChild(data.icon);
     }
-    // ´´½¨±êÌâ
+    // åˆ›å»ºæ ‡é¢˜
     auto titleLabel = Label::createWithSystemFont(title, "Arial", 45);
     titleLabel->setPosition(Vec2(x - 200, y));
     titleLabel->setTextColor(Color4B::WHITE);
     titleLabel->setAnchorPoint(Vec2(0, 0.5));
     this->addChild(titleLabel);
 
-    // ´´½¨±³¾°¿ò
-    auto background = LayerColor::create(Color4B(0, 0, 0, 150), 500, 40); // ºÚÉ«°ëÍ¸Ã÷
-    background->setPosition(Vec2(x - 100, y - 24.0f)); // ÉèÖÃÎ»ÖÃ
+    // åˆ›å»ºèƒŒæ™¯æ¡†
+    auto background = LayerColor::create(Color4B(0, 0, 0, 150), 500, 40); // é»‘è‰²åŠé€æ˜
+    background->setPosition(Vec2(x - 100, y - 24.0f)); // è®¾ç½®ä½ç½®
     this->addChild(background, 0);
-    data.background = nullptr; // ÓÉÓÚÊ¹ÓÃLayerColor£¬ÕâÀïÉèÎªnull
+    data.background = nullptr; // ç”±äºä½¿ç”¨LayerColorï¼Œè¿™é‡Œè®¾ä¸ºnull
 
-    // ´´½¨½ø¶ÈÌõ
+    // åˆ›å»ºè¿›åº¦æ¡
     data.loadingBar = cocos2d::ui::LoadingBar::create("GoldLoadingBarFile.png");
     if (data.loadingBar) {
         data.loadingBar->setDirection(cocos2d::ui::LoadingBar::Direction::RIGHT);
@@ -84,13 +84,13 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
         this->addChild(data.loadingBar, 1);
     }
 
-    // ´´½¨°Ù·Ö±È±êÇ©
+    // åˆ›å»ºç™¾åˆ†æ¯”æ ‡ç­¾
     data.percentLabel = Label::createWithSystemFont(StringUtils::format("%f%", percent * UpperLimit), "Arial", 30);
     data.percentLabel->setPosition(Vec2(x + 150, y - 5));
     data.percentLabel->setTextColor(Color4B::BLACK);
     this->addChild(data.percentLabel, 2);
 
-    // ±£´æµ½ÈİÆ÷
+    // ä¿å­˜åˆ°å®¹å™¨
     progressBars_.push_back(data);
 }
 

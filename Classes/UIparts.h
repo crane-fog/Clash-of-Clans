@@ -7,7 +7,7 @@
 #include "BaseMap.h"
 #include "cocos/ui/CocosGUI.h"
 
-// ½ø¶ÈÌõ½á¹¹Ìå
+// è¿›åº¦æ¡ç»“æ„ä½“
 struct ProgressBarData {
     cocos2d::ui::LoadingBar* loadingBar;
     cocos2d::LayerColor* background;
@@ -16,23 +16,23 @@ struct ProgressBarData {
     std::string title;
 };
 
-// UI²¿·Ö»ùÀà
+// UIéƒ¨åˆ†åŸºç±»
 class UI : public cocos2d::Scene {
 private:
-    std::vector<ProgressBarData> progressBars_;  // ´æ´¢¶à¸ö½ø¶ÈÌõ
+    std::vector<ProgressBarData> progressBars_;  // å­˜å‚¨å¤šä¸ªè¿›åº¦æ¡
 
 public:
-    // ³õÊ¼»¯£¬µ±¶ÔÏó±»´´½¨Ê±±»×Ô¶¯µ÷ÓÃ
+    // åˆå§‹åŒ–ï¼Œå½“å¯¹è±¡è¢«åˆ›å»ºæ—¶è¢«è‡ªåŠ¨è°ƒç”¨
     virtual bool init() override;
 
-    // ´´½¨´ø±³¾°µÄ½ø¶ÈÌõ
+    // åˆ›å»ºå¸¦èƒŒæ™¯çš„è¿›åº¦æ¡
     void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, float percent, float x, float y, int UpperLimit);
 
-    // ¸üĞÂÖ¸¶¨½ø¶ÈÌõ
+    // æ›´æ–°æŒ‡å®šè¿›åº¦æ¡
     void updateProgressBar(int index, float percent);
     void updateProgressBar(const std::string& title, float percent);
 
-    // ¾²Ì¬´´½¨º¯Êı£¬Ìæ´ú¹¹Ôìº¯Êı£¬»á½«´´½¨µÄ¶ÔÏó×Ô¶¯·ÅÈë×Ô¶¯ÊÍ·Å³Ø
+    // é™æ€åˆ›å»ºå‡½æ•°ï¼Œæ›¿ä»£æ„é€ å‡½æ•°ï¼Œä¼šå°†åˆ›å»ºçš„å¯¹è±¡è‡ªåŠ¨æ”¾å…¥è‡ªåŠ¨é‡Šæ”¾æ± 
     CREATE_FUNC(UI);
 };
 

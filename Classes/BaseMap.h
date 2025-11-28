@@ -27,9 +27,11 @@ public:
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(BaseMap);
 
-    cocos2d::Size map_size_;
+    // 切换有线框/无线框背景图
+    void changeLinedMap();
+
     // todo: 索引与管理
-    // 用于存储地图上精灵的容器，其中0固定为背景图
+    // 用于存储地图上精灵的容器，其中0和1固定为两张背景图
     std::vector<cocos2d::Sprite*> sprites_;
 };
 
