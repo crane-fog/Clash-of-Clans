@@ -3,18 +3,9 @@
 
 #include "cocos2d.h"
 
-// 继承自 Node，作为整个地图世界的容器
+// 作为整个地图的容器，允许整体缩放和移动
 class BaseMap : public cocos2d::Node {
 private:
-    // 初始化
-    virtual bool init();
-    // 当节点进入舞台时调用
-    virtual void onEnter() override;
-    // 用于存储地图上所有精灵的容器，其中0固定为背景图
-    // todo: 怎么管理这些精灵/找到某个具体的精灵
-    std::vector<cocos2d::Sprite*> sprites_;
-
-protected:
     // 鼠标事件回调
     void onMouseScroll(cocos2d::Event* event);
     void onMouseDown(cocos2d::Event* event);
@@ -23,14 +14,23 @@ protected:
     // 检查边界并修正位置
     void checkAndClampPosition();
 
-public:
-    // 替代构造函数
-    static BaseMap* create();
-
     // 用于鼠标监听相关的变量
     bool is_dragging_ = false;
     cocos2d::Vec2 last_mouse_pos_;
     cocos2d::EventListenerMouse* mouse_listener_ = nullptr;
+
+public:
+    // 初始化，当对象被创建时被自动调用
+    virtual bool init() override;
+    // 当对象被渲染时被自动调用
+    virtual void onEnter() override;
+    // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
+    CREATE_FUNC(BaseMap);
+
+    cocos2d::Size map_size_;
+    // todo: 索引与管理
+    // 用于存储地图上精灵的容器，其中0固定为背景图
+    std::vector<cocos2d::Sprite*> sprites_;
 };
 
 #endif // __BASE_MAP_H__

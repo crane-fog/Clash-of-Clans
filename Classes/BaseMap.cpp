@@ -3,17 +3,6 @@
 
 USING_NS_CC;
 
-BaseMap* BaseMap::create()
-{
-    BaseMap* node = new (std::nothrow) BaseMap();
-    if (node && node->init()) {
-        node->autorelease();
-        return node;
-    }
-    CC_SAFE_DELETE(node);
-    return nullptr;
-}
-
 bool BaseMap::init()
 {
     // 调用父类初始化
@@ -23,33 +12,23 @@ bool BaseMap::init()
 
     // 创建背景图 Sprite
     sprites_.push_back(Sprite::create("BaseMap.jpg"));
-    if (sprites_.empty() || !sprites_.back()) {
+    if (!sprites_.front()) {
         return false;
     }
     // 背景图左下角对齐容器左下角
     sprites_.front()->setAnchorPoint(Vec2::ZERO);
     sprites_.front()->setPosition(Vec2::ZERO);
-
+    // 将背景图设定为 BaseMap 的子对象
     this->addChild(sprites_.front(), -1);
 
     // 容器的 ContentSize 设置为背景图大小
     this->setContentSize(sprites_.front()->getContentSize());
-
+    map_size_ = this->getContentSize();
     // 锚点(0,0)
     this->setAnchorPoint(Vec2::ZERO);
 
     // 初始化变量
     is_dragging_ = false;
-
-    // 创建并绑定鼠标监听器
-    mouse_listener_ = EventListenerMouse::create();
-    mouse_listener_->onMouseScroll = CC_CALLBACK_1(BaseMap::onMouseScroll, this);
-    mouse_listener_->onMouseDown = CC_CALLBACK_1(BaseMap::onMouseDown, this);
-    mouse_listener_->onMouseUp = CC_CALLBACK_1(BaseMap::onMouseUp, this);
-    mouse_listener_->onMouseMove = CC_CALLBACK_1(BaseMap::onMouseMove, this);
-
-    // 将监听器绑定到当前节点
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouse_listener_, this);
 
     return true;
 }
@@ -62,43 +41,30 @@ void BaseMap::onEnter()
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     Size map_size = sprites_.front()->getContentSize();
-
     // 计算并应用最小缩放 (填满屏幕)
     float scale_x = visible_size.width / map_size.width;
     float scale_y = visible_size.height / map_size.height;
     float min_scale = std::max(scale_x, scale_y);
-
     if (this->getScale() < min_scale) {
         this->setScale(min_scale);
     }
-
     // 计算缩放后的地图尺寸
     float final_w = map_size.width * this->getScale();
     float final_h = map_size.height * this->getScale();
-
     // 计算居中所需的位置 (屏幕中心 - 地图中心)
     // 因为容器锚点是(0,0)，Position就是容器左下角在屏幕的位置
     float x = origin.x + (visible_size.width - final_w) / 2.0f;
     float y = origin.y + (visible_size.height - final_h) / 2.0f;
-
     this->setPosition(Vec2(x, y));
 
-
-
-    // 创建一个角色 Sprite
-    sprites_.push_back(Sprite::create("Barbarian.png"));
-    if (sprites_.back()) {
-        sprites_.back()->setPosition(Vec2(this->_contentSize.width / 2, this->_contentSize.height / 2));
-        this->addChild(sprites_.back(), 2);
-    }
-    auto move_by1 = MoveBy::create(0.5, Vec2(400, 0));
-    auto move_by2 = MoveBy::create(0.5, Vec2(0, 400));
-    auto move_by3 = MoveBy::create(0.5, Vec2(-400, 0));
-    auto move_by4 = MoveBy::create(0.5, Vec2(0, -400));
-    auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
-    auto repeatAction = RepeatForever::create(seq_action);
-
-    sprites_.back()->runAction(repeatAction);
+    // 创建并绑定鼠标监听器
+    mouse_listener_ = EventListenerMouse::create();
+    mouse_listener_->onMouseScroll = CC_CALLBACK_1(BaseMap::onMouseScroll, this);
+    mouse_listener_->onMouseDown = CC_CALLBACK_1(BaseMap::onMouseDown, this);
+    mouse_listener_->onMouseUp = CC_CALLBACK_1(BaseMap::onMouseUp, this);
+    mouse_listener_->onMouseMove = CC_CALLBACK_1(BaseMap::onMouseMove, this);
+    // 将监听器绑定到当前节点
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouse_listener_, this);
 }
 
 void BaseMap::checkAndClampPosition()
