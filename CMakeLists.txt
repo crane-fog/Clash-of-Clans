@@ -61,6 +61,7 @@ list(APPEND GAME_SOURCE
      Classes/BaseMap.cpp
      Classes/VillageScene.cpp
      Classes/MainVillageScene.cpp
+     Classes/UIparts.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -68,6 +69,7 @@ list(APPEND GAME_HEADER
      Classes/BaseMap.h
      Classes/VillageScene.h
      Classes/MainVillageScene.h
+     Classes/UIparts.h
      )
 
 if(ANDROID)
