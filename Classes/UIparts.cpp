@@ -28,6 +28,23 @@ bool UI::init()
         });
     this->addChild(backButton);
 
+    auto button = Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
+
+    button->setTitleText("SHOP");
+
+    button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
+        switch (type)
+        {
+            case ui::Widget::TouchEventType::BEGAN:
+                break;
+            case ui::Widget::TouchEventType::ENDED:
+                break;
+            default:
+                break;
+        }
+        });
+
+    this->addChild(button);
     return true;
 }
 void UI::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, float percent, float x, float y, int UpperLimit)
@@ -35,7 +52,7 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
     ProgressBarData data;
     data.title = title;
 
-    // 创建图像图标 - 使用Sprite
+    // 创建图像图标 
     data.icon = Sprite::create(iconPath); // 你的图标图片
     if (data.icon) {
         data.icon->setPosition(Vec2(x + 450, y)); // 滑动条右边
@@ -51,7 +68,7 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
 
     // 创建背景框
     auto background = LayerColor::create(Color4B(0, 0, 0, 150), 500, 40); // 黑色半透明
-    background->setPosition(Vec2(x - 100, y - 24.0f)); // 设置位置（注意锚点）
+    background->setPosition(Vec2(x - 100, y - 24.0f)); // 设置位置
     this->addChild(background, 0);
     data.background = nullptr; // 由于使用LayerColor，这里设为null
 
