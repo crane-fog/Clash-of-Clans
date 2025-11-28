@@ -23,9 +23,18 @@ bool BaseMap::init()
 
     // 容器的 ContentSize 设置为背景图大小
     this->setContentSize(sprites_.front()->getContentSize());
-    map_size_ = this->getContentSize();
     // 锚点(0,0)
     this->setAnchorPoint(Vec2::ZERO);
+
+    // 创建线框背景图 Sprite
+    sprites_.push_back(Sprite::create("LinedBaseMap.jpg"));
+    if (!sprites_.back()) {
+        return false;
+    }
+    sprites_.back()->setAnchorPoint(Vec2::ZERO);
+    sprites_.back()->setPosition(Vec2::ZERO);
+    this->addChild(sprites_.back(), -1);
+    sprites_.back()->setVisible(false); // 默认隐藏线框图
 
     // 初始化变量
     is_dragging_ = false;
@@ -65,6 +74,12 @@ void BaseMap::onEnter()
     mouse_listener_->onMouseMove = CC_CALLBACK_1(BaseMap::onMouseMove, this);
     // 将监听器绑定到当前节点
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouse_listener_, this);
+}
+
+void BaseMap::changeLinedMap()
+{
+    sprites_[0]->setVisible(!sprites_[0]->isVisible());
+    sprites_[1]->setVisible(!sprites_[1]->isVisible());
 }
 
 void BaseMap::checkAndClampPosition()
