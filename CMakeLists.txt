@@ -66,6 +66,7 @@ list(APPEND GAME_SOURCE
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
      Classes/CocController.h
+     Classes/CoordAdaptor.h
      Classes/BaseMap.h
      Classes/VillageScene.h
      Classes/MainVillageScene.h
