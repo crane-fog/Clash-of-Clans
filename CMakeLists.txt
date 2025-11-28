@@ -28,7 +28,7 @@ cmake_minimum_required(VERSION 3.6)
 set(APP_NAME Clash-of-Clans)
 
 project(${APP_NAME})
-
+add_compile_options(/utf-8)
 if(XCODE)
     if(NOT DEFINED CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET)
         SET (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 8.0)
@@ -57,13 +57,17 @@ endif()
 # add cross-platforms source files and header files 
 list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
-     Classes/HelloWorldScene.cpp
+     Classes/CocController.cpp
      Classes/BaseMap.cpp
+     Classes/VillageScene.cpp
+     Classes/MainVillageScene.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
-     Classes/HelloWorldScene.h
+     Classes/CocController.h
      Classes/BaseMap.h
+     Classes/VillageScene.h
+     Classes/MainVillageScene.h
      )
 
 if(ANDROID)
