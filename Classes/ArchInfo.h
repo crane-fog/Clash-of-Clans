@@ -5,7 +5,7 @@
 #include <vector>
 
 // 示例用法：取3级箭塔的最大生命值
-// unsigned int a = kArchInfoData[ARCHER_TOWER][2].hp_;
+// unsigned int a = kArchInfoData.at(ARCHER_TOWER)[2].hp_;
 
 enum ArchName : unsigned char {
     TOWN_HALL = 0, // 大本营
@@ -24,15 +24,20 @@ enum ArchType : unsigned char {
     OTHER = 0, // 其它
     RESOURCE = 1, // 资源
     DEFENSE = 2, // 防御
-    WALL = 3 // 城墙
+    WALLT = 3 // 城墙
+};
+
+enum ResourceType : unsigned char {
+    GOLD = 0, // 金币
+    ELIXIR = 1 // 圣水
 };
 
 // 用于存放建筑物信息
 struct ArchInfo {
     typedef unsigned int UI;
     typedef unsigned char UC;
-    // 建筑种类的编号
-    UC no_;
+    // 建筑图片文件
+    std::string image_;
     // 建筑等级
     UC level_;
     // 建筑占地大小（x=x*x）
@@ -40,6 +45,12 @@ struct ArchInfo {
     // 建筑类型（1=资源建筑（攻击可得到资源）、2=防御建筑、3=城墙、0=其它）
     UC type_;
 
+    // 升到这一级所需要的资源类型（0=金币，1=圣水）（在1级时即为建筑初始建造时长）
+    UC upgrade_cost_type_;
+    // 升到这一级所需要的资源数量
+    UI upgrade_cost_amount_;
+    // 升级时间秒数
+    UI upgrade_time_;
     // 建筑生命值
     UI hp_;
 
@@ -63,10 +74,10 @@ struct ArchInfo {
     // 伤害溅射范围（伤害类型为0时则为0）
     float splash_range_;
 
-    ArchInfo(UC no, UC lvl, UC size, UC type, UI hp, UI cap = 0, UI prod = 0, UI dmg = 0,
-        UI atkInt = 0, UI range = 0, UC tgt = 0, UC dmgType = 0, float splash = 0.0f) :
-        no_(no), level_(lvl), size_(size), type_(type), hp_(hp), max_capacity_(cap), produce_speed_(prod), damage_(dmg),
-        attack_interval_(atkInt), attack_range_(range), target_type_(tgt), damage_type_(dmgType), splash_range_(splash)
+    ArchInfo(std::string i, UC lvl, UC size, UC type, UC uct, UI uca, UI ut, UI hp, UI cap = 0,
+        UI prod = 0, UI dmg = 0, UI atkInt = 0, UI range = 0, UC tgt = 0, UC dmgType = 0, float splash = 0.0f) :
+        image_(i), level_(lvl), size_(size), type_(type), upgrade_cost_type_(uct), upgrade_cost_amount_(uca), upgrade_time_(ut), hp_(hp), max_capacity_(cap),
+        produce_speed_(prod), damage_(dmg), attack_interval_(atkInt), attack_range_(range), target_type_(tgt), damage_type_(dmgType), splash_range_(splash)
     {
     }
 };
@@ -96,55 +107,55 @@ struct ArchData {
 // 建筑物信息数据
 const std::map<unsigned char, std::vector<ArchInfo>> kArchInfoData = {
     {TOWN_HALL, {
-        {TOWN_HALL, 1, 4, OTHER, 10000},
-        {TOWN_HALL, 2, 4, OTHER, 20000},
-        {TOWN_HALL, 3, 4, OTHER, 30000},
-        {TOWN_HALL, 4, 4, OTHER, 40000}}},
+        {"arch/Town_Hall1.webp", 1, 4, OTHER, GOLD, 0, 0, 400},
+        {"arch/Town_Hall2.webp", 2, 4, OTHER, GOLD, 1000, 10, 800},
+        {"arch/Town_Hall3.webp", 3, 4, OTHER, GOLD, 4000, 1800, 1600},
+        {"arch/Town_Hall4.webp", 4, 4, OTHER, GOLD, 25000, 10800, 2000}}},
     {WALL, {
-        {WALL, 1, 1, WALL, 5000},
-        {WALL, 2, 1, WALL, 10000},
-        {WALL, 3, 1, WALL, 15000},
-        {WALL, 4, 1, WALL, 20000}}},
+        {"arch/Wall1.webp", 1, 1, WALLT, GOLD, 0, 0, 100},
+        {"arch/Wall2.webp", 2, 1, WALLT, GOLD, 1000, 0, 200},
+        {"arch/Wall3.webp", 3, 1, WALLT, GOLD, 5000, 0, 400},
+        {"arch/Wall4.webp", 4, 1, WALLT, GOLD, 10000, 0, 800}}},
     {GOLD_STORAGE, {
-        {GOLD_STORAGE, 1, 3, RESOURCE, 10000, 50000},
-        {GOLD_STORAGE, 2, 3, RESOURCE, 20000, 100000},
-        {GOLD_STORAGE, 3, 3, RESOURCE, 30000, 150000},
-        {GOLD_STORAGE, 4, 3, RESOURCE, 40000, 200000}}},
+        {"arch/Gold_Storage1.webp", 1, 3, RESOURCE, ELIXIR, 300, 10, 150, 1500},
+        {"arch/Gold_Storage2.webp", 2, 3, RESOURCE, ELIXIR, 750, 120, 300, 3000},
+        {"arch/Gold_Storage3.webp", 3, 3, RESOURCE, ELIXIR, 1500, 300, 450, 6000},
+        {"arch/Gold_Storage4.webp", 4, 3, RESOURCE, ELIXIR, 3000, 900, 600, 12000}}},
     {ELIXIR_STORAGE, {
-        {ELIXIR_STORAGE, 1, 3, RESOURCE, 10000, 50000},
-        {ELIXIR_STORAGE, 2, 3, RESOURCE, 20000, 100000},
-        {ELIXIR_STORAGE, 3, 3, RESOURCE, 30000, 150000},
-        {ELIXIR_STORAGE, 4, 3, RESOURCE, 40000, 200000}}},
+        {"arch/Elixir_Storage1.webp", 1, 3, RESOURCE, GOLD, 300, 10, 150, 1500},
+        {"arch/Elixir_Storage2.webp", 2, 3, RESOURCE, GOLD, 750, 120, 300, 3000},
+        {"arch/Elixir_Storage3.webp", 3, 3, RESOURCE, GOLD, 1500, 300, 450, 6000},
+        {"arch/Elixir_Storage4.webp", 4, 3, RESOURCE, GOLD, 3000, 900, 600, 12000}}},
     {GOLD_MINE, {
-        {GOLD_MINE, 1, 2, RESOURCE, 1000, 5000, 500},
-        {GOLD_MINE, 2, 2, RESOURCE, 2000, 10000, 1000},
-        {GOLD_MINE, 3, 2, RESOURCE, 3000, 15000, 1500},
-        {GOLD_MINE, 4, 2, RESOURCE, 4000, 20000, 2000}}},
+        {"arch/Gold_Mine1.webp", 1, 3, RESOURCE, ELIXIR, 150, 5, 75, 1000, 200},
+        {"arch/Gold_Mine2.webp", 2, 3, RESOURCE, ELIXIR, 300, 15, 150, 2000, 400},
+        {"arch/Gold_Mine3.webp", 3, 3, RESOURCE, ELIXIR, 700, 60, 300, 3000, 600},
+        {"arch/Gold_Mine4.webp", 4, 3, RESOURCE, ELIXIR, 1400, 120, 400, 5000, 800}}},
     {ELIXIR_COLLECTOR, {
-        {ELIXIR_COLLECTOR, 1, 2, RESOURCE, 1000, 5000, 500},
-        {ELIXIR_COLLECTOR, 2, 2, RESOURCE, 2000, 10000, 1000},
-        {ELIXIR_COLLECTOR, 3, 2, RESOURCE, 3000, 15000, 1500},
-        {ELIXIR_COLLECTOR, 4, 2, RESOURCE, 4000, 20000, 2000}}},
+        {"arch/Elixir_Collector1.webp", 1, 3, RESOURCE, GOLD, 150, 5, 75, 1000, 200},
+        {"arch/Elixir_Collector2.webp", 2, 3, RESOURCE, GOLD, 300, 15, 150, 2000, 400},
+        {"arch/Elixir_Collector3.webp", 3, 3, RESOURCE, GOLD, 700, 60, 300, 3000, 600},
+        {"arch/Elixir_Collector4.webp", 4, 3, RESOURCE, GOLD, 1400, 120, 400, 5000, 800}}},
     {BARRACKS, {
-        {BARRACKS, 1, 2, OTHER, 1000},
-        {BARRACKS, 2, 2, OTHER, 2000},
-        {BARRACKS, 3, 2, OTHER, 3000},
-        {BARRACKS, 4, 2, OTHER, 4000}}},
+        {"arch/Barracks1.webp", 1, 3, OTHER, ELIXIR, 100, 10, 100},
+        {"arch/Barracks2.webp", 2, 3, OTHER, ELIXIR, 500, 15, 200},
+        {"arch/Barracks3.webp", 3, 3, OTHER, ELIXIR, 2500, 120, 250},
+        {"arch/Barracks4.webp", 4, 3, OTHER, ELIXIR, 5000, 1800, 300}}},
     {ARMY_CAMP, {
-        {ARMY_CAMP, 1, 3, OTHER, 1000},
-        {ARMY_CAMP, 2, 3, OTHER, 2000},
-        {ARMY_CAMP, 3, 3, OTHER, 3000},
-        {ARMY_CAMP, 4, 3, OTHER, 4000}}},
+        {"arch/Army_Camp1.webp", 1, 4, OTHER, ELIXIR, 200, 60, 100},
+        {"arch/Army_Camp2.webp", 2, 4, OTHER, ELIXIR, 2000, 300, 150},
+        {"arch/Army_Camp3.webp", 3, 4, OTHER, ELIXIR, 10000, 1800, 200},
+        {"arch/Army_Camp4.webp", 4, 4, OTHER, ELIXIR, 100000, 7200, 250}}},
     {CANNON, {
-        {CANNON, 1, 2, DEFENSE, 2000, 0, 0, 50, 1000, 60},
-        {CANNON, 2, 2, DEFENSE, 4000, 0, 0, 60, 1000, 60},
-        {CANNON, 3, 2, DEFENSE, 6000, 0, 0, 70, 1000, 60},
-        {CANNON, 4, 2, DEFENSE, 8000, 0, 0, 80, 1000, 60}}},
+        {"arch/Cannon1.webp", 1, 3, DEFENSE, GOLD, 250, 5, 300, 0, 0, 5, 800, 90},
+        {"arch/Cannon2.webp", 2, 3, DEFENSE, GOLD, 1000, 30, 360, 0, 0, 8, 800, 90},
+        {"arch/Cannon3.webp", 3, 3, DEFENSE, GOLD, 4000, 120, 420, 0, 0, 10, 800, 90},
+        {"arch/Cannon4.webp", 4, 3, DEFENSE, GOLD, 16000, 1200, 500, 0, 0, 14, 800, 90}}},
     {ARCHER_TOWER, {
-        {ARCHER_TOWER, 1, 2, DEFENSE, 2000, 0, 0, 50, 800, 70, 2},
-        {ARCHER_TOWER, 2, 2, DEFENSE, 4000, 0, 0, 60, 800, 70, 2},
-        {ARCHER_TOWER, 3, 2, DEFENSE, 6000, 0, 0, 70, 800, 70, 2},
-        {ARCHER_TOWER, 4, 2, DEFENSE, 8000, 0, 0, 80, 800, 70, 2}}}
+        {"arch/Archer_Tower1.webp", 1, 3, DEFENSE, GOLD, 1000, 15, 380, 0, 0, 5, 500, 100, 2},
+        {"arch/Archer_Tower2.webp", 2, 3, DEFENSE, GOLD, 2000, 120, 420, 0, 0, 7, 500, 100, 2},
+        {"arch/Archer_Tower3.webp", 3, 3, DEFENSE, GOLD, 5000, 1200, 460, 0, 0, 9, 500, 100, 2},
+        {"arch/Archer_Tower4.webp", 4, 3, DEFENSE, GOLD, 20000, 3600, 500, 0, 0, 12, 500, 100, 2}}}
 };
 
 #endif // __ARCH_INFO_H__
