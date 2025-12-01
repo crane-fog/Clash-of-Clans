@@ -72,6 +72,7 @@ list(APPEND GAME_HEADER
      Classes/VillageScene.h
      Classes/MainVillageScene.h
      Classes/UIparts.h
+     Classes/ArchInfo.h
      Classes/Troop.h
      )
 
