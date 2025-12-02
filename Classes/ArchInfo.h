@@ -5,7 +5,9 @@
 #include <vector>
 
 // 示例用法：取3级箭塔的最大生命值
-// unsigned int a = kArchInfoData.at(ARCHER_TOWER)[2].hp_;
+// unsigned int a = kArchInfo.at(ARCHER_TOWER)[2].hp_;
+
+const unsigned char INVALID_ARCH_NO = 255;
 
 enum ArchName : unsigned char {
     TOWN_HALL = 0, // 大本营
@@ -82,30 +84,8 @@ struct ArchInfo {
     }
 };
 
-// 一张地图上的一格的建筑状况
-struct ArchData {
-    typedef unsigned int UI;
-    typedef unsigned char UC;
-    // 建筑种类的编号
-    UC no_;
-    // 建筑等级
-    UC level_;
-
-    // 当前生命值
-    UI current_hp_;
-
-    // 资源建筑
-    // 当前容量
-    UI current_capacity_;
-
-    ArchData(UC no, UC lvl, UI hp, UI cap = 0) :
-        no_(no), level_(lvl), current_hp_(hp), current_capacity_(cap)
-    {
-    }
-};
-
 // 建筑物信息数据
-const std::map<unsigned char, std::vector<ArchInfo>> kArchInfoData = {
+const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
     {TOWN_HALL, {
         {"arch/Town_Hall1.webp", 1, 4, OTHER, GOLD, 0, 0, 400},
         {"arch/Town_Hall2.webp", 2, 4, OTHER, GOLD, 1000, 10, 800},

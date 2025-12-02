@@ -3,6 +3,8 @@
 
 #include "cocos2d.h"
 
+const int MAP_SIZE = 44;
+
 // 作为整个地图的容器，允许整体缩放和移动
 class BaseMap : public cocos2d::Node {
 private:
