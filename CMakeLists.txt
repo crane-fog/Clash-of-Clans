@@ -62,6 +62,8 @@ list(APPEND GAME_SOURCE
      Classes/VillageScene.cpp
      Classes/MainVillageScene.cpp
      Classes/UIparts.cpp
+     Classes/Arch.cpp
+     Classes/DataHelper.cpp
      Classes/Troop.cpp
      )
 list(APPEND GAME_HEADER
@@ -72,6 +74,9 @@ list(APPEND GAME_HEADER
      Classes/VillageScene.h
      Classes/MainVillageScene.h
      Classes/UIparts.h
+     Classes/ArchInfo.h
+     Classes/Arch.h
+     Classes/DataHelper.h
      Classes/Troop.h
      )
 
@@ -168,3 +173,10 @@ if(LINUX OR WINDOWS)
     cocos_get_resource_path(APP_RES_DIR ${APP_NAME})
     cocos_copy_target_res(${APP_NAME} LINK_TO ${APP_RES_DIR} FOLDERS ${GAME_RES_FOLDER})
 endif()
+
+# 复制数据文件
+add_custom_command(TARGET ${APP_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/data
+            $<TARGET_FILE_DIR:${APP_NAME}>/data
+)

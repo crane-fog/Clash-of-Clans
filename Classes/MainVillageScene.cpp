@@ -1,5 +1,9 @@
 #include "MainVillageScene.h"
 #include "CoordAdaptor.h"
+#include "DataHelper.h"
+#include "Arch.h"
+#include <chrono>
+#include <vector>
 
 USING_NS_CC;
 
@@ -7,6 +11,20 @@ bool MainVillage::init()
 {
     if (!Village::init()) {
         return false;
+    }
+
+    // 从数据文件中读取建筑数据并创建建筑对象
+    time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    time_t data_time = 0;
+    if (!DataHelper::readArchData(kMainVillageDataFile, data_time, this->arch_status_)) {
+        return false;
+    }
+
+    std::vector<ArchData> arch_list;
+    DataHelper::mapToList(arch_status_, arch_list);
+
+    for (auto& arch : arch_list) {
+        Arch::create(arch, base_map_);
     }
 
     // 创建一个角色 Sprite
@@ -26,6 +44,7 @@ bool MainVillage::init()
 
 void MainVillage::onEnter()
 {
+    base_map_->changeLinedMap();
     Village::onEnter();
 
     // 让角色动
