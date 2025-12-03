@@ -65,6 +65,8 @@ list(APPEND GAME_SOURCE
      Classes/Arch.cpp
      Classes/DataHelper.cpp
      Classes/Troop.cpp
+     Classes/TroopAttackManager.cpp
+     Classes/TroopTargetManager.cpp
      Classes/ShopPopup.cpp
      )
 list(APPEND GAME_HEADER
@@ -79,7 +81,10 @@ list(APPEND GAME_HEADER
      Classes/Arch.h
      Classes/DataHelper.h
      Classes/Troop.h
-
+     Classes/TroopAttackManager.h
+     Classes/TroopTargetManager.h
+     Classes/ITroopTarget.h
+     Classes/IArcTarget.h
      )
 
 if(ANDROID)

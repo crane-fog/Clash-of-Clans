@@ -1,8 +1,9 @@
 #ifndef __TROOP_H__
 #define __TROOP_H__
 #include "cocos2d.h"
+#include "IArcTarget.h"
 #define MAX_TROOP_LEVEL 5//目前做到5级
-class Troop :public cocos2d::Sprite{
+class Troop :public cocos2d::Sprite, public IArchTarget{
 	typedef unsigned char uchar;
 protected:
 	//当前等级
@@ -40,9 +41,47 @@ public:
 	const float attack_speed_;
 	//攻击距离 格
 	const float range_;
-	
-	
 
+	// 当前生命值（非const，会变化）
+	float current_hitpoints_;
+
+public:
+	// 构造函数相关
+	Troop();
+	virtual ~Troop() = default;
+
+	// 初始化方法
+	virtual bool init();
+
+	// 执行攻击（由子类实现具体逻辑）
+	virtual void performAttack() = 0;
+
+	// 检查是否可以攻击
+	virtual bool canAttack() const;
+
+	// 受到伤害
+	virtual void takeDamage(float damage);
+
+	// 检查是否还活着
+	virtual bool isAlive() const;
+
+	// 获取士兵类型（用于建筑选择目标）
+	virtual unsigned char getTargetType() const;
+
+	// 获取当前生命值
+	float getCurrentHitpoints() const { return current_hitpoints_; }
+
+	// 获取最大生命值
+	float getMaxHitpoints() const { return hitpoints_[level_]; }
+
+	// 获取当前等级
+	int getLevel() const { return level_; }
+
+	// 设置等级
+	void setLevel(int level);
+
+	// 获取攻击伤害
+	float getCurrentDamage() const { return damage_per_attacks_[level_]; }
 };
 
 #endif // __TROOP_H__
