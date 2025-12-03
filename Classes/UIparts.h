@@ -35,5 +35,25 @@ public:
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(UI);
 };
+class ShopPopup : public cocos2d::Layer
+{
+public:
+    CREATE_FUNC(ShopPopup);
+    virtual bool init();
 
+    void show(cocos2d::Node* parent);
+    void close();
+    void onShopButtonClick(cocos2d::Ref* sender);
+    void setupBackground();
+private:
+    void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
+
+};
+struct ShopItem {
+    int id;
+    std::string name;
+    int price;
+    bool isAvailable;
+    std::string unavailableReason;
+};
 #endif // __UI_PARTS_H__

@@ -189,3 +189,8 @@ void BaseMap::onMouseMove(Event* event)
 
     last_mouse_pos_ = currentMousePos;
 }
+void BaseMap::setInputEnabled(bool enabled)
+{
+    if (mouse_listener_)
+        mouse_listener_->setEnabled(enabled);
+}

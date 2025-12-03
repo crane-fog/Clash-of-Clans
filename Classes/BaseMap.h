@@ -35,6 +35,8 @@ public:
     // todo: 索引与管理
     // 用于存储地图上精灵的容器，其中0和1固定为两张背景图
     std::vector<cocos2d::Sprite*> sprites_;
+    void setInputEnabled(bool enabled);//禁用鼠标调用
+
 };
 
 #endif // __BASE_MAP_H__
