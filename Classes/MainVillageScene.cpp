@@ -53,12 +53,12 @@ bool MainVillage::init()
     shopButton->setContentSize(Size(200, 100));  // 设置足够的触摸区域
     shopButton->setTouchEnabled(true);
     shopButton->setEnabled(true);
-    shopButton->addTouchEventListener([&](Ref* sender, ui::Widget::TouchEventType type) {
-        if (type == ui::Widget::TouchEventType::ENDED) {
-            onShopButtonClick(sender);
+    shopButton->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+            this->onShopButtonClick(sender);
         }
         });
-    this->addChild(shopButton);
+    this->addChild(shopButton,99);
     return true;
 }
 void MainVillage::onShopButtonClick(Ref* sender)
@@ -73,6 +73,7 @@ void MainVillage::onShopButtonClick(Ref* sender)
     auto popup = ShopPopup::create();
     if (popup) {
         popup->setTag(100);  // 设置 tag 便于查找
+        popup->setLocalZOrder(100);
         popup->show(this);
         CCLOG("商店弹窗打开成功");
     }
