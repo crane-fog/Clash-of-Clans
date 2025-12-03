@@ -1,5 +1,5 @@
 #include "ShopPopup.h"
-
+#include"UIparts.h"
 USING_NS_CC;
 using namespace ui;
 // 商品数据结构
@@ -46,7 +46,38 @@ void showUnavailablePrompt(int itemId) {
         nullptr
     ));
 }
+void ShopPopup::setupBackground() {
+    auto visibleSize = Director::getInstance()->getVisibleSize();
 
+    // 创建背景层（继承自 Layer，可以接收触摸）
+    auto background = Layer::create();
+    background->setContentSize(visibleSize);
+
+    // 添加半透明黑色背景
+    auto colorBg = LayerColor::create(Color4B(0, 0, 0, 180)); // 深色半透明
+    colorBg->setContentSize(visibleSize);
+    background->addChild(colorBg);
+
+    // 添加触摸监听器 - 拦截所有触摸事件
+    auto touchListener = EventListenerTouchOneByOne::create();
+    touchListener->setSwallowTouches(true); // 吞噬触摸，不传递到下层
+
+    touchListener->onTouchBegan = [](cocos2d::Touch* touch, cocos2d::Event* event) {
+        // 点击背景的任何位置都返回 true，表示处理这个事件
+        return true;
+        };
+
+    touchListener->onTouchEnded = [this](cocos2d::Touch* touch, cocos2d::Event* event) {
+        // 可以添加点击背景关闭的功能（可选）
+        // auto location = touch->getLocation();
+        // 检查是否点击在面板外
+        };
+
+    // 注意：监听器要附加到 background（Layer），不是 colorBg（LayerColor）
+    background->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, background);
+
+    this->addChild(background, -1);
+}
 // 购买商品的处理函数（示例）
 void onPurchaseItem(int itemId) {
     CCLOG("Processing purchase for item %d", itemId);
@@ -77,6 +108,7 @@ bool ShopPopup::init()
     if (!Layer::init()) {
         return false;
     }
+
     // 模拟商品数据
     std::vector<ShopItem> shopItems = {
         {1, "Sword", 100, true, ""},
@@ -93,10 +125,7 @@ bool ShopPopup::init()
     };
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
-    // 半透明背景
-    auto bg = LayerColor::create(Color4B(0, 0, 0, 128));
-    this->addChild(bg);
-
+    setupBackground();
     // 面板背景
     auto panelBg = LayerColor::create(Color4B(50, 50, 100, 255),
         visibleSize.width * 0.8f,
@@ -282,6 +311,12 @@ void ShopPopup::show(Node* parent)
     auto scaleTo = ScaleTo::create(0.3f, 1.0f);
     auto easeOut = EaseBackOut::create(scaleTo);
     this->runAction(easeOut);
+    // 关闭地图输入
+    auto map = parent->getChildByName("BaseMap");
+    if (map) ((BaseMap*)map)->setInputEnabled(false);
+
+    this->setScale(0.1f);
+    this->runAction(EaseBackOut::create(ScaleTo::create(0.3f, 1.0f)));
 }
 
 void ShopPopup::close()
@@ -291,6 +326,14 @@ void ShopPopup::close()
     auto remove = RemoveSelf::create();
     auto sequence = Sequence::create(easeIn, remove, nullptr);
     this->runAction(sequence);
+    // 重新启用地图输入 
+    auto parent = this->getParent();
+    auto map = parent->getChildByName("BaseMap");
+    if (map) ((BaseMap*)map)->setInputEnabled(true);
+
+    this->runAction(Sequence::create(
+        EaseBackIn::create(ScaleTo::create(0.2f, 0.1f)),
+        RemoveSelf::create(), nullptr));
 }
 
 void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)

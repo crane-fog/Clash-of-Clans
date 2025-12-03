@@ -11,6 +11,7 @@ bool Village::init()
 
     // 创建 BaseMap 容器
     base_map_ = BaseMap::create();
+    base_map_->setName("BaseMap");
     if (!base_map_) {
         return false;
     }
