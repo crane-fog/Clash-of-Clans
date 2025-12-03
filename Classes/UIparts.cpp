@@ -31,7 +31,8 @@ bool UI::init()
     auto button = Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
 
     button->setTitleText("SHOP");
-
+    button->setScale(0.5f);
+    button->setPosition(Vec2(visibleSize.width-100, 100)); 
     button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
         switch (type)
         {

@@ -4,7 +4,7 @@
 #include "Arch.h"
 #include <chrono>
 #include <vector>
-
+#include"ShopPopup.h"
 USING_NS_CC;
 
 bool MainVillage::init()
@@ -38,10 +38,49 @@ bool MainVillage::init()
     // 这个 base_map_ 从 Village 基类继承来
     base_map_->sprites_.push_back(barbarian_sprite);
     base_map_->addChild(barbarian_sprite, 2);
+    // 获取屏幕尺寸
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    auto shopButton = cocos2d::ui::Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
+    //商店标签
+    shopButton->setTitleText("SHOP");
+    shopButton->setTitleAlignment(TextHAlignment::LEFT, TextVAlignment::TOP); // 居中
+    shopButton->setTitleFontSize(50);
 
+    //商店图标
+    shopButton->setPosition(Vec2(visibleSize.width - 100, 100));
+    shopButton->setScale(0.5f);
+    shopButton->setContentSize(Size(200, 100));  // 设置足够的触摸区域
+    shopButton->setTouchEnabled(true);
+    shopButton->setEnabled(true);
+    shopButton->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+            this->onShopButtonClick(sender);
+        }
+        });
+    this->addChild(shopButton,99);
     return true;
 }
+void MainVillage::onShopButtonClick(Ref* sender)
+{
+    CCLOG("打开商店...");
 
+    // 避免重复打开
+    if (this->getChildByTag(100)) {
+        CCLOG("商店已经打开");
+        return;
+    }
+    auto popup = ShopPopup::create();
+    if (popup) {
+        popup->setTag(100);  // 设置 tag 便于查找
+        popup->setLocalZOrder(100);
+        popup->show(this);
+        CCLOG("商店弹窗打开成功");
+    }
+    else {
+        CCLOG("错误：无法创建商店弹窗");
+    }
+}
 void MainVillage::onEnter()
 {
     base_map_->changeLinedMap();
