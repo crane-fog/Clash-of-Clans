@@ -1,3 +1,9 @@
+#ifndef __TROOPTARGETMANAGER_H__
+#define __TROOPTARGETMANAGER_H__
+#include "cocos2d.h"
+#include "ITroopTarget.h"
+#include <vector>
+
 class TroopTargetManager {
     protected:
         std::vector<ITroopTarget*> targets_;
@@ -14,3 +20,5 @@ class TroopTargetManager {
         ITroopTarget* getNearestTroopTarget(const cocos2d::Vec2& position, 
                                        unsigned char preferred_target_ = 255);
     };
+
+#endif // __TROOPTARGETMANAGER_H__
