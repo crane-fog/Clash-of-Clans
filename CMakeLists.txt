@@ -65,6 +65,7 @@ list(APPEND GAME_SOURCE
      Classes/Arch.cpp
      Classes/DataHelper.cpp
      Classes/Troop.cpp
+     Classes/ShopPopup.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -78,6 +79,7 @@ list(APPEND GAME_HEADER
      Classes/Arch.h
      Classes/DataHelper.h
      Classes/Troop.h
+     Classes/ShopPopup.h
      )
 
 if(ANDROID)
