@@ -9,7 +9,7 @@ class ITroopTarget {
         virtual void takeDamage(float damage, int attackType) = 0;
         
         // 获取建筑位置-网格逻辑坐标
-        virtual cocos2d::Vec2 getPosition() const = 0;
+        virtual cocos2d::Vec2 getCellPosition() const = 0;
         
         // 获取建筑类型（用于士兵选择目标）
         virtual unsigned char getTargetType() const = 0;

@@ -28,7 +28,7 @@ bool Troop::init() {
     current_hitpoints_ = getMaxHitpoints();
 
     // 注册到攻击管理器
-    TroopAttackManager::getInstance()->registerTroop(this);
+    //TroopAttackManager::getInstance()->registerTroop(this);
 
     return true;
 }
@@ -42,12 +42,8 @@ void Troop::takeDamage(float damage) {
     current_hitpoints_ -= damage;
     if (current_hitpoints_ <= 0) {
         current_hitpoints_ = 0;
-        // 死亡处理可以在这里或者在子类中实现
+		// TODO: 死亡处理 墓碑显示、禁用攻击与移动等
     }
-}
-
-bool Troop::isAlive() const {
-    return current_hitpoints_ > 0;
 }
 
 void Troop::setLevel(int level) {
@@ -56,10 +52,4 @@ void Troop::setLevel(int level) {
         // 升级时恢复满血
         current_hitpoints_ = getMaxHitpoints();
     }
-}
-
-unsigned char Troop::getTargetType() const {
-    // 默认返回地面兵种，子类可以重写
-    // 0=地面兵种，1=空中兵种
-    return 0;
 }

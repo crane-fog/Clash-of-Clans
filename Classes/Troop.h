@@ -8,6 +8,10 @@ class Troop :public cocos2d::Sprite, public IArchTarget{
 protected:
 	//当前等级
 	int level_;
+	//当前网格逻辑位置
+	cocos2d::Vec2 position_;
+	// 当前生命值
+	float current_hitpoints_;
 	/*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
 	//每次伤害
 	const float damage_per_attacks_[MAX_TROOP_LEVEL + 1];
@@ -42,9 +46,6 @@ public:
 	//攻击距离 格
 	const float range_;
 
-	// 当前生命值（非const，会变化）
-	float current_hitpoints_;
-
 public:
 	// 构造函数相关
 	Troop();
@@ -59,15 +60,20 @@ public:
 	// 检查是否可以攻击
 	virtual bool canAttack() const;
 
+	/*以下为对接口IArchTarget的实现*/
 	// 受到伤害
-	virtual void takeDamage(float damage);
+	virtual void takeDamage(float damage)override;
+
+	// 获取士兵位置-网格逻辑坐标
+	virtual cocos2d::Vec2 getCellPosition() const override { return position_; }
 
 	// 检查是否还活着
-	virtual bool isAlive() const;
+	virtual bool isAlive() const override{ return current_hitpoints_ > 0; }
 
-	// 获取士兵类型（用于建筑选择目标）
-	virtual unsigned char getTargetType() const;
+	// 获取士兵类型（用于建筑选择目标，如是否为空中兵种，具体返回值见todo-士兵）
+	virtual unsigned char getTargetType() const = 0;
 
+	/*以下为get&set*/
 	// 获取当前生命值
 	float getCurrentHitpoints() const { return current_hitpoints_; }
 
