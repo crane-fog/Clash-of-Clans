@@ -282,17 +282,14 @@ bool ShopPopup::init()
 
         // 如果商品不可用，显示原因
         if (!item.isAvailable) {
-            auto reasonLabel = Label::createWithSystemFont(item.unavailableReason, "Arial", 12);
-            reasonLabel->setPosition(Vec2(itemBg->getContentSize().width / 2, 10));
-            reasonLabel->setColor(Color3B::RED);
-            itemBg->addChild(reasonLabel);
+            this->showUnavailableBubble(item, itemBg);
         }
     }
 
 
     return true;
 }
-// 创建商店按钮的函数
+// 创建商品购买按钮的函数
 ui::Button* createShopButton(const ShopItem& item, int index) {
     auto button = ui::Button::create();
     button->setTitleText("BUY");
@@ -368,7 +365,7 @@ void ShopPopup::show(Node* parent)
     this->setScale(0.1f);
     this->runAction(EaseBackOut::create(ScaleTo::create(0.3f, 1.0f)));
 }
-
+//关闭商店面板
 void ShopPopup::close()
 {
     auto scaleTo = ScaleTo::create(0.2f, 0.1f);
@@ -391,6 +388,58 @@ void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)
     if (type == Widget::TouchEventType::ENDED) {
         close();
     }
+}
+// 添加显示气泡提示的函数
+void ShopPopup::showUnavailableBubble(const ShopItem& item, LayerColor* targetNode) {
+    // 获取目标节点的世界坐标
+    Vec2 worldPos = targetNode->getParent()->convertToWorldSpace(targetNode->getPosition());
+
+    // 创建提示气泡
+    auto bubble = Node::create();
+    bubble->setPosition(worldPos + Vec2(0, 120)); // 在商品上方显示
+    bubble->setTag(8888);
+    this->addChild(bubble, 999);
+
+    // 气泡背景
+    auto bubbleBg = LayerColor::create(Color4B(50, 50, 50, 220), 200, 80);
+    bubbleBg->setPosition(Vec2::ZERO);
+    bubble->addChild(bubbleBg);
+
+    // 三角形箭头
+    auto arrow = DrawNode::create();
+    Vec2 arrowPoints[] = {
+        Vec2(90, 0),
+        Vec2(100, -10),
+        Vec2(110, 0)
+    };
+    arrow->drawSolidPoly(arrowPoints, 3, Color4F(0.2f, 0.2f, 0.2f, 0.9f));
+    arrow->setPosition(Vec2(0, 80));
+    bubble->addChild(arrow);
+
+    // 原因文本
+    auto reasonLabel = Label::createWithSystemFont(
+        item.unavailableReason,
+        "Arial", 16
+    );
+    reasonLabel->setColor(Color3B::RED);
+    reasonLabel->setPosition(Vec2(100, 40));
+    reasonLabel->setWidth(180);
+    reasonLabel->setAlignment(TextHAlignment::CENTER);
+    bubbleBg->addChild(reasonLabel);
+
+    // 初始缩放动画
+    bubble->setScale(0.1f);
+    bubble->runAction(Sequence::create(
+        ScaleTo::create(0.2f, 1.0f),
+        DelayTime::create(5.0f),
+        Spawn::create(
+            FadeOut::create(0.3f),
+            ScaleTo::create(0.3f, 0.5f),
+            nullptr
+        ),
+        RemoveSelf::create(),
+        nullptr
+    ));
 }
 // 在按钮点击事件中
 void ShopPopup::onShopButtonClick(Ref* sender)

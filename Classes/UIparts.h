@@ -40,11 +40,12 @@ class ShopPopup : public cocos2d::Layer
 public:
     CREATE_FUNC(ShopPopup);
     virtual bool init();
-
+    //展示商店面板
     void show(cocos2d::Node* parent);
     void close();
     void onShopButtonClick(cocos2d::Ref* sender);
     void setupBackground();
+    void showUnavailableBubble(const ShopItem& item, LayerColor* targetNode);
 private:
     void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
 
