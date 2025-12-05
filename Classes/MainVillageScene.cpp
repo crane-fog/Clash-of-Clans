@@ -1,10 +1,13 @@
 #include "MainVillageScene.h"
 #include "CoordAdaptor.h"
+#include "cocos/ui/CocosGUI.h"
+#include "UIparts.h"
+#include"ShopPopup.h"
 #include "DataHelper.h"
 #include "Arch.h"
 #include <chrono>
 #include <vector>
-#include"ShopPopup.h"
+
 USING_NS_CC;
 
 bool MainVillage::init()
@@ -41,7 +44,7 @@ bool MainVillage::init()
     // 获取屏幕尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-    auto shopButton = cocos2d::ui::Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
+    auto shopButton =cocos2d::ui::Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
     //商店标签
     shopButton->setTitleText("SHOP");
     shopButton->setTitleAlignment(TextHAlignment::LEFT, TextVAlignment::TOP); // 居中
@@ -53,34 +56,16 @@ bool MainVillage::init()
     shopButton->setContentSize(Size(200, 100));  // 设置足够的触摸区域
     shopButton->setTouchEnabled(true);
     shopButton->setEnabled(true);
+
     shopButton->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
-        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) { 
             this->onShopButtonClick(sender);
         }
         });
     this->addChild(shopButton,99);
     return true;
 }
-void MainVillage::onShopButtonClick(Ref* sender)
-{
-    CCLOG("打开商店...");
 
-    // 避免重复打开
-    if (this->getChildByTag(100)) {
-        CCLOG("商店已经打开");
-        return;
-    }
-    auto popup = ShopPopup::create();
-    if (popup) {
-        popup->setTag(100);  // 设置 tag 便于查找
-        popup->setLocalZOrder(100);
-        popup->show(this);
-        CCLOG("商店弹窗打开成功");
-    }
-    else {
-        CCLOG("错误：无法创建商店弹窗");
-    }
-}
 void MainVillage::onEnter()
 {
     base_map_->changeLinedMap();
@@ -94,4 +79,23 @@ void MainVillage::onEnter()
     auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
     auto repeatAction = RepeatForever::create(seq_action);
     base_map_->sprites_.back()->runAction(repeatAction);
+}
+void MainVillage::onShopButtonClick(Ref* sender)
+{
+    CCLOG("打开商店...");
+    // 避免重复打开
+    if (this->getChildByTag(100)) {
+        CCLOG("商店已经打开");
+        return;
+    }
+    auto popup = ShopPopup::create();
+    if (popup) {
+        popup->setTag(100);  // 设置 tag 便于查找
+        popup->setLocalZOrder(9999);
+        popup->show(this);
+        CCLOG("商店弹窗打开成功");
+    }
+    else {
+        CCLOG("错误：无法创建商店弹窗");
+    }
 }
