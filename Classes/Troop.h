@@ -44,13 +44,12 @@ public:
         MELEE_SINGLE_GROUND = 0, // 近战单体地面-Barbarian,Giant
         MELEE_AOE_GROUND = 1, // 近战范围地面-WallBreaker
         RANGED_SINGLE_GROUND = 2, // 远程单体地面
-        RANGED_AOE_GROUND = 3, // 远程范围地面
+        RANGED_AOE_GROUND = 3, // 远程范围地面-Balloon
         RANGED_SINGLE_AIR_GROUND = 4, // 远程单体空中地面-Archer
-        RANGED_AOE_AIR_GROUND = 5 // 远程范围空中地面
+        RANGED_AOE_AIR_GROUND = 5 // 远程范围空中地面-Dragon
         //TODO:问一下机制：
-        //空中单位都不能攻击城墙?
-        //范围伤害的中心是什么？士兵or目标建筑？
-        //就近搜索的范围是多大？默认全图吗？
+        //空中单位都不能攻击城墙?-平时没必要，死亡溅射有可能。
+        //范围伤害的中心是什么？士兵or目标建筑？-平时目标中心，死亡溅射士兵中心。
     };
     //伤害类型(近战或远程,单体或范围,仅地面目标或地面和空中目标etc)
     const AttackType attack_type_;
