@@ -213,7 +213,8 @@ bool ShopPopup::init()
 
     // 初始显示建筑商品
     showItemsInScrollView(buildingItems, scrollView);
-
+    // 初始化抽卡池
+    initGachaPool();
     return true;
 }
 
@@ -246,9 +247,11 @@ void ShopPopup::switchToTab(int tabIndex) {
             showItemsInScrollView(soldierItems_, scrollView, tabIndex);
             break;
         case 3: // 抽卡
-            scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),
-                scrollView->getContentSize().height));
-            showItemsInScrollView(gachaItems_, scrollView, tabIndex);
+            //scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),
+                //scrollView->getContentSize().height));
+            //showItemsInScrollView(gachaItems_, scrollView, tabIndex);
+            // 抽卡界面特殊处理
+            createGachaItem();
             break;
     }
 
@@ -538,4 +541,440 @@ void ShopPopup::onShopButtonClick(Ref* sender)
 {
     auto popup = ShopPopup::create();
     popup->show(this);
+}
+// 初始化抽卡池
+void ShopPopup::initGachaPool() {
+    gachaPool_ = {
+        // SSR物品 (5%)
+        {301, "传奇之剑", 0, true, "SSR稀有物品！", "arch/Town_Hall4.webp", 3},
+        {302, "神圣护甲", 0, true, "SSR稀有物品！", "arch/Town_Hall4.webp", 3},
+        {303, "龙之宝珠", 0, true, "SSR稀有物品！", "arch/Town_Hall4.webp", 3},
+
+        // SR物品 (15%)
+        {304, "魔法法杖", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
+        {305, "精灵之弓", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
+        {306, "勇士盾牌", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
+        {307, "智慧之书", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
+        {308, "凤凰羽毛", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
+
+        // R物品 (30%)
+        {309, "银质长剑", 0, true, "R稀有物品！", "arch/Town_Hall2.webp", 1},
+        {310, "钢铁盔甲", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
+        {311, "治疗药水", 0, true, "R稀有物品！", "arch/Town_Hall2.webp", 1},
+        {312, "魔法卷轴", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
+        {313, "力量戒指", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
+        {314, "速度之靴", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
+
+        // N物品 (50%)
+        {315, "普通长剑", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
+        {316, "皮革盔甲", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
+        {317, "小型药水", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
+        {318, "火把", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
+        {319, "面包", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
+        {320, "钥匙", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
+        {321, "绳子", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
+        {322, "箭袋", 0, true, "普通物品","arch/Town_Hall1.webp", 0}
+    };
+}
+
+// 创建抽卡界面
+void ShopPopup::createGachaItem() {
+    if (!scrollView_) return;
+
+    scrollView_->removeAllChildren();
+
+    // 抽卡界面背景
+    auto gachaBg = LayerColor::create(Color4B(50, 30, 70, 255), 350, 450);
+    gachaBg->setPosition(Vec2(
+        scrollView_->getContentSize().width / 2 - 175,
+        scrollView_->getContentSize().height / 2 - 255
+    ));
+    scrollView_->addChild(gachaBg);
+
+    // 标题
+    auto title = Label::createWithSystemFont("神秘抽卡", "fonts/Marker Felt.ttf", 48);
+    title->setColor(Color3B(255, 215, 0)); // 金色
+    title->enableShadow(Color4B::BLACK, Size(2, -2), 0);
+    title->setPosition(Vec2(175, 400));
+    gachaBg->addChild(title);
+
+    // 描述
+    auto desc = Label::createWithSystemFont("点击按钮抽取神秘物品", "Arial", 24);
+    desc->setColor(Color3B::WHITE);
+    desc->setPosition(Vec2(175, 350));
+    gachaBg->addChild(desc);
+
+    // 抽卡展示区域
+    auto cardArea = LayerColor::create(Color4B(30, 20, 40, 255), 300, 200);
+    cardArea->setPosition(Vec2(25, 120));
+    cardArea->setTag(1001); // 用于后续查找
+    gachaBg->addChild(cardArea);
+
+    // 问号图标（初始状态）
+    auto questionMark = Sprite::create("ui/question_mark.png");
+    if (!questionMark) {
+        questionMark = Sprite::create();
+        auto draw = DrawNode::create();
+        draw->drawCircle(Vec2(0, 0), 40, 0, 30, false, Color4F::WHITE);
+        draw->drawLine(Vec2(0, 30), Vec2(0, -30), Color4F::WHITE);
+        draw->drawLine(Vec2(-30, 0), Vec2(30, 0), Color4F::WHITE);
+        questionMark->addChild(draw);
+    }
+    questionMark->setScale(2.0f);
+    questionMark->setPosition(Vec2(150, 100));
+    questionMark->setTag(1002); // 用于后续替换
+    cardArea->addChild(questionMark);
+
+    // 抽卡按钮
+    auto gachaButton = ui::Button::create();
+    gachaButton->setTitleText("开始抽卡");
+    gachaButton->setTitleFontSize(32);
+    gachaButton->setTitleColor(Color3B::WHITE);
+    gachaButton->setContentSize(Size(200, 70));
+    gachaButton->setPosition(Vec2(175, 60));
+    gachaButton->setColor(Color3B(200, 50, 50));
+
+    // 按钮发光效果
+    auto buttonGlow = Sprite::create("ui/glow_circle.png");
+    if (buttonGlow) {
+        buttonGlow->setScale(1.2f);
+        buttonGlow->setPosition(Vec2(100, 35));
+        buttonGlow->setOpacity(150);
+        buttonGlow->runAction(RepeatForever::create(
+            Sequence::create(
+                FadeTo::create(0.8f, 200),
+                FadeTo::create(0.8f, 100),
+                nullptr
+            )
+        ));
+        gachaButton->addChild(buttonGlow, -1);
+    }
+
+    gachaButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->performGacha();
+        }
+        });
+    gachaBg->addChild(gachaButton);
+
+    // 概率说明
+    auto probability = Label::createWithSystemFont(
+        "概率: SSR 5% | SR 15% | R 30% | N 50%",
+        "Arial", 18
+    );
+    probability->setColor(Color3B(200, 200, 200));
+    probability->setPosition(Vec2(175, 20));
+    gachaBg->addChild(probability);
+}
+
+// 执行抽卡
+void ShopPopup::performGacha() {
+    // 先播放抽卡动画
+    showGachaAnimation();
+
+    // 延迟后显示结果
+    this->scheduleOnce([this](float dt) {
+        // 随机选择物品
+        int randomValue = rand() % 100;
+        ShopItem* selectedItem = nullptr;
+        Rarity rarity = RARITY_N;
+
+        if (randomValue < 5) { // 5% SSR
+            rarity = RARITY_SSR;
+        }
+        else if (randomValue < 20) { // 15% SR
+            rarity = RARITY_SR;
+        }
+        else if (randomValue < 50) { // 30% R
+            rarity = RARITY_R;
+        }
+        else { // 50% N
+            rarity = RARITY_N;
+        }
+
+        // 从对应稀有度的物品中随机选择
+        std::vector<ShopItem*> itemsOfRarity;
+        for (auto& item : gachaPool_) {
+            // 注意：这里需要修改ShopItem结构体，添加rarity字段
+            // 暂时使用id范围判断
+            if (rarity == RARITY_SSR && item.id >= 301 && item.id <= 303) {
+                itemsOfRarity.push_back(&item);
+            }
+            else if (rarity == RARITY_SR && item.id >= 304 && item.id <= 308) {
+                itemsOfRarity.push_back(&item);
+            }
+            else if (rarity == RARITY_R && item.id >= 309 && item.id <= 314) {
+                itemsOfRarity.push_back(&item);
+            }
+            else if (rarity == RARITY_N && item.id >= 315 && item.id <= 322) {
+                itemsOfRarity.push_back(&item);
+            }
+        }
+
+        if (!itemsOfRarity.empty()) {
+            int randomIndex = rand() % itemsOfRarity.size();
+            selectedItem = itemsOfRarity[randomIndex];
+        }
+
+        // 显示结果
+        if (selectedItem) {
+            this->showGachaResult(*selectedItem);
+        }
+        }, 2.5f, "show_gacha_result");
+}
+
+// 显示抽卡动画
+void ShopPopup::showGachaAnimation() {
+    // 创建全屏黑色遮罩
+    auto mask = LayerColor::create(Color4B(0, 0, 0, 180));
+    mask->setContentSize(Director::getInstance()->getVisibleSize());
+    mask->setPosition(Vec2::ZERO);
+    mask->setTag(8888);
+    mask->setOpacity(0);
+    this->addChild(mask, 1000);
+    mask->runAction(FadeIn::create(0.3f));
+
+    // 创建闪光效果
+    auto flash = Sprite::create("flash.png");
+    if (!flash) {
+        flash = Sprite::create();
+        auto draw = DrawNode::create();
+        draw->drawSolidCircle(Vec2::ZERO, 200, 0, 60, Color4F::WHITE);
+        flash->addChild(draw);
+    }
+    flash->setPosition(Vec2(
+        Director::getInstance()->getVisibleSize().width / 2,
+        Director::getInstance()->getVisibleSize().height / 2
+    ));
+    flash->setScale(0.1f);
+    flash->setOpacity(0);
+    mask->addChild(flash);
+
+    // 闪光动画序列
+    flash->runAction(Sequence::create(
+        Spawn::create(
+            ScaleTo::create(0.5f, 3.0f),
+            FadeIn::create(0.3f),
+            nullptr
+        ),
+        DelayTime::create(0.5f),
+        Spawn::create(
+            ScaleTo::create(0.5f, 0.5f),
+            FadeOut::create(0.5f),
+            nullptr
+        ),
+        nullptr
+    ));
+
+    // 创建旋转光效
+    auto rotatingGlow = Node::create();
+    for (int i = 0; i < 8; i++) {
+        auto ray = Sprite::create("ui/light_ray.png");
+        if (!ray) {
+            ray = Sprite::create();
+            auto draw = DrawNode::create();
+            draw->drawTriangle(
+                Vec2(0, 0),
+                Vec2(10, 100),
+                Vec2(-10, 100),
+                Color4F(1.0f, 1.0f, 0.5f, 0.7f)
+            );
+            ray->addChild(draw);
+        }
+        ray->setPosition(Vec2(0, 150));
+        ray->setRotation(i * 45);
+        ray->setOpacity(0);
+        rotatingGlow->addChild(ray);
+
+        // 每个光线的淡入淡出动画
+        ray->runAction(Sequence::create(
+            DelayTime::create(i * 0.1f),
+            FadeIn::create(0.3f),
+            DelayTime::create(0.5f),
+            FadeOut::create(0.3f),
+            nullptr
+        ));
+    }
+    rotatingGlow->setPosition(Vec2(
+        Director::getInstance()->getVisibleSize().width / 2,
+        Director::getInstance()->getVisibleSize().height / 2
+    ));
+    rotatingGlow->runAction(Repeat::create(
+        RotateBy::create(2.0f, 360),
+        1
+    ));
+    mask->addChild(rotatingGlow);
+
+    // 抽卡中文字
+    auto gachaText = Label::createWithSystemFont("抽卡中...", "fonts/Marker Felt.ttf", 60);
+    gachaText->setColor(Color3B(255, 255, 100));
+    gachaText->enableGlow(Color4B::YELLOW);
+    gachaText->setPosition(Vec2(
+        Director::getInstance()->getVisibleSize().width / 2,
+        Director::getInstance()->getVisibleSize().height / 2 - 200
+    ));
+    gachaText->setOpacity(0);
+    mask->addChild(gachaText);
+
+    // 文字动画
+    gachaText->runAction(Sequence::create(
+        DelayTime::create(0.5f),
+        FadeIn::create(0.3f),
+        DelayTime::create(1.5f),
+        FadeOut::create(0.3f),
+        nullptr
+    ));
+
+    // 2.5秒后移除遮罩
+    mask->runAction(Sequence::create(
+        DelayTime::create(2.5f),
+        FadeOut::create(0.3f),
+        RemoveSelf::create(),
+        nullptr
+    ));
+}
+
+// 显示抽卡结果
+void ShopPopup::showGachaResult(const ShopItem& item) {
+    // 移除之前的抽卡结果
+    if (gachaResultNode_) {
+        gachaResultNode_->removeFromParent();
+        gachaResultNode_ = nullptr;
+    }
+
+    // 创建结果展示层
+    gachaResultNode_ = Node::create();
+    gachaResultNode_->setPosition(Vec2::ZERO);
+    gachaResultNode_->setTag(9999);
+    this->addChild(gachaResultNode_, 1001);
+
+    // 背景遮罩
+    auto resultBg = LayerColor::create(Color4B(0, 0, 0, 200));
+    resultBg->setContentSize(Director::getInstance()->getVisibleSize());
+    resultBg->setPosition(Vec2::ZERO);
+    gachaResultNode_->addChild(resultBg);
+
+    // 结果卡片
+    auto card = LayerColor::create(Color4B(50, 50, 80, 255), 400, 500);
+    card->setPosition(Vec2(
+        Director::getInstance()->getVisibleSize().width / 2 - 200,
+        Director::getInstance()->getVisibleSize().height / 2 - 250
+    ));
+    gachaResultNode_->addChild(card);
+
+    // 根据稀有度设置卡片边框颜色和光效
+    Color3B borderColor;
+    std::string rarityText;
+    float glowIntensity = 1.0f;
+
+    // 根据物品ID判断稀有度（实际应该用rarity字段）
+    int itemId = item.id;
+    if (itemId >= 301 && itemId <= 303) { // SSR
+        borderColor = Color3B(255, 215, 0); // 金色
+        rarityText = "SSR";
+        glowIntensity = 3.0f;
+    }
+    else if (itemId >= 304 && itemId <= 308) { // SR
+        borderColor = Color3B(255, 100, 255); // 紫色
+        rarityText = "SR";
+        glowIntensity = 2.0f;
+    }
+    else if (itemId >= 309 && itemId <= 314) { // R
+        borderColor = Color3B(100, 200, 255); // 蓝色
+        rarityText = "R";
+        glowIntensity = 1.5f;
+    }
+    else { // N
+        borderColor = Color3B(150, 150, 150); // 灰色
+        rarityText = "N";
+        glowIntensity = 1.0f;
+    }
+
+    // 卡片边框
+    auto border = DrawNode::create();
+    Color4F borderColor4F(borderColor);
+    border->drawRect(Vec2(0, 0), Vec2(400, 500), borderColor4F);
+    card->addChild(border);
+
+    // 发光效果（根据稀有度调整强度）
+    if (glowIntensity > 1.0f) {
+        auto glow = Sprite::create("ui/glow_circle.png");
+        if (glow) {
+            glow->setScale(glowIntensity);
+            glow->setPosition(Vec2(200, 250));
+            glow->setColor(borderColor);
+            glow->setOpacity(150);
+            glow->runAction(RepeatForever::create(
+                Sequence::create(
+                    FadeTo::create(0.8f, 200),
+                    FadeTo::create(0.8f, 100),
+                    nullptr
+                )
+            ));
+            card->addChild(glow, -1);
+        }
+    }
+
+    // 稀有度文字
+    auto rarityLabel = Label::createWithSystemFont(rarityText, "fonts/Marker Felt.ttf", 72);
+    rarityLabel->setColor(borderColor);
+    rarityLabel->enableGlow(Color4B(borderColor.r, borderColor.g, borderColor.b, 255));
+    rarityLabel->setPosition(Vec2(200, 420));
+    card->addChild(rarityLabel);
+
+    // 物品图片
+    auto itemImage = Sprite::create(item.imagePath);
+    if (!itemImage) {
+        itemImage = Sprite::create("ui/placeholder.png");
+    }
+    itemImage->setScale(1.0f);
+    itemImage->setPosition(Vec2(200, 250));
+    card->addChild(itemImage);
+
+    // 物品名称
+    auto nameLabel = Label::createWithSystemFont(item.name, "Arial", 36);
+    nameLabel->setColor(Color3B::WHITE);
+    nameLabel->setPosition(Vec2(200, 120));
+    card->addChild(nameLabel);
+
+    // 物品描述
+    auto descLabel = Label::createWithSystemFont(
+        "恭喜获得！" + item.unavailableReason,
+        "Arial", 24
+    );
+    descLabel->setColor(Color3B(200, 200, 200));
+    descLabel->setPosition(Vec2(200, 80));
+    descLabel->setWidth(350);
+    descLabel->setAlignment(TextHAlignment::CENTER);
+    card->addChild(descLabel);
+
+    // 确定按钮
+    auto okButton = ui::Button::create();
+    okButton->setTitleText("确定");
+    okButton->setTitleFontSize(28);
+    okButton->setTitleColor(Color3B::WHITE);
+    okButton->setContentSize(Size(150, 60));
+    okButton->setPosition(Vec2(200, 30));
+    okButton->setColor(Color3B(100, 150, 200));
+    okButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            if (gachaResultNode_) {
+                gachaResultNode_->removeFromParent();
+                gachaResultNode_ = nullptr;
+            }
+        }
+        });
+    card->addChild(okButton);
+
+    // 5秒后自动关闭
+    gachaResultNode_->runAction(Sequence::create(
+        DelayTime::create(5.0f),
+        CallFunc::create([this]() {
+            if (gachaResultNode_) {
+                gachaResultNode_->removeFromParent();
+                gachaResultNode_ = nullptr;
+            }
+            }),
+        nullptr
+    ));
 }

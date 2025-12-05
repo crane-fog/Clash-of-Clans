@@ -42,6 +42,7 @@ struct ShopItem {
     bool isAvailable;
     std::string unavailableReason;
     std::string imagePath;
+    int rarity; // 添加：0-N, 1-R, 2-SR, 3-SSR
 };
 class ShopPopup : public cocos2d::Layer
 {
@@ -67,6 +68,24 @@ private:
     std::vector<ShopItem> soldierItems_;   // 士兵商品
     std::vector<ShopItem> gachaItems_;     // 抽卡商品
     cocos2d::ui::ScrollView* scrollView_;  // 滚动容器引用
+
+
+    void performGacha();                          // 执行抽卡
+    void showGachaAnimation();                    // 显示抽卡动画
+    void showGachaResult(const ShopItem& item);   // 显示抽卡结果
+    void createGachaItem();                       // 创建抽卡商品界面
+    void initGachaPool();
+    // 稀有度枚举
+    enum Rarity {
+        RARITY_N = 0,     // 普通
+        RARITY_R = 1,     // 稀有
+        RARITY_SR = 2,    // 超级稀有
+        RARITY_SSR = 3    // 特级稀有
+    };
+
+    // 添加抽卡相关变量
+    std::vector<ShopItem> gachaPool_;             // 抽卡池
+    Node* gachaResultNode_ = nullptr;             // 抽卡结果节点
 };
 
 #endif // __UI_PARTS_H__
