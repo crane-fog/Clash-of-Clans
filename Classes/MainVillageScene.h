@@ -9,7 +9,7 @@
 class MainVillage : public Village {
 private:
     // 村庄中的建筑状态数据
-    ArchStatus arch_status_[MAP_SIZE][MAP_SIZE];
+    ArchData arch_status_[MAP_SIZE][MAP_SIZE];
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
