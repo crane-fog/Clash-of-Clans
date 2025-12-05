@@ -4,49 +4,8 @@
 USING_NS_CC;
 using namespace ui;
 // 商品数据结构
-
-
 ui::Button* createShopButton(const ShopItem& item, int index);
-// 显示禁用提示的函数
-void showUnavailablePrompt(int itemId) {
-    auto visibleSize = Director::getInstance()->getVisibleSize();
 
-    // 创建提示背景
-    auto promptBg = LayerColor::create(Color4B(0, 0, 0, 200), 300, 100);
-    promptBg->setPosition(Vec2(visibleSize.width / 2 - 150, visibleSize.height / 2 - 50));
-    promptBg->setTag(999); // 设置tag便于移除
-
-    // 提示文字
-    auto promptLabel = Label::createWithSystemFont(
-        "Item " + std::to_string(itemId) + " is unavailable!",
-        "Arial", 20
-    );
-    promptLabel->setPosition(Vec2(150, 60));
-    promptLabel->setColor(Color3B::WHITE);
-    promptBg->addChild(promptLabel);
-
-    // 确定按钮
-    auto okButton = ui::Button::create();
-    okButton->setTitleText("OK");
-    okButton->setTitleFontSize(16);
-    okButton->setContentSize(Size(80, 30));
-    okButton->setPosition(Vec2(150, 25));
-    okButton->addTouchEventListener([promptBg](Ref* sender, ui::Widget::TouchEventType type) {
-        if (type == ui::Widget::TouchEventType::ENDED) {
-            // 移除提示
-            promptBg->removeFromParent();
-        }
-        });
-    promptBg->addChild(okButton);
-
-
-    // 3秒后自动消失
-    promptBg->runAction(Sequence::create(
-        DelayTime::create(3.0f),
-        RemoveSelf::create(),
-        nullptr
-    ));
-}
 void ShopPopup::setupBackground() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -110,31 +69,45 @@ bool ShopPopup::init()
         return false;
     }
 
-    // 模拟商品数据
-    std::vector<ShopItem> shopItems = {
-        {1, "大本营", 100, true, "","arch/Archer_Tower1.webp"},
-        {2, "城墙", 150, false, "Level too low","arch/Wall1.webp"},
-        {3, "金库", 50, true, "","arch/Gold_Storage1.webp"},
-        {4, "圣水罐", 200, false, "Insufficient gold","arch/Elixir_Storage1.webp"},
-        {5, "金矿", 120, true, "","arch/Gold_Mine1.webp"},
-        {6, "圣水收集器", 180, false, "Quest required","arch/Elixir_Collector1.webp"},
-        {7, "训练营", 80, true, "","arch/Barracks1.webp"},
-        {8, "兵营", 250, false, "VIP only","arch/Army_Camp1.webp"},
-        {9, "加农炮", 250, false, "VIP only","arch/Cannon1.webp"},
-        {10, "箭塔", 250, false, "VIP only","arch/Archer_Tower1.webp"}
+    // 定义三个板块的商品数据
+    std::vector<ShopItem> buildingItems = {
+        {1, "大本营", 100, true, "", "arch/Town_Hall1.webp"},
+        {2, "城墙", 150, false, "等级不足", "arch/Wall1.webp"},
+        {3, "金库", 50, true, "", "arch/Gold_Storage1.webp"},
+        {4, "圣水罐", 200, false, "金币不足", "arch/Elixir_Storage1.webp"},
+        {5, "金矿", 120, true, "", "arch/Gold_Mine1.webp"},
+        {6, "圣水收集器", 180, false, "需要完成前置任务", "arch/Elixir_Collector1.webp"},
+        {7, "箭塔", 250, false, "VIP only", "arch/Archer_Tower1.webp"},
+        {8, "加农炮", 250, false, "VIP only", "arch/Cannon1.webp"}
+    };
+
+    std::vector<ShopItem> soldierItems = {
+        {101, "野蛮人", 30, true, "", "Barbarian.png"},
+        {102, "弓箭手", 45, true, "", "Barbarian.png"},
+        {103, "巨人", 150, false, "需要2级兵营", "Barbarian.png"},
+        {104, "哥布林", 25, true, "", "Barbarian.png"},
+        {105, "炸弹人", 50, false, "需要完成训练", "Barbarian.png"},
 
     };
+
+    std::vector<ShopItem> gachaItems = {
+        {201, "神秘宝箱", 1000, true, "有机会获得稀有物品！", "lucky.png"}
+    };
+
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     setupBackground();
+
     // 面板背景
     auto panelBg = LayerColor::create(Color4B(255, 204, 153, 255),
         visibleSize.width * 0.8f,
         visibleSize.height * 0.6f);
     panelBg->setPosition(Vec2(visibleSize.width * 0.1f, visibleSize.height * 0.2f));
     this->addChild(panelBg);
+
     // 添加边框
-    draw_border(panelBg, 5.0f,Color4F(0.0,0.0,0.0,1.0));
+    draw_border(panelBg, 5.0f, Color4F(0.0, 0.0, 0.0, 1.0));
+
     // 标题
     auto title = Label::createWithSystemFont("商店", "Arial", 70);
     title->setColor(Color3B(0, 0, 0));
@@ -149,7 +122,7 @@ bool ShopPopup::init()
     // 关闭按钮背景
     auto closeBtnBg = LayerColor::create(Color4B(160, 180, 230, 255), 80, 40);
     closeBtnBg->setAnchorPoint(Vec2(0.5f, 0.5f));
-    closeBtnBg->setPosition(Vec2(btnX-40, btnY-20));
+    closeBtnBg->setPosition(Vec2(btnX - 40, btnY - 20));
     panelBg->addChild(closeBtnBg);
 
     // 关闭按钮
@@ -159,51 +132,168 @@ bool ShopPopup::init()
     closeBtn->setTitleFontSize(20);
     closeBtn->setContentSize(Size(80, 40));
     closeBtn->setAnchorPoint(Vec2(0.5f, 0.5f));
-    closeBtn->setPosition(Vec2(btnX, btnY)); 
+    closeBtn->setPosition(Vec2(btnX, btnY));
     closeBtn->addTouchEventListener(CC_CALLBACK_2(ShopPopup::onClose, this));
-    panelBg->addChild(closeBtn,9999);
+    panelBg->addChild(closeBtn, 9999);
 
+    // 创建选项卡按钮
+    float tabStartY = panelBg->getContentSize().height - 120;
+    float tabWidth = panelBg->getContentSize().width / 3 - 20;
 
-    // 创建滚动容器
+    // 建筑选项卡
+    auto buildingTab = ui::Button::create();
+    buildingTab->setTitleText("建筑");
+    buildingTab->setTitleFontSize(28);
+    buildingTab->setTitleColor(Color3B::WHITE);
+    buildingTab->setContentSize(Size(tabWidth, 60));
+    buildingTab->setPosition(Vec2(tabWidth / 2 + 10, tabStartY));
+    buildingTab->setColor(Color3B(100, 150, 200)); // 蓝色
+    buildingTab->setTag(1); // 标记为建筑标签
+    buildingTab->addTouchEventListener([this, buildingTab](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->switchToTab(1); // 切换到建筑标签
+        }
+        });
+    panelBg->addChild(buildingTab, 10);
+
+    // 士兵选项卡
+    auto soldierTab = ui::Button::create();
+    soldierTab->setTitleText("士兵");
+    soldierTab->setTitleFontSize(28);
+    soldierTab->setTitleColor(Color3B::WHITE);
+    soldierTab->setContentSize(Size(tabWidth, 60));
+    soldierTab->setPosition(Vec2(tabWidth * 1.5 + 20, tabStartY));
+    soldierTab->setColor(Color3B(150, 100, 200)); // 紫色
+    soldierTab->setTag(2); // 标记为士兵标签
+    soldierTab->addTouchEventListener([this, soldierTab](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->switchToTab(2); // 切换到士兵标签
+        }
+        });
+    panelBg->addChild(soldierTab, 10);
+
+    // 抽卡选项卡
+    auto gachaTab = ui::Button::create();
+    gachaTab->setTitleText("抽卡");
+    gachaTab->setTitleFontSize(28);
+    gachaTab->setTitleColor(Color3B::WHITE);
+    gachaTab->setContentSize(Size(tabWidth, 60));
+    gachaTab->setPosition(Vec2(tabWidth * 2.5 + 30, tabStartY));
+    gachaTab->setColor(Color3B(200, 150, 100)); // 橙色
+    gachaTab->setTag(3); // 标记为抽卡标签
+    gachaTab->addTouchEventListener([this, gachaTab](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->switchToTab(3); // 切换到抽卡标签
+        }
+        });
+    panelBg->addChild(gachaTab, 10);
+
+    // 创建滚动容器（初始显示建筑）
     auto scrollView = ui::ScrollView::create();
-    scrollView->setContentSize(Size(panelBg->getContentSize().width - 40, panelBg->getContentSize().height-200)); // 滚动区域大小
-    scrollView->setInnerContainerSize(Size(270 * shopItems.size(), panelBg->getContentSize().height -200)); // 内部容器大小，5个商品宽度
-    scrollView->setDirection(ui::ScrollView::Direction::HORIZONTAL); // 水平滚动
+    scrollView->setContentSize(Size(panelBg->getContentSize().width - 40,
+        panelBg->getContentSize().height)); // 调整高度为选项卡留出空间
 
-    scrollView->setPosition(Vec2(20, panelBg->getContentSize().height / 4)); // 位置
-    scrollView->setScrollBarEnabled(true); // 显示滚动条
-    scrollView->setScrollBarPositionFromCorner(Vec2(2, 2)); // 滚动条位置
-    scrollView->setScrollBarWidth(20); // 滚动条宽度
-    scrollView->setScrollBarColor(Color3B::WHITE); // 滚动条颜色
+    scrollView->setInnerContainerSize(Size(270 * buildingItems.size(),
+        panelBg->getContentSize().height));
+    scrollView->setDirection(ui::ScrollView::Direction::HORIZONTAL);
+    scrollView->setPosition(Vec2(20, 100));
+    scrollView->setScrollBarEnabled(true);
+    scrollView->setScrollBarPositionFromCorner(Vec2(2, 2));
+    scrollView->setScrollBarWidth(20);
+    scrollView->setScrollBarColor(Color3B::BLACK);
+    scrollView->setTag(100); // 给滚动容器设置tag以便后续查找
     panelBg->addChild(scrollView);
 
+    // 保存商品数据供切换使用
+    currentTab_ = 1; // 默认显示建筑
+    buildingItems_ = buildingItems;
+    soldierItems_ = soldierItems;
+    gachaItems_ = gachaItems;
+    scrollView_ = scrollView; // 保存滚动容器引用
 
-    // 在滚动容器内创建横向排列的商品
-    for (int i = 0; i < shopItems.size(); i++) {
-        const auto& item = shopItems[i];
+    // 初始显示建筑商品
+    showItemsInScrollView(buildingItems, scrollView);
+
+    return true;
+}
+
+// 切换到指定标签的函数
+void ShopPopup::switchToTab(int tabIndex) {
+    if (currentTab_ == tabIndex) {
+        return; // 已经是当前标签，不切换
+    }
+
+    // 更新当前标签
+    currentTab_ = tabIndex;
+
+    // 获取滚动容器
+    auto scrollView = scrollView_;
+    if (!scrollView) return;
+
+    // 清空滚动容器
+    scrollView->removeAllChildren();
+
+    // 根据标签显示不同的商品
+    switch (tabIndex) {
+        case 1: // 建筑
+            scrollView->setInnerContainerSize(Size(270 * buildingItems_.size(),
+                scrollView->getContentSize().height));
+            showItemsInScrollView(buildingItems_, scrollView, tabIndex);
+            break;
+        case 2: // 士兵
+            scrollView->setInnerContainerSize(Size(270 * soldierItems_.size(),
+                scrollView->getContentSize().height));
+            showItemsInScrollView(soldierItems_, scrollView, tabIndex);
+            break;
+        case 3: // 抽卡
+            scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),
+                scrollView->getContentSize().height));
+            showItemsInScrollView(gachaItems_, scrollView, tabIndex);
+            break;
+    }
+
+    // 滚动到最左边
+    scrollView->scrollToPercentHorizontal(0, 0.3f, true);
+}
+
+// 在滚动容器中显示商品的辅助函数
+void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::ScrollView* scrollView, int tabIndex) {
+    auto scrollBg = LayerColor::create(Color4B(255, 255, 255, 255), 270 * buildingItems_.size(),
+                scrollView->getContentSize().height-250);
+    scrollBg->setPosition(Vec2::ZERO);
+    scrollBg->setLocalZOrder(-1); // 放在最底层
+    // 将背景添加到滚动视图
+    scrollView->addChild(scrollBg);
+    for (int i = 0; i < items.size(); i++) {
+        const auto& item = items[i];
 
         // 商品背景
         auto itemBg = LayerColor::create(Color4B(160, 180, 230, 255), 250, 300);
-        itemBg->setPosition(Vec2(20 + i * 270, 10));
+        itemBg->setPosition(Vec2(20 + i * 270, 20));
         scrollView->addChild(itemBg);
 
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
 
-        listener->onTouchBegan = [itemBg,item](Touch* touch, Event* event) -> bool {
+        listener->onTouchBegan = [this, itemBg, item,scrollView](Touch* touch, Event* event) -> bool {
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
             Rect rect = Rect(0, 0, size.width, size.height);
 
-            if (rect.containsPoint(locationInNode)&& item.isAvailable) {
-                itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+            if (rect.containsPoint(locationInNode)) {
+                if (item.isAvailable) {
+                    itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+                }
+                else {
+                    this->showUnavailableBubble(item, itemBg, scrollView);
+                }
                 return true;
             }
             return false;
             };
 
-        listener->onTouchEnded = [itemBg, i](Touch* touch, Event* event) {
+        listener->onTouchEnded = [itemBg, i, item](Touch* touch, Event* event) {
             itemBg->setColor(Color3B(160, 180, 230)); // 恢复颜色
 
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
@@ -211,83 +301,86 @@ bool ShopPopup::init()
             Rect rect = Rect(0, 0, size.width, size.height);
 
             if (rect.containsPoint(locationInNode)) {
-                CCLOG("Item %d background clicked!", i + 1);
-                // 处理商品点击
+                CCLOG("Item %d clicked: %s", i + 1, item.name.c_str());
+                if (item.isAvailable) {
+                    onPurchaseItem(item.id);
+                }
             }
             };
 
         listener->onTouchCancelled = [itemBg](Touch* touch, Event* event) {
-            itemBg->setColor(Color3B::WHITE);
+            itemBg->setColor(Color3B(160, 180, 230));
             };
 
         _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, itemBg);
+
+        // 如果商品不可用，添加灰色遮罩
         if (!item.isAvailable) {
-            // 获取itemBg的尺寸
             Size bgSize = itemBg->getContentSize();
-
-            // 创建与商品背景同样大小的遮罩
             auto grayMask = LayerColor::create(Color4B(128, 128, 128, 150), bgSize.width, bgSize.height);
-
-            // 设置位置为(0,0) - 相对于itemBg的本地坐标系
             grayMask->setPosition(Vec2::ZERO);
-
-            // 添加到itemBg，并设置高z-order确保在最上面
-            itemBg->addChild(grayMask, 9999);  // 使用更大的数字
+            itemBg->addChild(grayMask, 9999);
         }
-        // 商品图片（添加在名称上面）
+
+        // 商品图片
         Sprite* itemImage = nullptr;
         if (!item.imagePath.empty()) {
             itemImage = Sprite::create(item.imagePath);
             if (itemImage) {
-                // 调整图片大小以适应商品框
-                float maxSize = 250.0f;
+                float maxSize = 220.0f; // 调整图片大小
                 float scale = std::min(maxSize / itemImage->getContentSize().width,
                     maxSize / itemImage->getContentSize().height);
                 itemImage->setScale(scale);
                 itemImage->setPosition(Vec2(itemBg->getContentSize().width / 2,
-                    itemBg->getContentSize().height - 130));
+                    itemBg->getContentSize().height - 140));
                 itemBg->addChild(itemImage);
             }
             else {
-                // 如果图片加载失败，显示占位符
                 itemImage = Sprite::create("ui/placeholder.png");
                 itemImage->setScale(0.5f);
                 itemImage->setPosition(Vec2(itemBg->getContentSize().width / 2,
-                    itemBg->getContentSize().height - 70));
+                    itemBg->getContentSize().height - 100));
                 itemBg->addChild(itemImage);
             }
         }
 
         // 商品标签
-        auto itemLabel = Label::createWithSystemFont(item.name, "Arial", 30);
-        itemLabel->setPosition(Vec2(itemBg->getContentSize().width / 2, itemBg->getContentSize().height - 30));
+        auto itemLabel = Label::createWithSystemFont(item.name, "Arial", 26);
+        itemLabel->setPosition(Vec2(itemBg->getContentSize().width / 2,
+            itemBg->getContentSize().height - 30));
         itemLabel->setColor(Color3B::BLACK);
         itemBg->addChild(itemLabel);
+        if (tabIndex == 3) {
+            // 商品价格图标
+            auto goldIcon = Sprite::create("Elixir.png");
+            goldIcon->setPosition(Vec2(itemBg->getContentSize().width / 3, 30));
+            goldIcon->setScale(0.5f);
+            itemBg->addChild(goldIcon);
 
-        // 商品价格图标
-        auto goldIcon = Sprite::create("Gold.png");
-        goldIcon->setPosition(Vec2(itemBg->getContentSize().width / 3,30));
-        goldIcon->setScale(0.5f);
-        itemBg->addChild(goldIcon);
-        //商品价格
-        auto priceLabel = Label::createWithSystemFont("$" + std::to_string(item.price), "Arial", 25);
-        priceLabel->setPosition(Vec2(itemBg->getContentSize().width / 2 + 10, 30));
-        priceLabel->setColor(Color3B::YELLOW);
-        itemBg->addChild(priceLabel);
+            // 商品价格
+            auto priceLabel = Label::createWithSystemFont("$" + std::to_string(item.price), "Arial", 25);
+            priceLabel->setPosition(Vec2(itemBg->getContentSize().width / 2 + 10, 30));
+            priceLabel->setColor(Color3B::MAGENTA);
+            itemBg->addChild(priceLabel);
+        }
+        else {
+            // 商品价格图标
+            auto goldIcon = Sprite::create("Gold.png");
+            goldIcon->setPosition(Vec2(itemBg->getContentSize().width / 3, 30));
+            goldIcon->setScale(0.5f);
+            itemBg->addChild(goldIcon);
 
+            // 商品价格
+            auto priceLabel = Label::createWithSystemFont("$" + std::to_string(item.price), "Arial", 25);
+            priceLabel->setPosition(Vec2(itemBg->getContentSize().width / 2 + 10, 30));
+            priceLabel->setColor(Color3B::YELLOW);
+            itemBg->addChild(priceLabel);
+        }
         // 购买按钮
         auto buyButton = createShopButton(item, i);
         buyButton->setPosition(Vec2(itemBg->getContentSize().width / 2, 80));
         itemBg->addChild(buyButton);
-
-        // 如果商品不可用，显示原因
-        if (!item.isAvailable) {
-            this->showUnavailableBubble(item, itemBg);
-        }
     }
-
-
-    return true;
 }
 // 创建商品购买按钮的函数
 ui::Button* createShopButton(const ShopItem& item, int index) {
@@ -332,7 +425,7 @@ ui::Button* createShopButton(const ShopItem& item, int index) {
                 }
                 else {
                     // 显示禁用提示
-                    showUnavailablePrompt(index);
+                    
                 }
                 break;
 
@@ -389,37 +482,36 @@ void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)
         close();
     }
 }
-// 添加显示气泡提示的函数
-void ShopPopup::showUnavailableBubble(const ShopItem& item, LayerColor* targetNode) {
-    // 获取目标节点的世界坐标
-    Vec2 worldPos = targetNode->getParent()->convertToWorldSpace(targetNode->getPosition());
 
-    // 创建提示气泡
+void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView) {
+
+    // 创建提示气泡（相对于商品背景的本地坐标）
     auto bubble = Node::create();
-    bubble->setPosition(worldPos + Vec2(0, 120)); // 在商品上方显示
+    bubble->setPosition(Vec2(targetNode->getContentSize().width / 2,
+        targetNode->getContentSize().height + 10)); // 在商品上方显示
     bubble->setTag(8888);
-    this->addChild(bubble, 999);
+    targetNode->addChild(bubble, 999); // 添加到商品背景，而不是this
 
     // 气泡背景
-    auto bubbleBg = LayerColor::create(Color4B(50, 50, 50, 220), 200, 80);
-    bubbleBg->setPosition(Vec2::ZERO);
+    auto bubbleBg = LayerColor::create(Color4B(70, 70,70, 2020), 200, 80);
+    bubbleBg->setPosition(Vec2(-100, 0)); // 居中
     bubble->addChild(bubbleBg);
 
-    // 三角形箭头
+    // 三角形箭头（指向商品）
     auto arrow = DrawNode::create();
     Vec2 arrowPoints[] = {
-        Vec2(90, 0),
-        Vec2(100, -10),
-        Vec2(110, 0)
+        Vec2(90, 80),    // 左下
+        Vec2(100, 90),   // 顶点
+        Vec2(110, 80)    // 右下
     };
     arrow->drawSolidPoly(arrowPoints, 3, Color4F(0.2f, 0.2f, 0.2f, 0.9f));
-    arrow->setPosition(Vec2(0, 80));
+    arrow->setPosition(Vec2(0, 0));
     bubble->addChild(arrow);
 
     // 原因文本
     auto reasonLabel = Label::createWithSystemFont(
         item.unavailableReason,
-        "Arial", 16
+        "Arial", 25
     );
     reasonLabel->setColor(Color3B::RED);
     reasonLabel->setPosition(Vec2(100, 40));

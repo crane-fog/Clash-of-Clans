@@ -53,7 +53,7 @@ bool Arch::initWithFile(const std::string& filename)
 void Arch::showArchPanel(Arch* arch)
 {
 
-    auto bg = LayerColor::create(Color4B(100, 80, 100, 200));
+    auto bg = LayerColor::create(Color4B(100,100, 160, 200));
     bg->setContentSize(Size(400, 300));
     bg->setPosition(Vec2(90, 130));
     bg->setGlobalZOrder(99);

@@ -16,8 +16,8 @@ bool UI::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 创建多个进度条:金币和圣水
-    createProgressBarWithBackground("Gold", Color3B::YELLOW, "Gold.png", 50.0f, visibleSize.width - 500, visibleSize.height - 50, 100);
-    createProgressBarWithBackground("Elixir", Color3B(128, 0, 158), "Elixir.png", 100.0f, visibleSize.width - 500, visibleSize.height - 150, 100);
+    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", 50.0f, visibleSize.width - 500, visibleSize.height - 50, 100);
+    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", 100.0f, visibleSize.width - 500, visibleSize.height - 150, 100);
 
 
     // 创建返回按钮 - 固定在左上角

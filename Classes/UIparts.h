@@ -35,6 +35,14 @@ public:
     CREATE_FUNC(UI);
 
 };
+struct ShopItem {
+    int id;
+    std::string name;
+    int price;
+    bool isAvailable;
+    std::string unavailableReason;
+    std::string imagePath;
+};
 class ShopPopup : public cocos2d::Layer
 {
 public:
@@ -45,17 +53,20 @@ public:
     void close();
     void onShopButtonClick(cocos2d::Ref* sender);
     void setupBackground();
-    void showUnavailableBubble(const ShopItem& item, LayerColor* targetNode);
+    // 添加显示气泡提示的函数
+    void showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView);
+
 private:
     void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
+    void switchToTab(int tabIndex);  // 切换标签函数
+    void showItemsInScrollView(const std::vector<ShopItem>& items, cocos2d::ui::ScrollView* scrollView, int tabIndex=1);  // 显示商品函数
 
+    // 成员变量
+    int currentTab_;  // 当前选中的标签：1-建筑，2-士兵，3-抽卡
+    std::vector<ShopItem> buildingItems_;  // 建筑商品
+    std::vector<ShopItem> soldierItems_;   // 士兵商品
+    std::vector<ShopItem> gachaItems_;     // 抽卡商品
+    cocos2d::ui::ScrollView* scrollView_;  // 滚动容器引用
 };
-struct ShopItem {
-    int id;
-    std::string name;
-    int price;
-    bool isAvailable;
-    std::string unavailableReason;
-    std::string imagePath;
-};
+
 #endif // __UI_PARTS_H__
