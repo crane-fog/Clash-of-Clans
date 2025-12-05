@@ -6,7 +6,7 @@
 #include "cocos2d.h"
 #include "BaseMap.h"
 #include "cocos/ui/CocosGUI.h"
-
+#include"Arch.h"
 // 进度条结构体
 struct ProgressBarData {
     cocos2d::ui::LoadingBar* loadingBar;
@@ -27,26 +27,12 @@ public:
 
     // 创建带背景的进度条
     void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, float percent, float x, float y, int UpperLimit);
-
     // 更新指定进度条
     void updateProgressBar(int index, float percent);
     void updateProgressBar(const std::string& title, float percent);
 
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(UI);
-};
-class ShopPopup : public cocos2d::Layer
-{
-public:
-    CREATE_FUNC(ShopPopup);
-    virtual bool init();
-
-    void show(cocos2d::Node* parent);
-    void close();
-    void onShopButtonClick(cocos2d::Ref* sender);
-    void setupBackground();
-private:
-    void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
 
 };
 struct ShopItem {
@@ -55,5 +41,32 @@ struct ShopItem {
     int price;
     bool isAvailable;
     std::string unavailableReason;
+    std::string imagePath;
 };
+class ShopPopup : public cocos2d::Layer
+{
+public:
+    CREATE_FUNC(ShopPopup);
+    virtual bool init();
+    //展示商店面板
+    void show(cocos2d::Node* parent);
+    void close();
+    void onShopButtonClick(cocos2d::Ref* sender);
+    void setupBackground();
+    // 添加显示气泡提示的函数
+    void showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView);
+
+private:
+    void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
+    void switchToTab(int tabIndex);  // 切换标签函数
+    void showItemsInScrollView(const std::vector<ShopItem>& items, cocos2d::ui::ScrollView* scrollView, int tabIndex=1);  // 显示商品函数
+
+    // 成员变量
+    int currentTab_;  // 当前选中的标签：1-建筑，2-士兵，3-抽卡
+    std::vector<ShopItem> buildingItems_;  // 建筑商品
+    std::vector<ShopItem> soldierItems_;   // 士兵商品
+    std::vector<ShopItem> gachaItems_;     // 抽卡商品
+    cocos2d::ui::ScrollView* scrollView_;  // 滚动容器引用
+};
+
 #endif // __UI_PARTS_H__

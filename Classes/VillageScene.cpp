@@ -24,7 +24,7 @@ bool Village::init()
         return false;
     }
     // UI层直接添加到场景，不受base_map变换影响
-    this->addChild(ui_layer_, 10);  // 较高的z-order，确保UI显示在最上层且固定
+    this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
 
     return true;
 }
