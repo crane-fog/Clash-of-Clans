@@ -29,31 +29,94 @@ bool Arch::initWithFile(const std::string& filename)
     float scale = 1.5f * CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size, 0)).x / this->getContentSize().width;
     setScale(scale);
     setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+    base_map_->sprites_.push_back(this);
+    base_map_->addChild(base_map_->sprites_.back(), 2);
+    
+
     // 添加触摸监听
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
 
-    listener->onTouchBegan = [&](Touch* touch, Event* event) {
-        Vec2 pos = this->convertToNodeSpace(touch->getLocation());
+    listener->onTouchBegan = CC_CALLBACK_2(Arch::onTouchDown, this);
+    listener->onTouchMoved = CC_CALLBACK_2(Arch::onTouchMove, this);
+    listener->onTouchEnded = CC_CALLBACK_2(Arch::onTouchUp, this);
+    listener->onTouchCancelled = CC_CALLBACK_2(Arch::onTouchCancel, this);
 
-        if (pos.x >= 0 && pos.x <= getContentSize().width &&
-            pos.y >= 0 && pos.y <= getContentSize().height) {
-            // 如果当前有其他建筑的面板，先关闭它
-
-            showArchPanel(this);   // 调用面板显示函数
-            return true;
-        }
-        return false;
-        };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-    base_map_->sprites_.push_back(this);
-    base_map_->addChild(base_map_->sprites_.back(), 2);
+
     return true;
 }
+
+bool Arch::onTouchDown(Touch* touch, Event* event)
+{
+    Vec2 pos = this->convertToNodeSpace(touch->getLocation());
+
+    if (pos.x >= 0 && pos.x <= getContentSize().width && pos.y >= 0 && pos.y <= getContentSize().height) {
+        is_dragging_ = false;
+        touch_start_pos_ = touch->getLocation();
+        this->setLocalZOrder(100); // 拖动时置顶
+        base_map_->setInputEnabled(false); // 临时禁用地图拖动
+        return true;
+    }
+    return false;
+}
+
+void Arch::onTouchUp(Touch* touch, Event* event)
+{
+    this->setLocalZOrder(2); // 恢复层级
+    base_map_->setInputEnabled(true); // 恢复地图拖动
+    if (!is_dragging_) {
+        showArchPanel(this);
+    }
+    else {
+        is_dragging_ = false;
+    }
+}
+
+void Arch::onTouchMove(Touch* touch, Event* event)
+{
+    if (touch->getLocation().distance(touch_start_pos_) > 10.0f) {
+        is_dragging_ = true;
+    }
+
+    if (is_dragging_) {
+        // 获取触摸点在 BaseMap 中的位置
+        Vec2 touchInMap = base_map_->convertToNodeSpace(touch->getLocation());
+
+        // 转换为格子坐标
+        Vec2 cellPos = CoordAdaptor::pixelToCell(base_map_, touchInMap);
+
+        // 建筑大小
+        unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+
+        // 计算新的左下角坐标 (四舍五入吸附)
+        int newX = static_cast<int>(std::round(cellPos.x - size / 2.0f));
+        int newY = static_cast<int>(std::round(cellPos.y - size / 2.0f));
+
+        // 边界检查
+        if (newX < 0) newX = 0;
+        if (newY < 0) newY = 0;
+        if (newX > MAP_SIZE - size) newX = MAP_SIZE - size;
+        if (newY > MAP_SIZE - size) newY = MAP_SIZE - size;
+
+        // 更新位置
+        if (newX != x_ || newY != y_) {
+            x_ = static_cast<unsigned char>(newX);
+            y_ = static_cast<unsigned char>(newY);
+            this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+        }
+    }
+}
+
+void Arch::onTouchCancel(Touch* touch, Event* event)
+{
+    this->setLocalZOrder(2);
+    base_map_->setInputEnabled(true);
+    is_dragging_ = false;
+}
+
 void Arch::showArchPanel(Arch* arch)
 {
-
-
     auto bg = LayerColor::create(Color4B(220, 220, 200, 180));
     bg->setContentSize(Size(400, 300));
     bg->setPosition(Vec2(90,130));
@@ -120,14 +183,15 @@ void Arch::showArchPanel(Arch* arch)
 
     panel->runAction(showSequence);
 }
+
 void Arch::closeArchPanel()
 {
     // 移除面板
     this->removeChildByName("ARCH_PANEL");
-
-
 }
-std::string Arch::getArchNameFromEnum(unsigned char archNo) {
+
+std::string Arch::getArchNameFromEnum(unsigned char archNo)
+{
     switch (archNo) {
         case TOWN_HALL: return "大本营";
         case WALL: return "城墙";

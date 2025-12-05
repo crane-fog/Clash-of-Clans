@@ -47,6 +47,16 @@ private:
 
     // 所在的地图指针
     BaseMap* base_map_;
+
+    // 拖动相关
+    bool is_dragging_ = false;
+    cocos2d::Vec2 touch_start_pos_;
+
+    // 触摸事件回调
+    bool onTouchDown(cocos2d::Touch* touch, cocos2d::Event* event);
+    void onTouchUp(cocos2d::Touch* touch, cocos2d::Event* event);
+    void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);
+    void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
 public:
     Arch(const ArchData& data, BaseMap* base_map) : no_(data.no_), level_(data.level_), x_(data.x_), y_(data.y_),
         current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
