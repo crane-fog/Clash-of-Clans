@@ -21,6 +21,8 @@ private:
     cocos2d::Vec2 last_mouse_pos_;
     cocos2d::EventListenerMouse* mouse_listener_ = nullptr;
 
+    
+
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
@@ -35,7 +37,11 @@ public:
     // todo: 索引与管理
     // 用于存储地图上精灵的容器，其中0和1固定为两张背景图
     std::vector<cocos2d::Sprite*> sprites_;
+
     void setInputEnabled(bool enabled);//禁用鼠标调用
+
+    cocos2d::Node* currentArchPanel_ = nullptr;  // 当前打开的建筑面板
+
 
 };
 
