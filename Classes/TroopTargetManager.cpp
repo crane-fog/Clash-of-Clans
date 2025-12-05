@@ -20,8 +20,8 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
     }
 }
 
-ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position, float damage_range = 0,
-    Troop::PreferredTarget preferred_target = Troop::NONE) {
+ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position, float damage_range,
+    Troop::PreferredTarget preferred_target) {
     ITroopTarget* nearestTarget = nullptr;
     float minDistance = std::numeric_limits<float>::max();
 

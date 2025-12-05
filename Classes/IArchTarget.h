@@ -7,10 +7,10 @@ class IArchTarget {
 public:
     virtual ~IArchTarget() = default;
 
-    // ½¨Öş¹¥»÷Ê¿±øÊ±µ÷ÓÃµÄ·½·¨
+    // å»ºç­‘æ”»å‡»å£«å…µæ—¶è°ƒç”¨çš„æ–¹æ³•
     virtual void takeDamage(float damage) = 0;
 
-    // »ñÈ¡Ê¿±øÎ»ÖÃ-Íø¸ñÂß¼­×ø±ê
+    // è·å–å£«å…µä½ç½®-ç½‘æ ¼é€»è¾‘åæ ‡
     virtual cocos2d::Vec2 getCellPosition() const = 0;
 
     enum ArchTargetType : unsigned char {
@@ -18,10 +18,10 @@ public:
         AIR = 1,
         OTHER = 2
     };
-    // »ñÈ¡Ê¿±øÀàĞÍ£¨ÓÃÓÚ½¨ÖşÑ¡ÔñÄ¿±ê£¬ÈçÊÇ·ñÎª¿ÕÖĞ±øÖÖ£¬¾ßÌå·µ»ØÖµ¼ûtodo-Ê¿±ø£©
+    // è·å–å£«å…µç±»å‹ï¼ˆç”¨äºå»ºç­‘é€‰æ‹©ç›®æ ‡ï¼Œå¦‚æ˜¯å¦ä¸ºç©ºä¸­å…µç§ï¼Œå…·ä½“è¿”å›å€¼è§todo-å£«å…µï¼‰
     virtual ArchTargetType getTargetType() const = 0;
 
-    // ¼ì²éÊ¿±øÊÇ·ñ»¹»î×Å
+    // æ£€æŸ¥å£«å…µæ˜¯å¦è¿˜æ´»ç€
     virtual bool isAlive() const = 0;
 };
 
