@@ -7,6 +7,7 @@
 #include <string.h>
 
 class BaseMap;
+class Arch;
 
 // 建筑数据
 struct ArchData {
@@ -26,6 +27,9 @@ struct ArchData {
     // 资源建筑
     // 当前容量
     UI current_capacity_;
+
+    ArchData() = default;
+    explicit ArchData(Arch* a);
 };
 
 class Arch : public cocos2d::Sprite, public ITroopTarget {
@@ -89,6 +93,8 @@ public:
     void showArchPanel(Arch* arch);
     void closeArchPanel();
     std::string getArchNameFromEnum(unsigned char archNo);
+
+    friend struct ArchData;
 };
 
 #endif // __ARCH_H__

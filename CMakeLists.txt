@@ -187,3 +187,7 @@ add_custom_command(TARGET ${APP_NAME} POST_BUILD
             ${CMAKE_CURRENT_SOURCE_DIR}/data
             $<TARGET_FILE_DIR:${APP_NAME}>/data
 )
+
+set_target_properties(${APP_NAME} PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${APP_NAME}>"
+)

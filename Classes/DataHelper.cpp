@@ -115,3 +115,26 @@ bool DataHelper::writeArchData(const std::string& file_name, time_t time, const 
 
     return true;
 }
+
+bool DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir)
+{
+    std::ifstream infile(file_name, std::ios::binary);
+    if (!infile) {
+        return false;
+    }
+    infile.read(reinterpret_cast<char*>(&gold), sizeof(unsigned long long));
+    infile.read(reinterpret_cast<char*>(&elixir), sizeof(unsigned long long));
+    infile.close();
+    return true;
+}
+
+bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir)
+{
+    std::ofstream outfile(file_name, std::ios::binary);
+    if (!outfile) {
+        return false;
+    }
+    outfile.write(reinterpret_cast<const char*>(&gold), sizeof(unsigned long long));
+    outfile.write(reinterpret_cast<const char*>(&elixir), sizeof(unsigned long long));
+    return true;
+}
