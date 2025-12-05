@@ -6,7 +6,8 @@
 #include "Arch.h"
 #include "BaseMap.h"
 
-const std::string kMainVillageDataFile = "../data/MainVillageData.dat";
+const std::string kSourceDataFile = "data/SourceData.dat";
+const std::string kMainVillageDataFile = "data/MainVillageData.dat";
 
 // 数据文件操作
 class DataHelper {
@@ -20,8 +21,10 @@ public:
 
     // 读数据文件
     static bool readArchData(const std::string& file_name, time_t& time, ArchData target[MAP_SIZE][MAP_SIZE]);
+    static bool readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir);
 
     // 写数据文件
     static bool writeArchData(const std::string& file_name, time_t time, const ArchData source[MAP_SIZE][MAP_SIZE]);
+    static bool writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir);
 };
 #endif // __DATA_HELPER_H__
