@@ -587,7 +587,7 @@ void ShopPopup::createGachaItem() {
     auto gachaBg = LayerColor::create(Color4B(50, 30, 70, 255), 350, 450);
     gachaBg->setPosition(Vec2(
         scrollView_->getContentSize().width / 2 - 175,
-        scrollView_->getContentSize().height / 2 - 255
+        scrollView_->getContentSize().height / 2 - 400
     ));
     scrollView_->addChild(gachaBg);
 
@@ -605,13 +605,13 @@ void ShopPopup::createGachaItem() {
     gachaBg->addChild(desc);
 
     // 抽卡展示区域
-    auto cardArea = LayerColor::create(Color4B(30, 20, 40, 255), 300, 200);
+    auto cardArea = LayerColor::create(Color4B(30, 20, 40, 255), 300,200);
     cardArea->setPosition(Vec2(25, 120));
     cardArea->setTag(1001); // 用于后续查找
     gachaBg->addChild(cardArea);
 
     // 问号图标（初始状态）
-    auto questionMark = Sprite::create("ui/question_mark.png");
+    auto questionMark = Sprite::create("question_mark.png");
     if (!questionMark) {
         questionMark = Sprite::create();
         auto draw = DrawNode::create();
@@ -620,7 +620,7 @@ void ShopPopup::createGachaItem() {
         draw->drawLine(Vec2(-30, 0), Vec2(30, 0), Color4F::WHITE);
         questionMark->addChild(draw);
     }
-    questionMark->setScale(2.0f);
+    questionMark->setScale(0.1f);
     questionMark->setPosition(Vec2(150, 100));
     questionMark->setTag(1002); // 用于后续替换
     cardArea->addChild(questionMark);
@@ -631,7 +631,7 @@ void ShopPopup::createGachaItem() {
     gachaButton->setTitleFontSize(32);
     gachaButton->setTitleColor(Color3B::WHITE);
     gachaButton->setContentSize(Size(200, 70));
-    gachaButton->setPosition(Vec2(175, 60));
+    gachaButton->setPosition(Vec2(175, 120));
     gachaButton->setColor(Color3B(200, 50, 50));
 
     // 按钮发光效果
@@ -663,7 +663,7 @@ void ShopPopup::createGachaItem() {
         "Arial", 18
     );
     probability->setColor(Color3B(200, 200, 200));
-    probability->setPosition(Vec2(175, 20));
+    probability->setPosition(Vec2(175, 100));
     gachaBg->addChild(probability);
 }
 
@@ -769,7 +769,7 @@ void ShopPopup::showGachaAnimation() {
     // 创建旋转光效
     auto rotatingGlow = Node::create();
     for (int i = 0; i < 8; i++) {
-        auto ray = Sprite::create("ui/light_ray.png");
+        auto ray = Sprite::create("flash.png");
         if (!ray) {
             ray = Sprite::create();
             auto draw = DrawNode::create();
