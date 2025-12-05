@@ -3,7 +3,7 @@
 #include "ArchInfo.h"
 // todo：改用cocos2d::FileUtils
 
-void DataHelper::mapToList(const ArchStatus source[MAP_SIZE][MAP_SIZE], std::vector<ArchData>& target)
+void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vector<ArchData>& target)
 {
     unsigned char size = 0;
     ArchData temp;
@@ -14,7 +14,7 @@ void DataHelper::mapToList(const ArchStatus source[MAP_SIZE][MAP_SIZE], std::vec
                 continue;
             }
 
-            const ArchStatus& current = source[x][y];
+            const ArchData& current = source[x][y];
 
             if (current.no_ == INVALID_ARCH_NO) {
                 visited[x][y] = true;
@@ -25,6 +25,7 @@ void DataHelper::mapToList(const ArchStatus source[MAP_SIZE][MAP_SIZE], std::vec
             temp.level_ = current.level_;
             temp.x_ = static_cast<unsigned char>(x);
             temp.y_ = static_cast<unsigned char>(y);
+            temp.current_hp_ = 0; // 存储时不保存当前生命值，读取时根据等级自动填充满血
             temp.current_capacity_ = current.current_capacity_;
             target.push_back(temp);
 
@@ -41,7 +42,7 @@ void DataHelper::mapToList(const ArchStatus source[MAP_SIZE][MAP_SIZE], std::vec
     }
 }
 
-void DataHelper::listToMap(const std::vector<ArchData>& source, ArchStatus target[MAP_SIZE][MAP_SIZE])
+void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[MAP_SIZE][MAP_SIZE])
 {
     unsigned char size = 0, x = 0, y = 0;
     for (int i = 0; i < MAP_SIZE; i++) {
@@ -55,6 +56,8 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchStatus targe
         y = source[i].y_;
         target[x][y].no_ = source[i].no_;
         target[x][y].level_ = source[i].level_;
+        target[x][y].x_ = source[i].x_; // 此处填充的x统一为min(x)
+        target[x][y].y_ = source[i].y_; // min(y)
         target[x][y].current_hp_ = kArchInfo.at(source[i].no_)[source[i].level_ - 1].hp_;
         target[x][y].current_capacity_ = source[i].current_capacity_;
         // 填充建筑占地
@@ -68,7 +71,7 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchStatus targe
     }
 }
 
-bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchStatus target[MAP_SIZE][MAP_SIZE])
+bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[MAP_SIZE][MAP_SIZE])
 {
     unsigned char x = 0, y = 0;
     unsigned short num = 0;
@@ -90,7 +93,7 @@ bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchSt
     return true;
 }
 
-bool DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchStatus source[MAP_SIZE][MAP_SIZE])
+bool DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[MAP_SIZE][MAP_SIZE])
 {
     unsigned short num = 0;
     std::vector<ArchData> data;
@@ -110,5 +113,28 @@ bool DataHelper::writeArchData(const std::string& file_name, time_t time, const 
         outfile.write(reinterpret_cast<const char*>(data.data()), sizeof(ArchData) * num);
     }
 
+    return true;
+}
+
+bool DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir)
+{
+    std::ifstream infile(file_name, std::ios::binary);
+    if (!infile) {
+        return false;
+    }
+    infile.read(reinterpret_cast<char*>(&gold), sizeof(unsigned long long));
+    infile.read(reinterpret_cast<char*>(&elixir), sizeof(unsigned long long));
+    infile.close();
+    return true;
+}
+
+bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir)
+{
+    std::ofstream outfile(file_name, std::ios::binary);
+    if (!outfile) {
+        return false;
+    }
+    outfile.write(reinterpret_cast<const char*>(&gold), sizeof(unsigned long long));
+    outfile.write(reinterpret_cast<const char*>(&elixir), sizeof(unsigned long long));
     return true;
 }

@@ -2,7 +2,7 @@
 #include "CoordAdaptor.h"
 #include "cocos/ui/CocosGUI.h"
 #include "UIparts.h"
-#include"ShopPopup.h"
+#include "ShopPopup.h"
 #include "DataHelper.h"
 #include "Arch.h"
 #include <chrono>
@@ -13,6 +13,11 @@ USING_NS_CC;
 bool MainVillage::init()
 {
     if (!Village::init()) {
+        return false;
+    }
+
+    // 从数据文件中读取资源数据
+    if (!DataHelper::readSourceData(kSourceDataFile, gold_, elixir_)) {
         return false;
     }
 
@@ -41,6 +46,7 @@ bool MainVillage::init()
     // 这个 base_map_ 从 Village 基类继承来
     base_map_->sprites_.push_back(barbarian_sprite);
     base_map_->addChild(barbarian_sprite, 2);
+
     // 获取屏幕尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -68,7 +74,6 @@ bool MainVillage::init()
 
 void MainVillage::onEnter()
 {
-    base_map_->changeLinedMap();
     Village::onEnter();
 
     // 让角色动
@@ -80,6 +85,20 @@ void MainVillage::onEnter()
     auto repeatAction = RepeatForever::create(seq_action);
     base_map_->sprites_.back()->runAction(repeatAction);
 }
+
+void MainVillage::cleanup()
+{
+    // 保存当前资源数据和建筑数据
+    std::vector<ArchData> arch_list;
+    for (auto a : base_map_->archs_) {
+        arch_list.push_back(ArchData(a));
+    }
+    DataHelper::listToMap(arch_list, arch_status_);
+    DataHelper::writeSourceData(kSourceDataFile, gold_, elixir_);
+    DataHelper::writeArchData(kMainVillageDataFile, std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(), arch_status_);
+    Village::cleanup();
+}
+
 void MainVillage::onShopButtonClick(Ref* sender)
 {
     CCLOG("打开商店...");

@@ -65,6 +65,8 @@ list(APPEND GAME_SOURCE
      Classes/Arch.cpp
      Classes/DataHelper.cpp
      Classes/Troop.cpp
+     Classes/TroopAttackManager.cpp
+     Classes/TroopTargetManager.cpp
      Classes/ShopPopup.cpp
      )
 list(APPEND GAME_HEADER
@@ -81,6 +83,10 @@ list(APPEND GAME_HEADER
      Classes/Troop.h
      Classes/UIcommon.h;
 
+     Classes/TroopAttackManager.h
+     Classes/TroopTargetManager.h
+     Classes/ITroopTarget.h
+     Classes/IArchTarget.h
      )
 
 if(ANDROID)
@@ -182,4 +188,8 @@ add_custom_command(TARGET ${APP_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_SOURCE_DIR}/data
             $<TARGET_FILE_DIR:${APP_NAME}>/data
+)
+
+set_target_properties(${APP_NAME} PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${APP_NAME}>"
 )
