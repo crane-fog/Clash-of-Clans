@@ -47,6 +47,53 @@ bool Arch::initWithFile(const std::string& filename)
     return true;
 }
 
+void Arch::createHighlight()
+{
+    if (highlight_node_) return;
+
+    highlight_node_ = Node::create();
+    base_map_->addChild(highlight_node_, 1); // 层级低于建筑
+
+    unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            auto sprite = Sprite::create("SingleCellGreen.png");
+            if (sprite) {
+                highlight_node_->addChild(sprite);
+            }
+        }
+    }
+    updateHighlightPos();
+}
+
+void Arch::updateHighlightPos()
+{
+    if (!highlight_node_) return;
+
+    unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+    auto children = highlight_node_->getChildren();
+    
+    int index = 0;
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if (index < children.size()) {
+                auto sprite = children.at(index);
+                Vec2 pos = CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + i + 0.5f, y_ + j + 0.5f));
+                sprite->setPosition(pos);
+                index++;
+            }
+        }
+    }
+}
+
+void Arch::removeHighlight()
+{
+    if (highlight_node_) {
+        highlight_node_->removeFromParent();
+        highlight_node_ = nullptr;
+    }
+}
+
 bool Arch::onTouchDown(Touch* touch, Event* event)
 {
     Vec2 pos = this->convertToNodeSpace(touch->getLocation());
@@ -65,6 +112,7 @@ void Arch::onTouchUp(Touch* touch, Event* event)
 {
     this->setLocalZOrder(2); // 恢复层级
     base_map_->setInputEnabled(true); // 恢复地图拖动
+    removeHighlight();
     if (!is_dragging_) {
         showArchPanel(this);
     }
@@ -76,7 +124,10 @@ void Arch::onTouchUp(Touch* touch, Event* event)
 void Arch::onTouchMove(Touch* touch, Event* event)
 {
     if (touch->getLocation().distance(touch_start_pos_) > 10.0f) {
-        is_dragging_ = true;
+        if (!is_dragging_) {
+            is_dragging_ = true;
+            createHighlight();
+        }
     }
 
     if (is_dragging_) {
@@ -100,10 +151,12 @@ void Arch::onTouchMove(Touch* touch, Event* event)
         if (newY > MAP_SIZE - size) newY = MAP_SIZE - size;
 
         // 更新位置
+        // todo:在上层的[44][44]中更新位置？
         if (newX != x_ || newY != y_) {
             x_ = static_cast<unsigned char>(newX);
             y_ = static_cast<unsigned char>(newY);
             this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+            updateHighlightPos();
         }
     }
 }
@@ -113,6 +166,7 @@ void Arch::onTouchCancel(Touch* touch, Event* event)
     this->setLocalZOrder(2);
     base_map_->setInputEnabled(true);
     is_dragging_ = false;
+    removeHighlight();
 }
 
 void Arch::showArchPanel(Arch* arch)

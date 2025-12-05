@@ -68,7 +68,6 @@ bool MainVillage::init()
 
 void MainVillage::onEnter()
 {
-    base_map_->changeLinedMap();
     Village::onEnter();
 
     // 让角色动

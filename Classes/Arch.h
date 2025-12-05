@@ -51,6 +51,11 @@ private:
     // 拖动相关
     bool is_dragging_ = false;
     cocos2d::Vec2 touch_start_pos_;
+    cocos2d::Node* highlight_node_ = nullptr;
+
+    void createHighlight();
+    void updateHighlightPos();
+    void removeHighlight();
 
     // 触摸事件回调
     bool onTouchDown(cocos2d::Touch* touch, cocos2d::Event* event);
