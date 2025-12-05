@@ -6,6 +6,9 @@
 #include "ui/CocosGUI.h"
 USING_NS_CC;
 
+ArchData::ArchData(Arch* a) : no_(a->no_), level_(a->level_), x_(a->x_), y_(a->y_),
+current_hp_(a->current_hp_), current_capacity_(a->current_capacity_) {}
+
 Arch* Arch::create(const ArchData& data, BaseMap* base_map)
 {
     Arch* pRet = new(std::nothrow) Arch(data, base_map);
