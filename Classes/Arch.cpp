@@ -1,5 +1,6 @@
 #include <vector>
 #include "Arch.h"
+#include "BaseMap.h"
 #include "CoordAdaptor.h"
 
 #include "ui/CocosGUI.h"
@@ -29,31 +30,201 @@ bool Arch::initWithFile(const std::string& filename)
     float scale = 1.5f * CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size, 0)).x / this->getContentSize().width;
     setScale(scale);
     setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+    base_map_->archs_.push_back(this);
+    base_map_->addChild(this, 2);
+
     // 添加触摸监听
+    // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
 
-    listener->onTouchBegan = [&](Touch* touch, Event* event) {
-        Vec2 pos = this->convertToNodeSpace(touch->getLocation());
+    listener->onTouchBegan = CC_CALLBACK_2(Arch::onTouchDown, this);
+    listener->onTouchMoved = CC_CALLBACK_2(Arch::onTouchMove, this);
+    listener->onTouchEnded = CC_CALLBACK_2(Arch::onTouchUp, this);
+    listener->onTouchCancelled = CC_CALLBACK_2(Arch::onTouchCancel, this);
 
-        if (pos.x >= 0 && pos.x <= getContentSize().width &&
-            pos.y >= 0 && pos.y <= getContentSize().height) {
-            // 如果当前有其他建筑的面板，先关闭它
-
-            showArchPanel(this);   // 调用面板显示函数
-            return true;
-        }
-        return false;
-        };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-    base_map_->sprites_.push_back(this);
-    base_map_->addChild(base_map_->sprites_.back(), 2);
+
     return true;
 }
+
+void Arch::createHighlight()
+{
+    if (highlight_node_) return;
+
+    highlight_node_ = Node::create();
+    base_map_->addChild(highlight_node_, 1); // 层级低于建筑
+
+    unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            auto sprite = Sprite::create("SingleCellGreen.png");
+            if (sprite) {
+                highlight_node_->addChild(sprite);
+            }
+        }
+    }
+    updateHighlightPos();
+}
+
+void Arch::updateHighlightPos()
+{
+    if (!highlight_node_) return;
+
+    unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+    auto children = highlight_node_->getChildren();
+    
+    int index = 0;
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if (index < children.size()) {
+                auto sprite = children.at(index);
+                Vec2 pos = CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + i + 0.5f, y_ + j + 0.5f));
+                sprite->setPosition(pos);
+                index++;
+            }
+        }
+    }
+}
+
+void Arch::updateHighlightColor(bool collision)
+{
+    if (!highlight_node_) return;
+
+    std::string textureName = collision ? "SingleCellRed.png" : "SingleCellGreen.png";
+    
+    for (auto child : highlight_node_->getChildren()) {
+        auto sprite = dynamic_cast<Sprite*>(child);
+        if (sprite) {
+            sprite->setTexture(textureName);
+        }
+    }
+}
+
+bool Arch::checkCollision(int checkX, int checkY)
+{
+    unsigned char my_size = kArchInfo.at(no_)[level_ - 1].size_;
+
+    for (auto other : base_map_->archs_) {
+        if (other == this) continue;
+
+        unsigned char other_size = kArchInfo.at(other->no_)[other->level_ - 1].size_;
+        unsigned char other_x = other->x_;
+        unsigned char other_y = other->y_;
+
+        bool intersect = !(checkX >= other_x + other_size ||
+            checkX + my_size <= other_x ||
+            checkY >= other_y + other_size ||
+            checkY + my_size <= other_y);
+
+        if (intersect) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Arch::removeHighlight()
+{
+    if (highlight_node_) {
+        highlight_node_->removeFromParent();
+        highlight_node_ = nullptr;
+    }
+}
+
+bool Arch::onTouchDown(Touch* touch, Event* event)
+{
+    Vec2 pos = this->convertToNodeSpace(touch->getLocation());
+
+    if (pos.x >= 0 && pos.x <= getContentSize().width && pos.y >= 0 && pos.y <= getContentSize().height) {
+        is_dragging_ = false;
+        touch_start_pos_ = touch->getLocation();
+        original_x_ = x_;
+        original_y_ = y_;
+        this->setLocalZOrder(100); // 拖动时置顶
+        base_map_->setInputEnabled(false); // 临时禁用地图拖动
+        return true;
+    }
+    return false;
+}
+
+void Arch::onTouchUp(Touch* touch, Event* event)
+{
+    this->setLocalZOrder(2); // 恢复层级
+    base_map_->setInputEnabled(true); // 恢复地图拖动
+    removeHighlight();
+    if (!is_dragging_) {
+        showArchPanel(this);
+    }
+    else {
+        // 检查碰撞
+        bool collision = checkCollision(x_, y_);
+        unsigned char my_size = kArchInfo.at(no_)[level_ - 1].size_;
+
+        if (collision) {
+            // 发生碰撞，回到原位
+            x_ = original_x_;
+            y_ = original_y_;
+            this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + my_size / 2.0f, y_ + my_size / 2.0f)));
+        }
+
+        is_dragging_ = false;
+    }
+}
+
+void Arch::onTouchMove(Touch* touch, Event* event)
+{
+    if (touch->getLocation().distance(touch_start_pos_) > 10.0f) {
+        if (!is_dragging_) {
+            is_dragging_ = true;
+            createHighlight();
+        }
+    }
+
+    if (is_dragging_) {
+        // 获取触摸点在 BaseMap 中的位置
+        Vec2 touchInMap = base_map_->convertToNodeSpace(touch->getLocation());
+
+        // 转换为格子坐标
+        Vec2 cellPos = CoordAdaptor::pixelToCell(base_map_, touchInMap);
+
+        // 建筑大小
+        unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+
+        // 计算新的左下角坐标 (四舍五入吸附)
+        int newX = static_cast<int>(std::round(cellPos.x - size / 2.0f));
+        int newY = static_cast<int>(std::round(cellPos.y - size / 2.0f));
+
+        // 边界检查
+        if (newX < 0) newX = 0;
+        if (newY < 0) newY = 0;
+        if (newX > MAP_SIZE - size) newX = MAP_SIZE - size;
+        if (newY > MAP_SIZE - size) newY = MAP_SIZE - size;
+
+        // 更新位置
+        // todo:在上层的[44][44]中更新位置？
+        if (newX != x_ || newY != y_) {
+            x_ = static_cast<unsigned char>(newX);
+            y_ = static_cast<unsigned char>(newY);
+            this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+            updateHighlightPos();
+            
+            bool collision = checkCollision(x_, y_);
+            updateHighlightColor(collision);
+        }
+    }
+}
+
+void Arch::onTouchCancel(Touch* touch, Event* event)
+{
+    this->setLocalZOrder(2);
+    base_map_->setInputEnabled(true);
+    is_dragging_ = false;
+    removeHighlight();
+}
+
 void Arch::showArchPanel(Arch* arch)
 {
-
-
     auto bg = LayerColor::create(Color4B(220, 220, 200, 180));
     bg->setContentSize(Size(400, 300));
     bg->setPosition(Vec2(90,130));
@@ -72,14 +243,14 @@ void Arch::showArchPanel(Arch* arch)
     panel->setGlobalZOrder(100);
     bg->addChild(panel);
 
-    const auto& info = kArchInfo.at(arch->getNo())[arch->getLevel() - 1];
+    const auto& info = kArchInfo.at(arch->no_)[arch->level_ - 1];
     
     auto label = Label::createWithSystemFont(
-        getArchNameFromEnum(arch->getNo())+"\n------------------\n" + 
-        ("等级: " + std::to_string(arch->getLevel()) + "\n") +
-        ("生命值: " + std::to_string(arch->getCurrentHP()) + "\n") +
+        getArchNameFromEnum(arch->no_)+"\n------------------\n" + 
+        ("等级: " + std::to_string(arch->level_) + "\n") +
+        ("生命值: " + std::to_string(arch->current_hp_) + "\n") +
         (info.type_ == RESOURCE ?
-            "容量: " + std::to_string(arch->getCurrentCapacity()) : "\n"),
+            "容量: " + std::to_string(arch->current_capacity_) : "\n"),
         "Arial", 22);
     label->setPosition(Vec2(160, 150));
     panel->addChild(label);
@@ -120,14 +291,15 @@ void Arch::showArchPanel(Arch* arch)
 
     panel->runAction(showSequence);
 }
+
 void Arch::closeArchPanel()
 {
     // 移除面板
     this->removeChildByName("ARCH_PANEL");
-
-
 }
-std::string Arch::getArchNameFromEnum(unsigned char archNo) {
+
+std::string Arch::getArchNameFromEnum(unsigned char archNo)
+{
     switch (archNo) {
         case TOWN_HALL: return "大本营";
         case WALL: return "城墙";

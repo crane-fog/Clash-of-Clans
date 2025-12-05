@@ -23,6 +23,23 @@ public:
         float cell_height = base_map->getContentSize().height * 0.00826040f;
         return cocos2d::Vec2((delta.x + delta.y) * cell_width, (delta.y - delta.x) * cell_height);
     }
+
+    // 像素坐标转格子坐标
+    inline static cocos2d::Vec2 pixelToCell(const cocos2d::Node* const base_map, const cocos2d::Vec2& pixelPos)
+    {
+        float cell_width_zero = base_map->getContentSize().width * 0.17813765f;
+        float cell_height_zero = base_map->getContentSize().height * 0.53831041f;
+        float cell_width = base_map->getContentSize().width * 0.00757575f;
+        float cell_height = base_map->getContentSize().height * 0.00826040f;
+
+        float x_prime = (pixelPos.x - cell_width_zero) / cell_width;
+        float y_prime = (pixelPos.y - cell_height_zero) / cell_height;
+
+        float cx = (x_prime - y_prime) / 2.0f;
+        float cy = (x_prime + y_prime) / 2.0f;
+
+        return cocos2d::Vec2(cx, cy);
+    }
 };
 
 #endif // __COORD_ADAPTOR_H__
