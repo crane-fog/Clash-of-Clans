@@ -2,10 +2,11 @@
 #define __ARCH_H__
 
 #include "cocos2d.h"
-#include "BaseMap.h"
 #include "ArchInfo.h"
 #include "ITroopTarget.h"
 #include <string.h>
+
+class BaseMap;
 
 // 建筑数据
 struct ArchData {
@@ -52,10 +53,16 @@ private:
     bool is_dragging_ = false;
     cocos2d::Vec2 touch_start_pos_;
     cocos2d::Node* highlight_node_ = nullptr;
+    
+    // 记录拖动前的原始位置
+    UC original_x_;
+    UC original_y_;
 
     void createHighlight();
     void updateHighlightPos();
     void removeHighlight();
+    void updateHighlightColor(bool collision);
+    bool checkCollision(int x, int y);
 
     // 触摸事件回调
     bool onTouchDown(cocos2d::Touch* touch, cocos2d::Event* event);

@@ -1,5 +1,6 @@
 #include <vector>
 #include "Arch.h"
+#include "BaseMap.h"
 #include "CoordAdaptor.h"
 
 #include "ui/CocosGUI.h"
@@ -33,6 +34,7 @@ bool Arch::initWithFile(const std::string& filename)
     base_map_->addChild(this, 2);
 
     // 添加触摸监听
+    // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
 
@@ -85,6 +87,43 @@ void Arch::updateHighlightPos()
     }
 }
 
+void Arch::updateHighlightColor(bool collision)
+{
+    if (!highlight_node_) return;
+
+    std::string textureName = collision ? "SingleCellRed.png" : "SingleCellGreen.png";
+    
+    for (auto child : highlight_node_->getChildren()) {
+        auto sprite = dynamic_cast<Sprite*>(child);
+        if (sprite) {
+            sprite->setTexture(textureName);
+        }
+    }
+}
+
+bool Arch::checkCollision(int checkX, int checkY)
+{
+    unsigned char my_size = kArchInfo.at(no_)[level_ - 1].size_;
+
+    for (auto other : base_map_->archs_) {
+        if (other == this) continue;
+
+        unsigned char other_size = kArchInfo.at(other->no_)[other->level_ - 1].size_;
+        unsigned char other_x = other->x_;
+        unsigned char other_y = other->y_;
+
+        bool intersect = !(checkX >= other_x + other_size ||
+            checkX + my_size <= other_x ||
+            checkY >= other_y + other_size ||
+            checkY + my_size <= other_y);
+
+        if (intersect) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Arch::removeHighlight()
 {
     if (highlight_node_) {
@@ -100,6 +139,8 @@ bool Arch::onTouchDown(Touch* touch, Event* event)
     if (pos.x >= 0 && pos.x <= getContentSize().width && pos.y >= 0 && pos.y <= getContentSize().height) {
         is_dragging_ = false;
         touch_start_pos_ = touch->getLocation();
+        original_x_ = x_;
+        original_y_ = y_;
         this->setLocalZOrder(100); // 拖动时置顶
         base_map_->setInputEnabled(false); // 临时禁用地图拖动
         return true;
@@ -116,6 +157,17 @@ void Arch::onTouchUp(Touch* touch, Event* event)
         showArchPanel(this);
     }
     else {
+        // 检查碰撞
+        bool collision = checkCollision(x_, y_);
+        unsigned char my_size = kArchInfo.at(no_)[level_ - 1].size_;
+
+        if (collision) {
+            // 发生碰撞，回到原位
+            x_ = original_x_;
+            y_ = original_y_;
+            this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + my_size / 2.0f, y_ + my_size / 2.0f)));
+        }
+
         is_dragging_ = false;
     }
 }
@@ -156,6 +208,9 @@ void Arch::onTouchMove(Touch* touch, Event* event)
             y_ = static_cast<unsigned char>(newY);
             this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
             updateHighlightPos();
+            
+            bool collision = checkCollision(x_, y_);
+            updateHighlightColor(collision);
         }
     }
 }

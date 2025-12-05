@@ -2,7 +2,8 @@
 #define __BASE_MAP_H__
 
 #include "cocos2d.h"
-#include "Arch.h"
+
+class Arch;
 
 const int MAP_SIZE = 44;
 

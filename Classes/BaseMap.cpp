@@ -1,4 +1,5 @@
 #include "BaseMap.h"
+#include "Arch.h"
 #include <algorithm>
 
 USING_NS_CC;
