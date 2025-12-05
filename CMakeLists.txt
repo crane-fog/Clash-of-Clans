@@ -84,7 +84,7 @@ list(APPEND GAME_HEADER
      Classes/TroopAttackManager.h
      Classes/TroopTargetManager.h
      Classes/ITroopTarget.h
-     Classes/IArcTarget.h
+     Classes/IArchTarget.h
      )
 
 if(ANDROID)
