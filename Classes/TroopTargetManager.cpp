@@ -20,8 +20,8 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
     }
 }
 
-ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position,
-                                                       unsigned char preferred_target) {
+ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position, float damage_range = 0,
+    Troop::PreferredTarget preferred_target = Troop::NONE) {
     ITroopTarget* nearestTarget = nullptr;
     float minDistance = std::numeric_limits<float>::max();
 
@@ -31,7 +31,7 @@ ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& pos
         // 如果指定了偏好类型，检查是否匹配
         if (preferred_target != 255 && target->getTargetType() != preferred_target) continue;
 
-        float distance = position.distance(target->getPosition());
+        float distance = position.distance(target->getCellPosition());
         if (distance < minDistance) {
             minDistance = distance;
             nearestTarget = target;

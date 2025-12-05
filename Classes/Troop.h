@@ -30,10 +30,30 @@ protected:
 
 public:
 	/*以下为升级时不改变的属性，初始化时直接赋值，由于是const直接设置为public允许外部读取*/
-	//攻击偏好建筑类型（1=资源建筑、2=防御建筑、3=城墙、0=其它、255=无）
-	const uchar preferred_target_;
+	enum PreferredTarget : uchar {//与ArchInfo.h里的ArchType对应
+		OTHER = 0, // 其它
+		RESOURCE = 1, // 资源
+		DEFENSE = 2, // 防御
+		WALLT = 3, // 城墙
+		NONE = 255 // 无
+	};
+	//攻击偏好建筑类型
+	const PreferredTarget preferred_target_;
+
+	enum AttackType : uchar {
+		MELEE_SINGLE_GROUND = 0, // 近战单体地面-Barbarian,Giant
+		MELEE_AOE_GROUND = 1, // 近战范围地面-WallBreaker
+		RANGED_SINGLE_GROUND = 2, // 远程单体地面
+		RANGED_AOE_GROUND = 3, // 远程范围地面
+		RANGED_SINGLE_AIR_GROUND = 4, // 远程单体空中地面-Archer
+		RANGED_AOE_AIR_GROUND = 5 // 远程范围空中地面
+		//TODO:问一下机制：
+		//空中单位都不能攻击城墙?
+		//范围伤害的中心是什么？士兵or目标建筑？
+		//就近搜索的范围是多大？默认全图吗？
+	};
 	//伤害类型(近战或远程,单体或范围,仅地面目标或地面和空中目标etc)
-	const uchar attack_type_;
+	const AttackType attack_type_;
 	//占据人口
 	const uchar housing_space_;
 	//所需训练营等级
@@ -70,8 +90,8 @@ public:
 	// 检查是否还活着
 	virtual bool isAlive() const override{ return current_hitpoints_ > 0; }
 
-	// 获取士兵类型（用于建筑选择目标，如是否为空中兵种，具体返回值见todo-士兵）
-	virtual unsigned char getTargetType() const = 0;
+	// 获取士兵类型（用于建筑选择目标，如是否为空中兵种）
+	virtual ArcTargetType getTargetType() const = 0;
 
 	/*以下为get&set*/
 	// 获取当前生命值

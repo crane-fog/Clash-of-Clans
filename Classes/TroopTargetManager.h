@@ -2,6 +2,7 @@
 #define __TROOPTARGETMANAGER_H__
 #include "cocos2d.h"
 #include "ITroopTarget.h"
+#include "Troop.h"
 #include <vector>
 
 class TroopTargetManager {
@@ -17,8 +18,8 @@ class TroopTargetManager {
         void unregisterTroopTarget(ITroopTarget* target);
         
         // 士兵查找攻击目标
-        ITroopTarget* getNearestTroopTarget(const cocos2d::Vec2& position, 
-                                       unsigned char preferred_target_ = 255);
+        ITroopTarget* getNearestTroopTarget(const cocos2d::Vec2& position, float damage_range = 0,
+            Troop::PreferredTarget preferred_target = Troop::NONE);
     };
 
 #endif // __TROOPTARGETMANAGER_H__
