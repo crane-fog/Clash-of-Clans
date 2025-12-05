@@ -2,6 +2,7 @@
 #define __BASE_MAP_H__
 
 #include "cocos2d.h"
+#include "Arch.h"
 
 const int MAP_SIZE = 44;
 
@@ -37,6 +38,8 @@ public:
     // todo: 索引与管理
     // 用于存储地图上精灵的容器，其中0和1固定为两张背景图
     std::vector<cocos2d::Sprite*> sprites_;
+    // 存储地图上所有建筑的容器
+    std::vector<Arch*> archs_;
 
     void setInputEnabled(bool enabled);//禁用鼠标调用
 

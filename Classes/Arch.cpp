@@ -29,9 +29,8 @@ bool Arch::initWithFile(const std::string& filename)
     float scale = 1.5f * CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size, 0)).x / this->getContentSize().width;
     setScale(scale);
     setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
-    base_map_->sprites_.push_back(this);
-    base_map_->addChild(base_map_->sprites_.back(), 2);
-    
+    base_map_->archs_.push_back(this);
+    base_map_->addChild(this, 2);
 
     // 添加触摸监听
     auto listener = EventListenerTouchOneByOne::create();
