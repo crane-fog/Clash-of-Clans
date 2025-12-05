@@ -72,14 +72,14 @@ void Arch::showArchPanel(Arch* arch)
     panel->setGlobalZOrder(100);
     bg->addChild(panel);
 
-    const auto& info = kArchInfo.at(arch->getNo())[arch->getLevel() - 1];
+    const auto& info = kArchInfo.at(arch->no_)[arch->level_ - 1];
     
     auto label = Label::createWithSystemFont(
-        getArchNameFromEnum(arch->getNo())+"\n------------------\n" + 
-        ("等级: " + std::to_string(arch->getLevel()) + "\n") +
-        ("生命值: " + std::to_string(arch->getCurrentHP()) + "\n") +
+        getArchNameFromEnum(arch->no_)+"\n------------------\n" + 
+        ("等级: " + std::to_string(arch->level_) + "\n") +
+        ("生命值: " + std::to_string(arch->current_hp_) + "\n") +
         (info.type_ == RESOURCE ?
-            "容量: " + std::to_string(arch->getCurrentCapacity()) : "\n"),
+            "容量: " + std::to_string(arch->current_capacity_) : "\n"),
         "Arial", 22);
     label->setPosition(Vec2(160, 150));
     panel->addChild(label);

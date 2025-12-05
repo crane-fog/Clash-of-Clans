@@ -54,7 +54,7 @@ struct ArchInfo {
     // 升级时间秒数
     UI upgrade_time_;
     // 建筑生命值
-    UI hp_;
+    int hp_;
 
     // 资源建筑
     // 最大容量
@@ -76,7 +76,7 @@ struct ArchInfo {
     // 伤害溅射范围（伤害类型为0时则为0）
     float splash_range_;
 
-    ArchInfo(std::string i, UC lvl, UC size, UC type, UC uct, UI uca, UI ut, UI hp, UI cap = 0,
+    ArchInfo(std::string i, UC lvl, UC size, UC type, UC uct, UI uca, UI ut, int hp, UI cap = 0,
         UI prod = 0, UI dmg = 0, UI atkInt = 0, UI range = 0, UC tgt = 0, UC dmgType = 0, float splash = 0.0f) :
         image_(i), level_(lvl), size_(size), type_(type), upgrade_cost_type_(uct), upgrade_cost_amount_(uca), upgrade_time_(ut), hp_(hp), max_capacity_(cap),
         produce_speed_(prod), damage_(dmg), attack_interval_(atkInt), attack_range_(range), target_type_(tgt), damage_type_(dmgType), splash_range_(splash)
