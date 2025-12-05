@@ -1,7 +1,7 @@
 #include <vector>
 #include "Arch.h"
 #include "CoordAdaptor.h"
-
+#include "UIcommon.h"
 #include "ui/CocosGUI.h"
 USING_NS_CC;
 
@@ -53,12 +53,21 @@ bool Arch::initWithFile(const std::string& filename)
 void Arch::showArchPanel(Arch* arch)
 {
 
-
-    auto bg = LayerColor::create(Color4B(220, 220, 200, 180));
+    auto bg = LayerColor::create(Color4B(100, 80, 100, 200));
     bg->setContentSize(Size(400, 300));
-    bg->setPosition(Vec2(90,130));
+    bg->setPosition(Vec2(90, 130));
     bg->setGlobalZOrder(99);
     this->addChild(bg, 10, "ARCH_PANEL");
+
+    // 添加边框
+    auto border = DrawNode::create();
+    float borderWidth = 3.0f;  // 边框粗细
+
+    // 基于bg的实际尺寸
+    Size bgSize = bg->getContentSize();
+
+    // 绘制边框
+    draw_border(bg);
 
     // 创建面板容器
     auto panel = cocos2d::ui::Layout::create();
@@ -80,7 +89,7 @@ void Arch::showArchPanel(Arch* arch)
         ("生命值: " + std::to_string(arch->getCurrentHP()) + "\n") +
         (info.type_ == RESOURCE ?
             "容量: " + std::to_string(arch->getCurrentCapacity()) : "\n"),
-        "Arial", 22);
+        "Arial", 24);
     label->setPosition(Vec2(160, 150));
     panel->addChild(label);
 

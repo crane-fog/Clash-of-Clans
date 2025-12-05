@@ -79,6 +79,7 @@ list(APPEND GAME_HEADER
      Classes/Arch.h
      Classes/DataHelper.h
      Classes/Troop.h
+     Classes/UIcommon.h;
 
      )
 

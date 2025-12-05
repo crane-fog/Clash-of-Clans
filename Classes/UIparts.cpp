@@ -16,8 +16,8 @@ bool UI::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 创建多个进度条:金币和圣水
-    createProgressBarWithBackground("Gold", Color3B::YELLOW, "Gold.png", 50.0f, visibleSize.width - 500, visibleSize.height - 100, 100);
-    createProgressBarWithBackground("Elixir", Color3B(128, 0, 158), "Elixir.png", 100.0f, visibleSize.width - 500, visibleSize.height - 200, 100);
+    createProgressBarWithBackground("Gold", Color3B::YELLOW, "Gold.png", 50.0f, visibleSize.width - 500, visibleSize.height - 50, 100);
+    createProgressBarWithBackground("Elixir", Color3B(128, 0, 158), "Elixir.png", 100.0f, visibleSize.width - 500, visibleSize.height - 150, 100);
 
 
     // 创建返回按钮 - 固定在左上角
@@ -54,7 +54,7 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
     data.title = title;
 
     // 创建图像图标 
-    data.icon = Sprite::create(iconPath); // 你的图标图片
+    data.icon = Sprite::create(iconPath); // 图标图片
     if (data.icon) {
         data.icon->setPosition(Vec2(x + 450, y)); // 滑动条右边
         data.icon->setScale(1.0f); // 调整图标大小
@@ -62,7 +62,7 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
     }
     // 创建标题
     auto titleLabel = Label::createWithSystemFont(title, "Arial", 45);
-    titleLabel->setPosition(Vec2(x - 200, y));
+    titleLabel->setPosition(Vec2(x - 220, y));
     titleLabel->setTextColor(Color4B::WHITE);
     titleLabel->setAnchorPoint(Vec2(0, 0.5));
     this->addChild(titleLabel);
@@ -79,7 +79,7 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
         data.loadingBar->setDirection(cocos2d::ui::LoadingBar::Direction::RIGHT);
         data.loadingBar->setPercent(percent);
         data.loadingBar->setPosition(Vec2(x + 150, y - 4));
-        data.loadingBar->setScaleX(2.6f);
+        data.loadingBar->setScaleX(2.4f);
         data.loadingBar->setScaleY(2.0f);
         data.loadingBar->setColor(barColor);
         this->addChild(data.loadingBar, 1);

@@ -6,7 +6,7 @@
 #include "cocos2d.h"
 #include "BaseMap.h"
 #include "cocos/ui/CocosGUI.h"
-
+#include"Arch.h"
 // 进度条结构体
 struct ProgressBarData {
     cocos2d::ui::LoadingBar* loadingBar;
@@ -27,13 +27,13 @@ public:
 
     // 创建带背景的进度条
     void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, float percent, float x, float y, int UpperLimit);
-
     // 更新指定进度条
     void updateProgressBar(int index, float percent);
     void updateProgressBar(const std::string& title, float percent);
 
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(UI);
+
 };
 class ShopPopup : public cocos2d::Layer
 {
@@ -55,5 +55,6 @@ struct ShopItem {
     int price;
     bool isAvailable;
     std::string unavailableReason;
+    std::string imagePath;
 };
 #endif // __UI_PARTS_H__

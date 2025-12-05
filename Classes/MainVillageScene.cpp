@@ -53,7 +53,7 @@ bool MainVillage::init()
     //商店图标
     shopButton->setPosition(Vec2(visibleSize.width - 100, 100));
     shopButton->setScale(0.5f);
-    shopButton->setContentSize(Size(200, 100));  // 设置足够的触摸区域
+    shopButton->setContentSize(Size(300, 300));  // 设置足够的触摸区域
     shopButton->setTouchEnabled(true);
     shopButton->setEnabled(true);
 
@@ -62,7 +62,7 @@ bool MainVillage::init()
             this->onShopButtonClick(sender);
         }
         });
-    this->addChild(shopButton,99);
+    this->addChild(shopButton,300);
     return true;
 }
 
