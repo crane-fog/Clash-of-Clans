@@ -1,7 +1,8 @@
 #include "Troop.h"
 #include "TroopAttackManager.h"
 
-Troop::Troop(int level,
+Troop::Troop(BaseMap* base_map,
+             int level,
              cocos2d::Vec2 position,
              PreferredTarget preferred_target,
              AttackType attack_type,
@@ -13,9 +14,10 @@ Troop::Troop(int level,
              const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
              const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
              const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
-             const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
+             const std::array<float, MAX_TROOP_LEVEL + 1>& research_times,
              const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds)
-    : level_(level)
+	: base_map_(base_map)
+    , level_(level)
     , position_(position)
     , current_hitpoints_(0)
     , preferred_target_(preferred_target)
@@ -31,12 +33,25 @@ Troop::Troop(int level,
     , research_times_(research_times)
     , laboratory_level_requireds_(laboratory_level_requireds)
 {
+    if (level_ < 1 || level_ > MAX_TROOP_LEVEL) {
+        level_ = 1; // 默认等级为1，防止越界
+    }
     // 初始化当前生命值为最大生命值
     current_hitpoints_ = hitpoints_[level_];
 }
+//TODO:所有子类都需要实现init以及create
+// 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池 CREATE_FUNC(<Typename>);
+// 子类需要展开一下这个宏并用带参数的构造函数替换其中的默认构造函数
+ 
+//bool Troop::init() {
+//    if (!Sprite::init()) {
+//        return false;
+//    }
+//    return true;
+//}
 
-bool Troop::init() {
-    if (!Sprite::init()) {
+bool Troop::initWithFile(const std::string& filename) {
+    if (!Sprite::initWithFile(filename)) {
         return false;
     }
     return true;
@@ -48,11 +63,14 @@ bool Troop::canAttack() const {
 }
 
 void Troop::takeDamage(float damage) {
+	if (!isAlive()) return; // 已经死亡的部队不能再受伤
+    if (damage < 0) return; // 负伤害无效
     current_hitpoints_ -= damage;
     if (current_hitpoints_ <= 0) {
         current_hitpoints_ = 0;
 		// TODO: 死亡处理 墓碑显示、禁用攻击与移动等
     }
+	//血条显示、更新等，应当是需要用cocos2d::ui::LoadingBar来实现，然后将它挂靠到Troop的子节点上
 }
 
 void Troop::setLevel(int level) {

@@ -4,9 +4,12 @@
 #include "IArchTarget.h"
 #include <array>
 #define MAX_TROOP_LEVEL 5//目前做到5级
+class BaseMap;
 class Troop :public cocos2d::Sprite, public IArchTarget{
-    typedef unsigned char uchar;
 protected:
+    typedef unsigned char uchar;
+    //被创建的场景地图
+    BaseMap* base_map_;
     //当前等级
     int level_;
     //当前网格逻辑位置
@@ -24,7 +27,7 @@ protected:
     const std::array<int, MAX_TROOP_LEVEL + 1> research_costs_;
 
     //升到level级所需时间 单位：小时
-    const std::array<int, MAX_TROOP_LEVEL + 1> research_times_;
+    const std::array<float, MAX_TROOP_LEVEL + 1> research_times_;
 
     //升到level级所需实验室等级
     const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
@@ -68,7 +71,8 @@ public:
 
 public:
     // 构造函数相关
-    Troop(int level,
+	Troop(BaseMap* base_map,
+          int level,
           cocos2d::Vec2 position,
           PreferredTarget preferred_target,
           AttackType attack_type,
@@ -80,12 +84,12 @@ public:
           const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
           const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
           const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
-          const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
+          const std::array<float, MAX_TROOP_LEVEL + 1>& research_times,
           const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);
     virtual ~Troop() = default;
 
-    // 初始化方法
-    virtual bool init();
+    // 初始化方法，当对象被创建时被自动调用，由于Troop没有实现create，仅由子类调用。
+    virtual bool initWithFile(const std::string& filename) override;//virtual bool init();
 
     // 执行攻击（由子类实现具体逻辑）
     virtual void performAttack() = 0;
@@ -126,8 +130,8 @@ public:
     float getCurrentDamage() const { return damage_per_attacks_[level_]; }
 
     /*以下为渲染相关*/
-	// 创建士兵实例
-	static Troop* createTroop(const std::string& picfilename,
+	// 创建士兵实例 由于Troop类不该能直接创建，改为由子类自行实现
+	/*static Troop* createTroop(const std::string& picfilename,
         int level,
 		cocos2d::Vec2 position,
 		PreferredTarget preferred_target,
@@ -141,7 +145,9 @@ public:
 		const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
 		const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
 		const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
-		const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);
+		const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);*/
+
+    //TODO:移动
 };
 
 #endif // __TROOP_H__

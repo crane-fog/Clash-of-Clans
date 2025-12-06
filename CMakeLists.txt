@@ -67,6 +67,7 @@ list(APPEND GAME_SOURCE
      Classes/Troop.cpp
      Classes/TroopAttackManager.cpp
      Classes/TroopTargetManager.cpp
+     Classes/Barbarian.cpp
      Classes/ShopPopup.cpp
      )
 list(APPEND GAME_HEADER
@@ -86,6 +87,7 @@ list(APPEND GAME_HEADER
      Classes/TroopAttackManager.h
      Classes/TroopTargetManager.h
      Classes/ITroopTarget.h
+     Classes/Barbarian.h
      Classes/IArchTarget.h
      )
 
