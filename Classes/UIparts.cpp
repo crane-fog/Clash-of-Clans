@@ -74,7 +74,7 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
     data.background = nullptr; // 由于使用LayerColor，这里设为null
 
     // 创建进度条
-    data.loadingBar = cocos2d::ui::LoadingBar::create("GoldLoadingBarFile.png");
+    data.loadingBar = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
     if (data.loadingBar) {
         data.loadingBar->setDirection(cocos2d::ui::LoadingBar::Direction::RIGHT);
         data.loadingBar->setPercent(percent);

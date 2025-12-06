@@ -1,10 +1,14 @@
+#include <fstream>
+#include <vector>
+
 #include "ShopPopup.h"
 #include"UIparts.h"
 #include"UIcommon.h"
+#include"Arch.h"
+#include"ArchInfo.h"
+#include"MainVillageScene.h"
 USING_NS_CC;
 using namespace ui;
-// 商品数据结构
-ui::Button* createShopButton(const ShopItem& item, int index);
 
 void ShopPopup::setupBackground() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
@@ -37,31 +41,6 @@ void ShopPopup::setupBackground() {
     background->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, background);
 
     this->addChild(background, -1);
-}
-// 购买商品的处理函数
-void onPurchaseItem(int itemId) {
-    CCLOG("Processing purchase for item %d", itemId);
-
-    // 这里可以添加实际的购买逻辑，如：
-    // - 扣除金币
-    // - 更新UI
-    // - 发送网络请求等
-
-    // 示例：显示购买成功提示
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    auto successLabel = Label::createWithSystemFont(
-        "Purchase successful! Item " + std::to_string(itemId),
-        "Arial", 24
-    );
-    successLabel->setPosition(Vec2(visibleSize.width / 2, visibleSize.height - 100));
-    successLabel->setColor(Color3B::GREEN);
-
-    // 2秒后消失
-    successLabel->runAction(Sequence::create(
-        DelayTime::create(2.0f),
-        RemoveSelf::create(),
-        nullptr
-    ));
 }
 bool ShopPopup::init()
 {
@@ -217,7 +196,6 @@ bool ShopPopup::init()
     initGachaPool();
     return true;
 }
-
 // 切换到指定标签的函数
 void ShopPopup::switchToTab(int tabIndex) {
     if (currentTab_ == tabIndex) {
@@ -258,7 +236,6 @@ void ShopPopup::switchToTab(int tabIndex) {
     // 滚动到最左边
     scrollView->scrollToPercentHorizontal(0, 0.3f, true);
 }
-
 // 在滚动容器中显示商品的辅助函数
 void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::ScrollView* scrollView, int tabIndex) {
     auto scrollBg = LayerColor::create(Color4B(255, 255, 255, 255), 270 * buildingItems_.size(),
@@ -274,12 +251,40 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         auto itemBg = LayerColor::create(Color4B(160, 180, 230, 255), 250, 300);
         itemBg->setPosition(Vec2(20 + i * 270, 20));
         scrollView->addChild(itemBg);
-
+        // 根据商品ID确定建筑类型
+        unsigned char archNo = INVALID_ARCH_NO;
+        switch (item.id) {
+            case 1: // 大本营
+                archNo = TOWN_HALL;
+                break;
+            case 2: // 城墙
+                archNo = WALL;
+                break;
+            case 3: // 金库
+                archNo = GOLD_STORAGE;
+                break;
+            case 4: // 圣水罐
+                archNo = ELIXIR_STORAGE;
+                break;
+            case 5: // 金矿
+                archNo = GOLD_MINE;
+                break;
+            case 6: // 圣水收集器
+                archNo = ELIXIR_COLLECTOR;
+                break;
+            case 7: // 箭塔
+                archNo = ARCHER_TOWER;
+                break;
+            case 8: // 加农炮
+                archNo = CANNON;
+                break;
+                return;
+        }
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
 
-        listener->onTouchBegan = [this, itemBg, item,scrollView](Touch* touch, Event* event) -> bool {
+        listener->onTouchBegan = [this, itemBg, item,scrollView,archNo](Touch* touch, Event* event) -> bool {
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
             Rect rect = Rect(0, 0, size.width, size.height);
@@ -287,6 +292,15 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             if (rect.containsPoint(locationInNode)) {
                 if (item.isAvailable) {
                     itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+                    // 按下即购买
+                    this->close();
+                    auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());
+                    scene->addBuildingByNO(archNo);  
+
+
+                    // 添加购买反馈效果
+                    auto scaleDown = ScaleTo::create(0.1f, 0.95f);
+                    itemBg->runAction(scaleDown);
                 }
                 else {
                     this->showUnavailableBubble(item, itemBg, scrollView);
@@ -296,7 +310,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             return false;
             };
 
-        listener->onTouchEnded = [itemBg, i, item](Touch* touch, Event* event) {
+        listener->onTouchEnded = [itemBg, i, item,this](Touch* touch, Event* event) {
             itemBg->setColor(Color3B(160, 180, 230)); // 恢复颜色
 
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
@@ -305,9 +319,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
 
             if (rect.containsPoint(locationInNode)) {
                 CCLOG("Item %d clicked: %s", i + 1, item.name.c_str());
-                if (item.isAvailable) {
-                    onPurchaseItem(item.id);
-                }
+
             }
             };
 
@@ -379,71 +391,24 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             priceLabel->setColor(Color3B::YELLOW);
             itemBg->addChild(priceLabel);
         }
-        // 购买按钮
-        auto buyButton = createShopButton(item, i);
-        buyButton->setPosition(Vec2(itemBg->getContentSize().width / 2, 80));
-        itemBg->addChild(buyButton);
+
     }
-}
-// 创建商品购买按钮的函数
-ui::Button* createShopButton(const ShopItem& item, int index) {
-    auto button = ui::Button::create();
-    button->setTitleText("BUY");
-    button->setTitleFontSize(25);
-    button->setContentSize(Size(100, 40));
+}   
 
-    // 根据可用性设置样式
-    if (item.isAvailable) {
-        button->setTitleColor(Color3B::WHITE);
-        button->setColor(Color3B(0, 200, 0)); // 绿色
-    }
-    else {
-        button->setTitleColor(Color3B::GRAY);
-        button->setColor(Color3B(100, 100, 100)); // 灰色
-        button->setEnabled(false);
-    }
+// 在ShopPopup::close()函数中，确保清理放置状态
+void ShopPopup::close() {
 
-    // 触摸事件
-    button->addTouchEventListener([item, index](Ref* sender, ui::Widget::TouchEventType type) {
-        auto button = static_cast<ui::Button*>(sender);
+    // 关闭逻辑...
+    auto scaleTo = ScaleTo::create(0.2f, 0.1f);
+    auto easeIn = EaseBackIn::create(scaleTo);
+    auto remove = RemoveSelf::create();
+    auto sequence = Sequence::create(easeIn, remove, nullptr);
+    this->runAction(sequence);
 
-        switch (type) {
-            case ui::Widget::TouchEventType::BEGAN:
-                if (button->isEnabled()) {
-                    button->runAction(ScaleTo::create(0.1f, 0.9f));
-                }
-                break;
-
-            case ui::Widget::TouchEventType::ENDED:
-                if (button->isEnabled()) {
-                    // 回弹动画
-                    button->runAction(Sequence::create(
-                        ScaleTo::create(0.1f, 1.1f),
-                        ScaleTo::create(0.1f, 1.0f),
-                        nullptr
-                    ));
-
-                    // 触发购买事件
-                    onPurchaseItem(index);
-                }
-                else {
-                    // 显示禁用提示
-                    
-                }
-                break;
-
-            case ui::Widget::TouchEventType::CANCELED:
-                if (button->isEnabled()) {
-                    button->runAction(ScaleTo::create(0.1f, 1.0f));
-                }
-                break;
-
-            default:
-                break;
-        }
-        });
-
-    return button;
+    // 重新启用地图输入 
+    auto parent = this->getParent();
+    auto map = parent->getChildByName("BaseMap");
+    if (map) ((BaseMap*)map)->setInputEnabled(true);
 }
 void ShopPopup::show(Node* parent)
 {
@@ -461,31 +426,12 @@ void ShopPopup::show(Node* parent)
     this->setScale(0.1f);
     this->runAction(EaseBackOut::create(ScaleTo::create(0.3f, 1.0f)));
 }
-//关闭商店面板
-void ShopPopup::close()
-{
-    auto scaleTo = ScaleTo::create(0.2f, 0.1f);
-    auto easeIn = EaseBackIn::create(scaleTo);
-    auto remove = RemoveSelf::create();
-    auto sequence = Sequence::create(easeIn, remove, nullptr);
-    this->runAction(sequence);
-    // 重新启用地图输入 
-    auto parent = this->getParent();
-    auto map = parent->getChildByName("BaseMap");
-    if (map) ((BaseMap*)map)->setInputEnabled(true);
-
-    this->runAction(Sequence::create(
-        EaseBackIn::create(ScaleTo::create(0.2f, 0.1f)),
-        RemoveSelf::create(), nullptr));
-}
-
 void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)
 {
     if (type == Widget::TouchEventType::ENDED) {
         close();
     }
 }
-
 void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView) {
 
     // 创建提示气泡（相对于商品背景的本地坐标）
@@ -666,9 +612,7 @@ void ShopPopup::createGachaItem() {
     probability->setPosition(Vec2(175, 100));
     gachaBg->addChild(probability);
 }
-void random() {
 
-}
 // 执行抽卡
 void ShopPopup::performGacha() {
     int randomValue = rand() % 100;
