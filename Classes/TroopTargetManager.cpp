@@ -21,8 +21,8 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
     }
 }
 
-ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position, bool is_wall_included,
-    Troop::PreferredTarget preferred_target, float& min_distance) {
+ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position, float& min_distance, bool is_wall_included,
+    Troop::PreferredTarget preferred_target) {
 
     ITroopTarget* nearest_target = nullptr;
     min_distance = std::numeric_limits<float>::max();
