@@ -18,8 +18,8 @@ class TroopTargetManager {
         void unregisterTroopTarget(ITroopTarget* target);
         
         // 士兵查找攻击目标
-        ITroopTarget* getNearestTroopTarget(const cocos2d::Vec2& position, bool is_wall_included=true,
-            Troop::PreferredTarget preferred_target = Troop::NONE, float& min_distance);
+        ITroopTarget* getNearestTroopTarget(const cocos2d::Vec2& position, float& min_distance, bool is_wall_included=true,
+            Troop::PreferredTarget preferred_target = Troop::NONE);
     };
 
 #endif // __TROOPTARGETMANAGER_H__
