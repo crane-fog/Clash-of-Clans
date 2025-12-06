@@ -5,6 +5,7 @@
 #include "ShopPopup.h"
 #include "DataHelper.h"
 #include "Arch.h"
+#include "Barbarian.h"
 #include <chrono>
 #include <vector>
 
@@ -46,6 +47,8 @@ bool MainVillage::init()
     // 这个 base_map_ 从 Village 基类继承来
     base_map_->sprites_.push_back(barbarian_sprite);
     base_map_->addChild(barbarian_sprite, 2);
+
+    Barbarian::create(base_map_, 1, Vec2(22, 22));
 
     // 获取屏幕尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();

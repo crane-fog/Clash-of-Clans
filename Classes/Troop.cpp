@@ -14,7 +14,7 @@ Troop::Troop(BaseMap* base_map,
              const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
              const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
              const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
-             const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
+             const std::array<float, MAX_TROOP_LEVEL + 1>& research_times,
              const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds)
 	: base_map_(base_map)
     , level_(level)
@@ -43,8 +43,15 @@ Troop::Troop(BaseMap* base_map,
 // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池 CREATE_FUNC(<Typename>);
 // 子类需要展开一下这个宏并用带参数的构造函数替换其中的默认构造函数
  
-bool Troop::init() {
-    if (!Sprite::init()) {
+//bool Troop::init() {
+//    if (!Sprite::init()) {
+//        return false;
+//    }
+//    return true;
+//}
+
+bool Troop::initWithFile(const std::string& filename) {
+    if (!Sprite::initWithFile(filename)) {
         return false;
     }
     return true;
