@@ -29,7 +29,18 @@ struct ArchData {
     UI current_capacity_;
 
     ArchData() = default;
-    explicit ArchData(Arch* a);
+    explicit ArchData(Arch*a);
+    explicit ArchData(UC no, UC lv = 1) {
+        no_ = no;
+        level_ = lv;
+
+        // 默认出生在左下角 (可改为中心或随机)
+        x_ = 1;
+        y_ = 1;
+
+        current_hp_ = kArchInfo.at(no)[lv].hp_;
+        current_capacity_ = kArchInfo.at(no)[lv].max_capacity_;
+    }
 };
 
 class Arch : public cocos2d::Sprite, public ITroopTarget {

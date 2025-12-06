@@ -118,3 +118,48 @@ void MainVillage::onShopButtonClick(Ref* sender)
         CCLOG("错误：无法创建商店弹窗");
     }
 }
+
+// 通过NO新建建筑并加入存档 + 加入场景
+bool MainVillage::addBuildingByNO(unsigned char no)
+{
+    // 默认新建筑等级为1
+    unsigned char level = 1;
+
+    // 校验no是否存在
+    if (kArchInfo.find(no) == kArchInfo.end()) {
+        CCLOG("建筑编号不存在:%d", no);
+        return false;
+    }
+
+    // 读取ArchInfo默认资源
+    auto& info = kArchInfo.at(no)[level - 1];
+
+    // 构建建筑数据
+    ArchData data;
+    data.no_ = no;
+    data.level_ = level;
+    data.x_ = MAP_SIZE/2;                 //默认左下角
+    data.y_ = MAP_SIZE/2;
+    data.current_hp_ = info.hp_;         //如果没有max_hp_字段就给默认值
+    data.current_capacity_ = info.max_capacity_;              //资源建筑容量
+
+    // 创建建筑到地图
+    auto arch = Arch::create(data, base_map_);
+    if (!arch) return false;
+
+    base_map_->archs_.push_back(arch);
+
+    // 写入存档数据结构
+    arch_status_[data.x_][data.y_] = data;
+
+    //  立即写入文件（可取消改为退出时写）
+    DataHelper::writeArchData(
+        kMainVillageDataFile,
+        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()),
+        arch_status_
+    );
+
+    CCLOG("建筑添加成功 NO=%d 放置在[0,0]并写入存档", no);
+    return true;
+}
+

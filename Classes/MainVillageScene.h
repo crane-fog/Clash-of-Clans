@@ -25,6 +25,7 @@ public:
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(MainVillage);
     void onShopButtonClick(Ref* sender);
+    bool addBuildingByNO(unsigned char no);
 };
 
 #endif // __MAIN_VILLAGE_SCENE_H__

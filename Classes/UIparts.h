@@ -58,8 +58,7 @@ public:
     void setupBackground();
     // 添加显示气泡提示的函数
     void showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView);
-    // 购买处理函数
-    void onPurchaseItem(const ShopItem& item,cocos2d::LayerColor* itemBg);
+
 private:
     //关闭动画
     void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
@@ -96,19 +95,10 @@ private:
     Arch* pendingArch_ = nullptr;
     cocos2d::EventListener* mapTouchListener_ = nullptr;
     bool isPlacingArch_ = false;
-    void startArchPlacement(const ShopItem& item);
-    void setupArchForPlacement(Arch* arch);
-    bool onMapClickDuringPlacement(cocos2d::Touch* touch, cocos2d::Event* event);
-    void cancelArchPlacement();
+
     
 public:
-    void showMessageBox(const std::string& title, const std::string& message);
-    void showPlacementGuide();
-    void removePlacementGuide();
-    void createCancelButton();
-    void playPlacementSuccessAnimation(Arch* arch);
-    bool checkCanPlaceArch(int x, int y, unsigned char size);
-    void confirmArchPlacement();
+
     friend class Arch;
 };
 
