@@ -80,7 +80,7 @@ public:
     virtual bool initWithFile(const std::string& filename) override;
 
     // ITroopTarget 接口实现
-    virtual void takeDamage(float damage, int attackType) override { current_hp_ -= static_cast<UI>(damage); }
+    virtual void takeDamage(float damage) override { current_hp_ -= static_cast<UI>(damage); }
     virtual cocos2d::Vec2 getCellPosition(float& size) const override
     { 
         size = static_cast<float>(kArchInfo.at(no_)[level_ - 1].size_);
