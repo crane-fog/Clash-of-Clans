@@ -71,7 +71,7 @@ private:
 
 
     void performGacha();                          // 执行抽卡
-    void showGachaAnimation();                    // 显示抽卡动画
+    void showGachaAnimation(int rarity );                    // 显示抽卡动画
     void showGachaResult(const ShopItem& item);   // 显示抽卡结果
     void createGachaItem();                       // 创建抽卡商品界面
     void initGachaPool();
