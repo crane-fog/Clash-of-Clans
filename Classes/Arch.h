@@ -52,12 +52,12 @@ private:
 
     // 所在的地图指针
     BaseMap* base_map_;
-
+public:
     // 拖动相关
     bool is_dragging_ = false;
     cocos2d::Vec2 touch_start_pos_;
     cocos2d::Node* highlight_node_ = nullptr;
-    
+
     // 记录拖动前的原始位置
     UC original_x_;
     UC original_y_;
@@ -93,6 +93,7 @@ public:
     void showArchPanel(Arch* arch);
     void closeArchPanel();
     std::string getArchNameFromEnum(unsigned char archNo);
+    friend class ShopPopup;
 
     friend struct ArchData;
 };

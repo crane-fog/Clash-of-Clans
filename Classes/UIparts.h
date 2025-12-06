@@ -51,13 +51,17 @@ public:
     virtual bool init();
     //展示商店面板
     void show(cocos2d::Node* parent);
+    //关闭商店面板
     void close();
     void onShopButtonClick(cocos2d::Ref* sender);
+    //面板背景遮盖
     void setupBackground();
     // 添加显示气泡提示的函数
     void showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView);
-
+    // 购买处理函数
+    void onPurchaseItem(const ShopItem& item,cocos2d::LayerColor* itemBg);
 private:
+    //关闭动画
     void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
     void switchToTab(int tabIndex);  // 切换标签函数
     void showItemsInScrollView(const std::vector<ShopItem>& items, cocos2d::ui::ScrollView* scrollView, int tabIndex=1);  // 显示商品函数
@@ -71,7 +75,7 @@ private:
 
 
     void performGacha();                          // 执行抽卡
-    void showGachaAnimation(int rarity );                    // 显示抽卡动画
+    void showGachaAnimation(int rarity );         // 显示抽卡动画
     void showGachaResult(const ShopItem& item);   // 显示抽卡结果
     void createGachaItem();                       // 创建抽卡商品界面
     void initGachaPool();
@@ -86,6 +90,26 @@ private:
     // 添加抽卡相关变量
     std::vector<ShopItem> gachaPool_;             // 抽卡池
     Node* gachaResultNode_ = nullptr;             // 抽卡结果节点
+
+//购买函数相关
+private:
+    Arch* pendingArch_ = nullptr;
+    cocos2d::EventListener* mapTouchListener_ = nullptr;
+    bool isPlacingArch_ = false;
+    void startArchPlacement(const ShopItem& item);
+    void setupArchForPlacement(Arch* arch);
+    bool onMapClickDuringPlacement(cocos2d::Touch* touch, cocos2d::Event* event);
+    void cancelArchPlacement();
+    
+public:
+    void showMessageBox(const std::string& title, const std::string& message);
+    void showPlacementGuide();
+    void removePlacementGuide();
+    void createCancelButton();
+    void playPlacementSuccessAnimation(Arch* arch);
+    bool checkCanPlaceArch(int x, int y, unsigned char size);
+    void confirmArchPlacement();
+    friend class Arch;
 };
 
 #endif // __UI_PARTS_H__

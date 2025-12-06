@@ -1,10 +1,10 @@
 #include "ShopPopup.h"
 #include"UIparts.h"
 #include"UIcommon.h"
+#include"Arch.h"
+#include"ArchInfo.h"
 USING_NS_CC;
 using namespace ui;
-// 商品数据结构
-ui::Button* createShopButton(const ShopItem& item, int index);
 
 void ShopPopup::setupBackground() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
@@ -37,31 +37,6 @@ void ShopPopup::setupBackground() {
     background->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, background);
 
     this->addChild(background, -1);
-}
-// 购买商品的处理函数
-void onPurchaseItem(int itemId) {
-    CCLOG("Processing purchase for item %d", itemId);
-
-    // 这里可以添加实际的购买逻辑，如：
-    // - 扣除金币
-    // - 更新UI
-    // - 发送网络请求等
-
-    // 示例：显示购买成功提示
-    auto visibleSize = Director::getInstance()->getVisibleSize();
-    auto successLabel = Label::createWithSystemFont(
-        "Purchase successful! Item " + std::to_string(itemId),
-        "Arial", 24
-    );
-    successLabel->setPosition(Vec2(visibleSize.width / 2, visibleSize.height - 100));
-    successLabel->setColor(Color3B::GREEN);
-
-    // 2秒后消失
-    successLabel->runAction(Sequence::create(
-        DelayTime::create(2.0f),
-        RemoveSelf::create(),
-        nullptr
-    ));
 }
 bool ShopPopup::init()
 {
@@ -217,7 +192,6 @@ bool ShopPopup::init()
     initGachaPool();
     return true;
 }
-
 // 切换到指定标签的函数
 void ShopPopup::switchToTab(int tabIndex) {
     if (currentTab_ == tabIndex) {
@@ -258,7 +232,6 @@ void ShopPopup::switchToTab(int tabIndex) {
     // 滚动到最左边
     scrollView->scrollToPercentHorizontal(0, 0.3f, true);
 }
-
 // 在滚动容器中显示商品的辅助函数
 void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::ScrollView* scrollView, int tabIndex) {
     auto scrollBg = LayerColor::create(Color4B(255, 255, 255, 255), 270 * buildingItems_.size(),
@@ -287,6 +260,12 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             if (rect.containsPoint(locationInNode)) {
                 if (item.isAvailable) {
                     itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+                    // 按下即购买
+                    this->onPurchaseItem(item,itemBg);
+
+                    // 添加购买反馈效果
+                    auto scaleDown = ScaleTo::create(0.1f, 0.95f);
+                    itemBg->runAction(scaleDown);
                 }
                 else {
                     this->showUnavailableBubble(item, itemBg, scrollView);
@@ -296,7 +275,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             return false;
             };
 
-        listener->onTouchEnded = [itemBg, i, item](Touch* touch, Event* event) {
+        listener->onTouchEnded = [itemBg, i, item,this](Touch* touch, Event* event) {
             itemBg->setColor(Color3B(160, 180, 230)); // 恢复颜色
 
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
@@ -306,7 +285,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             if (rect.containsPoint(locationInNode)) {
                 CCLOG("Item %d clicked: %s", i + 1, item.name.c_str());
                 if (item.isAvailable) {
-                    onPurchaseItem(item.id);
+                    onPurchaseItem(item,itemBg);
                 }
             }
             };
@@ -379,71 +358,443 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             priceLabel->setColor(Color3B::YELLOW);
             itemBg->addChild(priceLabel);
         }
-        // 购买按钮
-        auto buyButton = createShopButton(item, i);
-        buyButton->setPosition(Vec2(itemBg->getContentSize().width / 2, 80));
-        itemBg->addChild(buyButton);
-    }
-}
-// 创建商品购买按钮的函数
-ui::Button* createShopButton(const ShopItem& item, int index) {
-    auto button = ui::Button::create();
-    button->setTitleText("BUY");
-    button->setTitleFontSize(25);
-    button->setContentSize(Size(100, 40));
 
-    // 根据可用性设置样式
-    if (item.isAvailable) {
-        button->setTitleColor(Color3B::WHITE);
-        button->setColor(Color3B(0, 200, 0)); // 绿色
+    }
+}   
+
+// 修改后的购买处理函数
+void ShopPopup::onPurchaseItem(const ShopItem& item, cocos2d::LayerColor* itemBg) {
+    CCLOG("Processing purchase for item %d: %s", item.id, item.name.c_str());
+
+    // 检查金币是否足够
+    // 这里需要根据实际游戏逻辑检查玩家资源
+    bool canAfford = true; // 临时假设可以购买
+
+    if (!canAfford) {
+        // 显示金币不足提示
+        showMessageBox("金币不足", "您的金币不足，无法购买此建筑");
+        return;
+    }
+
+    // 根据商品ID确定建筑类型
+    unsigned char archNo = INVALID_ARCH_NO;
+    switch (item.id) {
+        case 1: // 大本营
+            archNo = TOWN_HALL;
+            break;
+        case 2: // 城墙
+            archNo = WALL;
+            break;
+        case 3: // 金库
+            archNo = GOLD_STORAGE;
+            break;
+        case 4: // 圣水罐
+            archNo = ELIXIR_STORAGE;
+            break;
+        case 5: // 金矿
+            archNo = GOLD_MINE;
+            break;
+        case 6: // 圣水收集器
+            archNo = ELIXIR_COLLECTOR;
+            break;
+        case 7: // 箭塔
+            archNo = ARCHER_TOWER;
+            break;
+        case 8: // 加农炮
+            archNo = CANNON;
+            break;
+        default:
+            showMessageBox("错误", "未知的建筑类型");
+            return;
+    }
+
+    if (archNo == INVALID_ARCH_NO) {
+        showMessageBox("错误", "无效的建筑类型");
+        return;
+    }
+
+    // 扣取金币（这里需要根据实际游戏逻辑实现）
+    // int cost = item.price;
+    // playerGold -= cost;
+
+    // 关闭商店面板
+    this->close();
+
+    // 开始建筑放置流程
+    startArchPlacement(item);
+}
+
+// 开始建筑放置
+void ShopPopup::startArchPlacement(const ShopItem& item) {
+    // 创建临时建筑数据
+    ArchData tempData;
+    tempData.no_ = static_cast<unsigned char>(item.id);
+    tempData.level_ = 1;  // 默认1级
+
+    // 初始位置放在地图中央
+    unsigned char size = kArchInfo.at(tempData.no_)[0].size_;
+    tempData.x_ = static_cast<unsigned char>(MAP_SIZE / 2 - size / 2);
+    tempData.y_ = static_cast<unsigned char>(MAP_SIZE / 2 - size / 2);
+
+    tempData.current_hp_ = kArchInfo.at(tempData.no_)[0].hp_;
+
+    // 资源建筑的初始容量
+    if (tempData.no_ == GOLD_STORAGE || tempData.no_ == ELIXIR_STORAGE ||
+        tempData.no_ == GOLD_MINE || tempData.no_ == ELIXIR_COLLECTOR) {
+        tempData.current_capacity_ = 0; // 初始为空
+    }
+
+    // 获取地图实例
+    auto parent = this->getParent();
+    auto baseMap = dynamic_cast<BaseMap*>(parent->getChildByName("BaseMap"));
+    if (!baseMap) {
+        showMessageBox("错误", "找不到地图");
+        return;
+    }
+
+    // 创建建筑
+    pendingArch_ = Arch::create(tempData, baseMap);
+    if (!pendingArch_) {
+        showMessageBox("错误", "创建建筑失败");
+        return;
+    }
+
+    // 设置建筑为放置模式
+    setupArchForPlacement(pendingArch_);
+
+    // 显示放置提示
+    showPlacementGuide();
+
+    // 创建取消按钮
+    createCancelButton();
+
+}
+
+// 设置建筑为放置模式
+void ShopPopup::setupArchForPlacement(Arch* arch) {
+    if (!arch) return;
+
+    // 设置建筑为半透明预览状态
+    arch->setOpacity(150);
+    arch->setLocalZOrder(1000); // 最高层级
+
+    // 启用建筑的拖拽功能
+    // Arch类的拖拽功能已经在initWithFile中设置了触摸监听器
+
+    // 添加高亮边框
+    auto border = DrawNode::create();
+    auto size = arch->getContentSize();
+    border->drawRect(Vec2(-size.width / 2, -size.height / 2),
+        Vec2(size.width / 2, size.height / 2),
+        Color4F::YELLOW);
+    border->setName("PLACEMENT_BORDER");
+    arch->addChild(border);
+
+    // 创建放置提示文字
+    auto placementLabel = Label::createWithSystemFont(
+        "拖动放置\n点击地图其他位置确认",
+        "Arial", 16
+    );
+    placementLabel->setColor(Color3B::YELLOW);
+    placementLabel->enableOutline(Color4B::BLACK, 1);
+    placementLabel->setPosition(Vec2(0, -arch->getContentSize().height / 2 - 30));
+    placementLabel->setName("PLACEMENT_LABEL");
+    arch->addChild(placementLabel);
+}
+
+// 地图点击确认放置
+bool ShopPopup::onMapClickDuringPlacement(cocos2d::Touch* touch, cocos2d::Event* event) {
+    if (!isPlacingArch_ || !pendingArch_) return false;
+
+    // 检查当前位置是否可以放置
+    bool canPlace = checkCanPlaceArch(pendingArch_->x_, pendingArch_->y_,
+        kArchInfo.at(pendingArch_->no_)[pendingArch_->level_ - 1].size_);
+
+    if (canPlace) {
+        confirmArchPlacement();
     }
     else {
-        button->setTitleColor(Color3B::GRAY);
-        button->setColor(Color3B(100, 100, 100)); // 灰色
-        button->setEnabled(false);
+        // 显示无法放置的提示
+        showMessageBox("无法放置", "当前建筑位置与其他建筑重叠或超出边界");
+
+        // 添加晃动动画提示
+        auto shake = Sequence::create(
+            MoveBy::create(0.05f, Vec2(10, 0)),
+            MoveBy::create(0.05f, Vec2(-20, 0)),
+            MoveBy::create(0.05f, Vec2(20, 0)),
+            MoveBy::create(0.05f, Vec2(-10, 0)),
+            nullptr
+        );
+        pendingArch_->runAction(shake);
     }
 
-    // 触摸事件
-    button->addTouchEventListener([item, index](Ref* sender, ui::Widget::TouchEventType type) {
-        auto button = static_cast<ui::Button*>(sender);
+    return true;
+}
 
-        switch (type) {
-            case ui::Widget::TouchEventType::BEGAN:
-                if (button->isEnabled()) {
-                    button->runAction(ScaleTo::create(0.1f, 0.9f));
-                }
-                break;
+// 检查是否可以放置建筑（重用Arch类的checkCollision函数）
+bool ShopPopup::checkCanPlaceArch(int x, int y, unsigned char size) {
+    if (!pendingArch_) return false;
 
-            case ui::Widget::TouchEventType::ENDED:
-                if (button->isEnabled()) {
-                    // 回弹动画
-                    button->runAction(Sequence::create(
-                        ScaleTo::create(0.1f, 1.1f),
-                        ScaleTo::create(0.1f, 1.0f),
-                        nullptr
-                    ));
+    auto baseMap = dynamic_cast<BaseMap*>(pendingArch_->getParent());
+    if (!baseMap) return false;
 
-                    // 触发购买事件
-                    onPurchaseItem(index);
-                }
-                else {
-                    // 显示禁用提示
-                    
-                }
-                break;
+    // 使用Arch类的checkCollision函数检查碰撞
+    int originalX = pendingArch_->x_;
+    int originalY = pendingArch_->y_;
 
-            case ui::Widget::TouchEventType::CANCELED:
-                if (button->isEnabled()) {
-                    button->runAction(ScaleTo::create(0.1f, 1.0f));
-                }
-                break;
+    // 临时设置位置进行检查
+    pendingArch_->x_ = static_cast<unsigned char>(x);
+    pendingArch_->y_ = static_cast<unsigned char>(y);
 
-            default:
-                break;
+    bool hasCollision = false;
+
+    // 方法1：直接调用Arch的checkCollision（如果它是public）
+    // hasCollision = pendingArch_->checkCollision(x, y);
+
+    // 方法2：手动检查碰撞（与Arch::checkCollision相同逻辑）
+    unsigned char my_size = kArchInfo.at(pendingArch_->no_)[pendingArch_->level_ - 1].size_;
+
+    for (auto other : baseMap->archs_) {
+        if (other == pendingArch_) continue; // 跳过自己
+
+        unsigned char other_size = kArchInfo.at(other->no_)[other->level_ - 1].size_;
+        unsigned char other_x = other->x_;
+        unsigned char other_y = other->y_;
+
+        bool intersect = !(x >= other_x + other_size ||
+            x + my_size <= other_x ||
+            y >= other_y + other_size ||
+            y + my_size <= other_y);
+
+        if (intersect) {
+            hasCollision = true;
+            break;
+        }
+    }
+
+    // 恢复原始位置
+    pendingArch_->x_ = static_cast<unsigned char>(originalX);
+    pendingArch_->y_ = static_cast<unsigned char>(originalY);
+
+    // 边界检查
+    if (x < 0 || y < 0 || x + size > MAP_SIZE || y + size > MAP_SIZE) {
+        hasCollision = true;
+    }
+
+    return !hasCollision;
+}
+
+// 确认放置建筑
+void ShopPopup::confirmArchPlacement() {
+    if (!pendingArch_) return;
+
+    // 移除放置相关的装饰
+    pendingArch_->removeChildByName("PLACEMENT_BORDER");
+    pendingArch_->removeChildByName("PLACEMENT_LABEL");
+
+    // 将建筑恢复正常状态
+    pendingArch_->setOpacity(255);
+    pendingArch_->setLocalZOrder(2); // 恢复正常层级
+
+
+
+    // 移除放置提示和取消按钮
+    removePlacementGuide();
+
+    // 播放放置成功动画
+    playPlacementSuccessAnimation(pendingArch_);
+
+    // 显示购买成功提示
+    showMessageBox("购买成功", "建筑已成功放置");
+
+    // 重置状态
+    pendingArch_ = nullptr;
+    isPlacingArch_ = false;
+}
+
+// 取消建筑放置
+void ShopPopup::cancelArchPlacement() {
+    if (!pendingArch_) return;
+
+    // 移除建筑
+    pendingArch_->removeFromParent();
+    pendingArch_ = nullptr;
+
+
+
+
+    // 移除放置提示和取消按钮
+    removePlacementGuide();
+
+    // 显示取消提示
+    showMessageBox("已取消", "建筑放置已取消");
+
+    // 重置状态
+    isPlacingArch_ = false;
+}
+
+// 显示放置引导
+void ShopPopup::showPlacementGuide() {
+    auto parent = this->getParent();
+    auto baseMap = dynamic_cast<BaseMap*>(parent->getChildByName("BaseMap"));
+    if (!baseMap) return;
+
+    // 创建引导文本
+    auto guideLabel = Label::createWithSystemFont(
+        "建筑放置模式\n拖动建筑选择位置\n点击地图空白处确认放置",
+        "Arial", 24
+    );
+    guideLabel->setColor(Color3B::YELLOW);
+    guideLabel->enableOutline(Color4B::BLACK, 2);
+    guideLabel->setPosition(Vec2(
+        Director::getInstance()->getVisibleSize().width / 2,
+        Director::getInstance()->getVisibleSize().height - 100
+    ));
+    guideLabel->setName("PLACEMENT_GUIDE");
+    guideLabel->setGlobalZOrder(1000);
+    parent->addChild(guideLabel, 1000);
+}
+
+// 移除放置引导
+void ShopPopup::removePlacementGuide() {
+    auto parent = this->getParent();
+    if (parent) {
+        parent->removeChildByName("PLACEMENT_GUIDE");
+        parent->removeChildByName("CANCEL_BUTTON");
+    }
+}
+
+// 创建取消按钮
+void ShopPopup::createCancelButton() {
+    auto parent = this->getParent();
+    if (!parent) return;
+
+    // 创建取消按钮
+    auto cancelButton = ui::Button::create();
+    cancelButton->setTitleText("取消放置 (ESC)");
+    cancelButton->setTitleFontSize(24);
+    cancelButton->setTitleColor(Color3B::WHITE);
+    cancelButton->setContentSize(Size(150, 50));
+    cancelButton->setPosition(Vec2(
+        Director::getInstance()->getVisibleSize().width - 100,
+        50
+    ));
+    cancelButton->setColor(Color3B(200, 50, 50));
+    cancelButton->setName("CANCEL_BUTTON");
+    cancelButton->setGlobalZOrder(1000);
+
+    cancelButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->cancelArchPlacement();
         }
         });
 
-    return button;
+    parent->addChild(cancelButton, 1000);
+
+}
+
+// 播放放置成功动画
+void ShopPopup::playPlacementSuccessAnimation(Arch* arch) {
+    if (!arch) return;
+
+    // 创建成功光效
+    auto successEffect = ParticleSystemQuad::create("particles/success.plist");
+    if (!successEffect) {
+        // 如果没有粒子文件，创建简单的动画
+        successEffect = ParticleSystemQuad::createWithTotalParticles(100);
+        successEffect->setLife(1.0f);
+        successEffect->setLifeVar(0.5f);
+        successEffect->setStartColor(Color4F::GREEN);
+        successEffect->setStartColorVar(Color4F(0, 0, 0, 0));
+        successEffect->setEndColor(Color4F::YELLOW);
+        successEffect->setEndColorVar(Color4F(0, 0, 0, 0));
+        successEffect->setStartSize(30.0f);
+        successEffect->setStartSizeVar(10.0f);
+        successEffect->setEndSize(0.0f);
+        successEffect->setAngle(90.0f);
+        successEffect->setAngleVar(360.0f);
+        successEffect->setSpeed(200.0f);
+        successEffect->setSpeedVar(50.0f);
+        successEffect->setPosVar(Vec2(50, 50));
+    }
+
+    successEffect->setPosition(arch->getPosition());
+    successEffect->setAutoRemoveOnFinish(true);
+    successEffect->setDuration(0.5f);
+
+    arch->getParent()->addChild(successEffect, 1001);
+
+    // 建筑淡入效果
+    arch->runAction(Sequence::create(
+        FadeTo::create(0.3f, 255),
+        nullptr
+    ));
+}
+
+// 显示消息框（辅助函数）
+void ShopPopup::showMessageBox(const std::string& title, const std::string& message) {
+    auto messageBox = LayerColor::create(Color4B(0, 0, 0, 150));
+    messageBox->setContentSize(Director::getInstance()->getVisibleSize());
+    messageBox->setName("MESSAGE_BOX");
+
+    auto bg = LayerColor::create(Color4B(50, 50, 80, 255), 300, 200);
+    bg->setPosition(Vec2(
+        Director::getInstance()->getVisibleSize().width / 2 - 150,
+        Director::getInstance()->getVisibleSize().height / 2 - 100
+    ));
+
+    auto titleLabel = Label::createWithSystemFont(title, "Arial", 32);
+    titleLabel->setColor(Color3B::YELLOW);
+    titleLabel->setPosition(Vec2(150, 150));
+    bg->addChild(titleLabel);
+
+    auto messageLabel = Label::createWithSystemFont(message, "Arial", 24);
+    messageLabel->setColor(Color3B::WHITE);
+    messageLabel->setPosition(Vec2(150, 100));
+    messageLabel->setWidth(280);
+    messageLabel->setAlignment(TextHAlignment::CENTER);
+    bg->addChild(messageLabel);
+
+    auto okButton = ui::Button::create();
+    okButton->setTitleText("确定");
+    okButton->setTitleFontSize(24);
+    okButton->setTitleColor(Color3B::WHITE);
+    okButton->setContentSize(Size(100, 50));
+    okButton->setPosition(Vec2(150, 40));
+    okButton->setColor(Color3B(100, 150, 200));
+    okButton->addTouchEventListener([messageBox](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            messageBox->removeFromParent();
+        }
+        });
+    bg->addChild(okButton);
+
+    messageBox->addChild(bg);
+
+    auto parent = this->getParent();
+    if (parent) {
+        parent->addChild(messageBox, 1000);
+    }
+}
+
+// 在ShopPopup::close()函数中，确保清理放置状态
+void ShopPopup::close() {
+    // 如果正在放置建筑，取消放置
+    if (isPlacingArch_) {
+        cancelArchPlacement();
+    }
+
+    // 原有关闭逻辑...
+    auto scaleTo = ScaleTo::create(0.2f, 0.1f);
+    auto easeIn = EaseBackIn::create(scaleTo);
+    auto remove = RemoveSelf::create();
+    auto sequence = Sequence::create(easeIn, remove, nullptr);
+    this->runAction(sequence);
+
+    // 重新启用地图输入 
+    auto parent = this->getParent();
+    auto map = parent->getChildByName("BaseMap");
+    if (map) ((BaseMap*)map)->setInputEnabled(true);
 }
 void ShopPopup::show(Node* parent)
 {
@@ -461,31 +812,12 @@ void ShopPopup::show(Node* parent)
     this->setScale(0.1f);
     this->runAction(EaseBackOut::create(ScaleTo::create(0.3f, 1.0f)));
 }
-//关闭商店面板
-void ShopPopup::close()
-{
-    auto scaleTo = ScaleTo::create(0.2f, 0.1f);
-    auto easeIn = EaseBackIn::create(scaleTo);
-    auto remove = RemoveSelf::create();
-    auto sequence = Sequence::create(easeIn, remove, nullptr);
-    this->runAction(sequence);
-    // 重新启用地图输入 
-    auto parent = this->getParent();
-    auto map = parent->getChildByName("BaseMap");
-    if (map) ((BaseMap*)map)->setInputEnabled(true);
-
-    this->runAction(Sequence::create(
-        EaseBackIn::create(ScaleTo::create(0.2f, 0.1f)),
-        RemoveSelf::create(), nullptr));
-}
-
 void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)
 {
     if (type == Widget::TouchEventType::ENDED) {
         close();
     }
 }
-
 void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView) {
 
     // 创建提示气泡（相对于商品背景的本地坐标）
@@ -666,9 +998,7 @@ void ShopPopup::createGachaItem() {
     probability->setPosition(Vec2(175, 100));
     gachaBg->addChild(probability);
 }
-void random() {
 
-}
 // 执行抽卡
 void ShopPopup::performGacha() {
     int randomValue = rand() % 100;
