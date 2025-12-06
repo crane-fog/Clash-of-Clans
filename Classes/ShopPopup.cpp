@@ -666,36 +666,36 @@ void ShopPopup::createGachaItem() {
     probability->setPosition(Vec2(175, 100));
     gachaBg->addChild(probability);
 }
+void random() {
 
+}
 // 执行抽卡
 void ShopPopup::performGacha() {
+    int randomValue = rand() % 100;
+    Rarity rarity = RARITY_N;
+// 随机选择物品
+    if (randomValue < 5) { // 5% SSR
+        rarity = RARITY_SSR;
+    }
+    else if (randomValue < 20) { // 15% SR
+        rarity = RARITY_SR;
+    }
+    else if (randomValue < 50) { // 30% R
+        rarity = RARITY_R;
+    }
+    else { // 50% N
+        rarity = RARITY_N;
+    }
+    int r = rarity;
     // 先播放抽卡动画
-    showGachaAnimation();
+    showGachaAnimation(r);
 
     // 延迟后显示结果
-    this->scheduleOnce([this](float dt) {
-        // 随机选择物品
-        int randomValue = rand() % 100;
+    this->scheduleOnce([this,rarity](float dt) {
         ShopItem* selectedItem = nullptr;
-        Rarity rarity = RARITY_N;
-
-        if (randomValue < 5) { // 5% SSR
-            rarity = RARITY_SSR;
-        }
-        else if (randomValue < 20) { // 15% SR
-            rarity = RARITY_SR;
-        }
-        else if (randomValue < 50) { // 30% R
-            rarity = RARITY_R;
-        }
-        else { // 50% N
-            rarity = RARITY_N;
-        }
-
         // 从对应稀有度的物品中随机选择
         std::vector<ShopItem*> itemsOfRarity;
         for (auto& item : gachaPool_) {
-            // 注意：这里需要修改ShopItem结构体，添加rarity字段
             // 暂时使用id范围判断
             if (rarity == RARITY_SSR && item.id >= 301 && item.id <= 303) {
                 itemsOfRarity.push_back(&item);
@@ -724,7 +724,7 @@ void ShopPopup::performGacha() {
 }
 
 // 显示抽卡动画
-void ShopPopup::showGachaAnimation() {
+void ShopPopup::showGachaAnimation(int rarity) {
     // 创建全屏黑色遮罩
     auto mask = LayerColor::create(Color4B(0, 0, 0, 180));
     mask->setContentSize(Director::getInstance()->getVisibleSize());
@@ -736,11 +736,14 @@ void ShopPopup::showGachaAnimation() {
 
     // 创建闪光效果
     auto flash = Sprite::create("flash.png");
-    if (!flash) {
-        flash = Sprite::create();
-        auto draw = DrawNode::create();
-        draw->drawSolidCircle(Vec2::ZERO, 200, 0, 60, Color4F::WHITE);
-        flash->addChild(draw);
+    if (rarity == RARITY_SSR) {
+
+    }
+    else if (rarity == RARITY_SR) {
+        flash->setTexture("SRflash.png"); 
+    }
+    else {
+        flash->setTexture("Rflash.png");
     }
     flash->setPosition(Vec2(
         Director::getInstance()->getVisibleSize().width / 2,
@@ -770,16 +773,14 @@ void ShopPopup::showGachaAnimation() {
     auto rotatingGlow = Node::create();
     for (int i = 0; i < 8; i++) {
         auto ray = Sprite::create("flash.png");
-        if (!ray) {
-            ray = Sprite::create();
-            auto draw = DrawNode::create();
-            draw->drawTriangle(
-                Vec2(0, 0),
-                Vec2(10, 100),
-                Vec2(-10, 100),
-                Color4F(1.0f, 1.0f, 0.5f, 0.7f)
-            );
-            ray->addChild(draw);
+        if (rarity == RARITY_SSR) {
+
+        }
+        else if (rarity == RARITY_SR) {
+            ray->setTexture("SRflash.png");
+        }
+        else {
+            ray->setTexture("Rflash.png");
         }
         ray->setPosition(Vec2(0, 150));
         ray->setRotation(i * 45);
