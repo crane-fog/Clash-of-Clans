@@ -2,6 +2,7 @@
 #define __TROOP_H__
 #include "cocos2d.h"
 #include "IArchTarget.h"
+#include <array>
 #define MAX_TROOP_LEVEL 5//目前做到5级
 class Troop :public cocos2d::Sprite, public IArchTarget{
     typedef unsigned char uchar;
@@ -14,19 +15,19 @@ protected:
     float current_hitpoints_;
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     //每次伤害
-    const float damage_per_attacks_[MAX_TROOP_LEVEL + 1];
+    const std::array<float, MAX_TROOP_LEVEL + 1> damage_per_attacks_;
 
     //生命值
-    const float hitpoints_[MAX_TROOP_LEVEL + 1];
+    const std::array<float, MAX_TROOP_LEVEL + 1> hitpoints_;
 
     //升到level级所需资源花费
-    const int research_costs_[MAX_TROOP_LEVEL + 1];
+    const std::array<int, MAX_TROOP_LEVEL + 1> research_costs_;
 
     //升到level级所需时间 单位：小时
-    const int research_times_[MAX_TROOP_LEVEL + 1];
+    const std::array<int, MAX_TROOP_LEVEL + 1> research_times_;
 
     //升到level级所需实验室等级
-    const uchar laboratory_level_requireds_[MAX_TROOP_LEVEL + 1];
+    const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
 
 public:
     /*以下为升级时不改变的属性，初始化时直接赋值，由于是const直接设置为public允许外部读取*/
@@ -44,13 +45,12 @@ public:
         MELEE_SINGLE_GROUND = 0, // 近战单体地面-Barbarian,Giant
         MELEE_AOE_GROUND = 1, // 近战范围地面-WallBreaker
         RANGED_SINGLE_GROUND = 2, // 远程单体地面
-        RANGED_AOE_GROUND = 3, // 远程范围地面
+        RANGED_AOE_GROUND = 3, // 远程范围地面-Balloon
         RANGED_SINGLE_AIR_GROUND = 4, // 远程单体空中地面-Archer
-        RANGED_AOE_AIR_GROUND = 5 // 远程范围空中地面
+        RANGED_AOE_AIR_GROUND = 5 // 远程范围空中地面-Dragon
         //TODO:问一下机制：
-        //空中单位都不能攻击城墙?
-        //范围伤害的中心是什么？士兵or目标建筑？
-        //就近搜索的范围是多大？默认全图吗？
+        //空中单位都不能攻击城墙?-平时没必要，死亡溅射有可能。
+        //范围伤害的中心是什么？士兵or目标建筑？-平时目标中心，死亡溅射士兵中心。
     };
     //伤害类型(近战或远程,单体或范围,仅地面目标或地面和空中目标etc)
     const AttackType attack_type_;
@@ -68,7 +68,20 @@ public:
 
 public:
     // 构造函数相关
-    Troop();
+    Troop(int level,
+          cocos2d::Vec2 position,
+          PreferredTarget preferred_target,
+          AttackType attack_type,
+          uchar housing_space,
+          uchar barracks_level_required,
+          float movement_speed,
+          float attack_speed,
+          float range,
+          const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
+          const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
+          const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
+          const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
+          const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);
     virtual ~Troop() = default;
 
     // 初始化方法
@@ -91,7 +104,7 @@ public:
     virtual bool isAlive() const override{ return current_hitpoints_ > 0; }
 
     // 获取士兵类型（用于建筑选择目标，如是否为空中兵种）
-    virtual ArchTargetType getTargetType() const = 0;
+    virtual ArchTargetType getTargetType() const override = 0;
 
     /*以下为get&set*/
     // 获取当前生命值
@@ -106,8 +119,29 @@ public:
     // 设置等级
     void setLevel(int level);
 
+    // 升级
+    void levelUp() { setLevel(level_ + 1); }
+
     // 获取攻击伤害
     float getCurrentDamage() const { return damage_per_attacks_[level_]; }
+
+    /*以下为渲染相关*/
+	// 创建士兵实例
+	static Troop* createTroop(const std::string& picfilename,
+        int level,
+		cocos2d::Vec2 position,
+		PreferredTarget preferred_target,
+		AttackType attack_type,
+		uchar housing_space,
+		uchar barracks_level_required,
+		float movement_speed,
+		float attack_speed,
+		float range,
+		const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
+		const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
+		const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
+		const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
+		const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);
 };
 
 #endif // __TROOP_H__

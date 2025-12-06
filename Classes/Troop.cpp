@@ -1,35 +1,44 @@
 #include "Troop.h"
 #include "TroopAttackManager.h"
 
-Troop::Troop()
-    : level_(1)
+Troop::Troop(int level,
+             cocos2d::Vec2 position,
+             PreferredTarget preferred_target,
+             AttackType attack_type,
+             uchar housing_space,
+             uchar barracks_level_required,
+             float movement_speed,
+             float attack_speed,
+             float range,
+             const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
+             const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
+             const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
+             const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
+             const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds)
+    : level_(level)
+    , position_(position)
     , current_hitpoints_(0)
-    , preferred_target_(NONE)
-    , attack_type_(MELEE_SINGLE_GROUND)
-    , housing_space_(1)
-    , barracks_level_required_(1)
-    , movement_speed_(1.0f)
-    , attack_speed_(1.0f)
-    , range_(1.0f)
-    , damage_per_attacks_{0, 10, 12, 14, 16, 18}  // 示例数据
-    , hitpoints_{0, 100, 120, 140, 160, 180}     // 示例数据
-    , research_costs_{0, 100, 200, 300, 400, 500}
-    , research_times_{0, 1, 2, 3, 4, 5}
-    , laboratory_level_requireds_{0, 1, 2, 3, 4, 5}
+    , preferred_target_(preferred_target)
+    , attack_type_(attack_type)
+    , housing_space_(housing_space)
+    , barracks_level_required_(barracks_level_required)
+    , movement_speed_(movement_speed)
+    , attack_speed_(attack_speed)
+    , range_(range)
+    , damage_per_attacks_(damage_per_attacks)
+    , hitpoints_(hitpoints)
+    , research_costs_(research_costs)
+    , research_times_(research_times)
+    , laboratory_level_requireds_(laboratory_level_requireds)
 {
+    // 初始化当前生命值为最大生命值
+    current_hitpoints_ = hitpoints_[level_];
 }
 
 bool Troop::init() {
     if (!Sprite::init()) {
         return false;
     }
-
-    // 初始化当前生命值为最大生命值
-    current_hitpoints_ = getMaxHitpoints();
-
-    // 注册到攻击管理器
-    //TroopAttackManager::getInstance()->registerTroop(this);
-
     return true;
 }
 

@@ -82,7 +82,7 @@ list(APPEND GAME_HEADER
      Classes/DataHelper.h
      Classes/Troop.h
      Classes/UIcommon.h;
-
+     Classes/CalculateHelper.h
      Classes/TroopAttackManager.h
      Classes/TroopTargetManager.h
      Classes/ITroopTarget.h

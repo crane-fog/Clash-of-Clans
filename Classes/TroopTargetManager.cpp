@@ -1,6 +1,7 @@
 #include "TroopTargetManager.h"
 #include <algorithm>
 #include <limits>
+#include "CalculateHelper.h"
 
 TroopTargetManager* TroopTargetManager::getInstance() {
     static TroopTargetManager instance;
@@ -20,23 +21,51 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
     }
 }
 
-ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position, float damage_range,
-    Troop::PreferredTarget preferred_target) {
-    ITroopTarget* nearestTarget = nullptr;
-    float minDistance = std::numeric_limits<float>::max();
+ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& position, bool is_wall_included,
+    Troop::PreferredTarget preferred_target, float& min_distance) {
 
-    for (ITroopTarget* target : targets_) {
-        if (!target->isAlive()) continue;
+    ITroopTarget* nearest_target = nullptr;
+    min_distance = std::numeric_limits<float>::max();
 
-        // 如果指定了偏好类型，检查是否匹配
-        if (preferred_target != 255 && target->getTargetType() != preferred_target) continue;
-        float ignored_size = 0.0f;
-        float distance = position.distance(target->getCellPosition(ignored_size));
-        if (distance < minDistance) {
-            minDistance = distance;
-            nearestTarget = target;
+    // 第一遍：查找符合偏好类型的目标
+    if (preferred_target != Troop::NONE) {
+        for (ITroopTarget* target : targets_) {
+			if (target->getTargetType() == Troop::WALLT && !is_wall_included) continue;
+            if (!target->isAlive()) continue;
+            // 检查是否匹配偏好类型
+            if (target->getTargetType() != preferred_target) continue;
+
+            float size;
+            cocos2d::Vec2 target_pos = target->getCellPosition(size);
+            float distance = CalculateHelper::calculateDistanceToSquare(position, target_pos, size);
+
+            if (distance < min_distance) {
+                min_distance = distance;
+                nearest_target = target;
+            }
         }
     }
 
-    return nearestTarget;
+    // 如果找到了符合偏好类型的目标，返回它
+    if (nearest_target != nullptr) {
+        return nearest_target;
+    }
+
+    // 第二遍：查找所有目标中的最近者（包括不符合偏好类型的）
+    min_distance = std::numeric_limits<float>::max();
+    for (ITroopTarget* target : targets_) {
+        if (target->getTargetType() == Troop::WALLT && !is_wall_included) continue;
+        if (!target->isAlive()) continue;
+
+        float size;
+        cocos2d::Vec2 target_pos = target->getCellPosition(size);
+        float distance = CalculateHelper::calculateDistanceToSquare(position, target_pos, size);
+
+        if (distance < min_distance) {
+            min_distance = distance;
+            nearest_target = target;
+        }
+    }
+
+    return nearest_target;
 }
