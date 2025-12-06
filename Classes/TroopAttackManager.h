@@ -9,10 +9,10 @@ class TroopAttackManager {
 private:
     struct AttackEntry {
         Troop* troop;
-        float timeSinceLastAttack;
+        float time_since_last_attack_;
     };
 
-    std::vector<AttackEntry> attackQueue_;
+    std::vector<AttackEntry> attack_queue_;
 
     TroopAttackManager() = default;
     TroopAttackManager(const TroopAttackManager&) = delete;
