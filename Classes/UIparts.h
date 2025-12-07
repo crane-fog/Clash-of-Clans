@@ -99,7 +99,13 @@ private:
 
     
 public:
-
+    void startArchPlacement(const ShopItem& item);
+    void createCancelButton();
+    void createConfirmButton();
+    void confirmArchPlacement();
+    void removeCancelAndConfirmButtons();
+    void ShopPopup::playPlacementSuccessAnimation(Arch* arch);
+    void ShopPopup::cancelArchPlacement();
     friend class Arch;
 };
 

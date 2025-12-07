@@ -26,6 +26,13 @@ public:
     CREATE_FUNC(MainVillage);
     void onShopButtonClick(Ref* sender);
     bool addBuildingByNO(unsigned char no);
+public:
+    void MainVillage::createCancelButton(Arch* pendingArch_);
+    void MainVillage::createConfirmButton(Arch* pendingArch_);
+    void MainVillage::cancelBuildingPlacement(Arch* pendingArch_);
+    void MainVillage::confirmBuildingPlacement(Arch* pendingArch_);
+    void MainVillage::removeCancelAndConfirmButtons();
+    void MainVillage::playBuildingDropEffect(Arch* arch);
 };
 
 #endif // __MAIN_VILLAGE_SCENE_H__
