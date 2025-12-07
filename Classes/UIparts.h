@@ -26,6 +26,7 @@ public:
     virtual bool init() override;
 
     // 创建带背景的进度条
+    //title:进度条左边文字标签， barcolor:进度条颜色， iconPath：图标文件路径，percent：当前显示的百分比，x,y位置，UpperLimit:上限
     void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, float percent, float x, float y, int UpperLimit);
     // 更新指定进度条
     void updateProgressBar(int index, float percent);
