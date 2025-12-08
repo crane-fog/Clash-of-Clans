@@ -36,10 +36,6 @@ bool MainVillage::init()
         Arch::create(arch, base_map_);
     }
 
-    auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(0, 1));
-    if (!barbarian2)return false;
-    base_map_->sprites_.push_back(barbarian2);
-
     // 创建一个角色 Sprite
     auto barbarian_sprite = Sprite::create("Barbarian.png");
     if (!barbarian_sprite) {
@@ -51,6 +47,8 @@ bool MainVillage::init()
     // 这个 base_map_ 从 Village 基类继承来
     base_map_->sprites_.push_back(barbarian_sprite);
     base_map_->addChild(barbarian_sprite, 2);
+
+    Barbarian::create(base_map_, 1, Vec2(22, 22));
 
     // 获取屏幕尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();
