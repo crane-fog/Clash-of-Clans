@@ -2,14 +2,18 @@
 #define __TROOP_H__
 #include "cocos2d.h"
 #include "IArchTarget.h"
+#include "HealthBar.h"
+#include "CoordAdaptor.h"
+#include "BaseMap.h"
 #include <array>
 #define MAX_TROOP_LEVEL 5//目前做到5级
-class BaseMap;
 class Troop :public cocos2d::Sprite, public IArchTarget{
 protected:
     typedef unsigned char uchar;
     //被创建的场景地图
     BaseMap* base_map_;
+    //血条
+    HealthBar* health_bar_;
     //当前等级
     int level_;
     //当前网格逻辑位置
@@ -130,6 +134,7 @@ public:
     float getCurrentDamage() const { return damage_per_attacks_[level_]; }
 
     /*以下为渲染相关*/
+    cocos2d::Vec2 troopPosToPixel() { return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x + 1, position_.y)); }
 	// 创建士兵实例 由于Troop类不该能直接创建，改为由子类自行实现
 	/*static Troop* createTroop(const std::string& picfilename,
         int level,

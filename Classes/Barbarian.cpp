@@ -1,8 +1,6 @@
 #include "Barbarian.h"
 #include "TroopTargetManager.h"
 #include "TroopAttackManager.h"
-#include "BaseMap.h"
-#include "CoordAdaptor.h"
 Barbarian::Barbarian(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, MELEE_SINGLE_GROUND,1,1,2,1,0.4,
         std::array<float, MAX_TROOP_LEVEL + 1>({0,9,12,15,18,23}),
@@ -29,16 +27,7 @@ bool Barbarian::initWithFile(const std::string& filename) {
     if (!Troop::initWithFile(filename)) {
         return false;
     }
-
-    // 设置精灵大小
-    //this->setScale(1.5f);  // 根据需要调整大小
-
-    // 设置锚点为中心
-    this->setAnchorPoint(cocos2d::Vec2(0.5f, 0.5f));
-
-    setPosition(CoordAdaptor::cellToPixel(base_map_, position_));
-	base_map_->addChild(this, 3);//TODO:这个地方的层级需要调整，需要在自身x大于建筑、y小于建筑时显示在建筑之上，反之显示在建筑之下
-	//base_map_->sprites_.push_back(this);
+    //base_map_->sprites_.push_back(this);
     return true;
 }
 
