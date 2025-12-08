@@ -99,7 +99,18 @@ private:
 
     
 public:
+    //延迟调用商店面板，sec为延迟秒数
+    void showShopPopupWithDelay(float sec);
 
+    void startArchPlacement(const ShopItem& item);
+
+
+    void createCancelButton(Arch* pendingArch_);
+    void createConfirmButton(Arch* pendingArch_);
+    void cancelBuildingPlacement(Arch* pendingArch_);
+    void confirmBuildingPlacement(Arch* pendingArch_);
+    void removeCancelAndConfirmButtons();
+    void playBuildingDropEffect(Arch* arch);
     friend class Arch;
 };
 

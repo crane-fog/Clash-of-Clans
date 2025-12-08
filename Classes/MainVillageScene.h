@@ -26,6 +26,15 @@ public:
     CREATE_FUNC(MainVillage);
     void onShopButtonClick(Ref* sender);
     bool addBuildingByNO(unsigned char no);
+public:
+    void MainVillage::createCancelButton(Arch* pendingArch_);
+    void MainVillage::createConfirmButton(Arch* pendingArch_);
+    void MainVillage::cancelBuildingPlacement(Arch* pendingArch_);
+    void MainVillage::confirmBuildingPlacement(Arch* pendingArch_);
+    void MainVillage::removeCancelAndConfirmButtons(Arch* pendingArch_);
+    void MainVillage::playBuildingDropEffect(Arch* arch);
+    //延迟调用商店面板，sec为延迟秒数
+    void MainVillage::showShopPopupWithDelay(float sec);
 };
 
 #endif // __MAIN_VILLAGE_SCENE_H__

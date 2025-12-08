@@ -296,7 +296,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
                     this->close();
                     auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());
                     scene->addBuildingByNO(archNo);  
-
+                    //startArchPlacement(item);
 
                     // 添加购买反馈效果
                     auto scaleDown = ScaleTo::create(0.1f, 0.95f);
@@ -923,3 +923,4 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
         nullptr
     ));
 }
+

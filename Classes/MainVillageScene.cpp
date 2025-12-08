@@ -149,20 +149,165 @@ bool MainVillage::addBuildingByNO(unsigned char no)
     // 创建建筑到地图
     auto arch = Arch::create(data, base_map_);
     if (!arch) return false;
-
     base_map_->archs_.push_back(arch);
 
-    // 写入存档数据结构
-    arch_status_[data.x_][data.y_] = data;
+    // 展示取消按钮和确认按钮
+    createCancelButton(arch);
+    createConfirmButton(arch);
 
-    //  立即写入文件（可取消改为退出时写）
+    // 创建建筑预览（建筑会显示在默认位置）
+    arch->setOpacity(150);  // 设置为半透明
+    arch->setLocalZOrder(900);  // 设置在最上层
+   
+    // 立即显示放置提示和按钮
+    return true;
+}
+
+void MainVillage::createCancelButton(Arch* pendingArch_)
+{
+
+    // 创建取消按钮
+
+    auto cancelButton = ui::Button::create();
+    cancelButton->setTitleText("取消放置");
+    cancelButton->setTitleFontSize(24);
+    cancelButton->setTitleColor(Color3B::WHITE);
+    cancelButton->setContentSize(Size(170, 70));
+
+    // 创建一个纯色背景
+    auto buttonBg = LayerColor::create(Color4B(200, 50, 50,200));  // 纯红色背景，透明度255
+    buttonBg->setContentSize(cancelButton->getContentSize());  // 设置背景大小与按钮大小一致
+    buttonBg->setPosition(Vec2(0, 0));  // 背景位置设置为按钮的位置
+    buttonBg->setName("CANCEL_BUTTONBG");
+
+    // 将背景添加到按钮
+    cancelButton->addChild(buttonBg, -1);  // -1 确保背景在按钮下面
+
+    cancelButton->setPosition(Vec2(10,10));
+    cancelButton->setColor(Color3B::BLACK);
+    cancelButton->setName("CANCEL_BUTTON");
+    cancelButton->setGlobalZOrder(900);
+
+    cancelButton->addTouchEventListener([this,pendingArch_](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->cancelBuildingPlacement(pendingArch_);
+        }
+        });
+
+    pendingArch_->addChild(cancelButton,900);
+}
+
+void MainVillage::createConfirmButton(Arch* pendingArch_)
+{
+
+    // 创建确认按钮
+    auto confirmButton = ui::Button::create();
+    confirmButton->setTitleText("确认放置");
+    confirmButton->setTitleFontSize(24);
+    confirmButton->setTitleColor(Color3B::WHITE);
+    confirmButton->setContentSize(Size(170, 70));
+    // 创建一个纯色背景
+    auto buttonBg = LayerColor::create(Color4B(50, 200, 50, 200));  // 纯红色背景，透明度255
+    buttonBg->setContentSize(confirmButton->getContentSize());  // 设置背景大小与按钮大小一致
+    buttonBg->setPosition(Vec2(0, 0));  // 背景位置设置为按钮的位置
+    buttonBg->setName("CONFIRML_BUTTONBG");
+    // 将背景添加到按钮
+    confirmButton->addChild(buttonBg, -1);  // -1 确保背景在按钮下面
+    confirmButton->setPosition(Vec2(200,10 ));
+    confirmButton->setColor(Color3B::BLACK);
+    confirmButton->setName("CONFIRM_BUTTON");
+    confirmButton->setGlobalZOrder(900);
+
+    confirmButton->addTouchEventListener([this, pendingArch_](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->confirmBuildingPlacement(pendingArch_);
+        }
+        });
+
+    pendingArch_->addChild(confirmButton, 900);
+}
+
+void MainVillage::cancelBuildingPlacement(Arch* pendingArch_)
+{
+    if (!pendingArch_) return;
+    // 从base_map_->archs_中移除
+    auto& arr = base_map_->archs_;
+    arr.erase(std::remove(arr.begin(), arr.end(), pendingArch_), arr.end());
+    // 移除放置相关按钮
+    removeCancelAndConfirmButtons(pendingArch_);
+    // 删除已创建的建筑
+    pendingArch_->removeFromParent();
+    pendingArch_ = nullptr;
+
+    // 显示提示并返回商店面板
+    CCLOG("建筑放置已取消，返回商店面板");
+    showShopPopupWithDelay(1.0f);
+}
+
+void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
+{
+    if (!pendingArch_) return;
+    // 清理UI相关的按钮
+    removeCancelAndConfirmButtons(pendingArch_);
+    // 清理拖动状态
+    pendingArch_->is_dragging_ = false;  
+    // 使建筑恢复正常状态
+    pendingArch_->setOpacity(255);  // 恢复透明度
+    pendingArch_->setLocalZOrder(2);  // 恢复正常层级
+
+    // 播放建筑落地效果
+    playBuildingDropEffect(pendingArch_);
+    // 将建筑加入存档数据结构
+    arch_status_[pendingArch_->Arch::getx(pendingArch_)][pendingArch_->Arch::gety(pendingArch_)] = ArchData(pendingArch_);
+
+    // 写入存档数据
     DataHelper::writeArchData(
         kMainVillageDataFile,
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()),
         arch_status_
     );
 
-    CCLOG("建筑添加成功 NO=%d 放置在[0,0]并写入存档", no);
-    return true;
+    
+
+    // 重新回到商店界面
+    CCLOG("建筑放置成功");
+
+}
+
+void MainVillage::removeCancelAndConfirmButtons(Arch* pendingArch_)
+{
+    pendingArch_->removeChildByName("CANCEL_BUTTON");
+    pendingArch_->removeChildByName("CANCEL_BUTTONBG");
+    pendingArch_->removeChildByName("CONFIRM_BUTTON");
+    pendingArch_->removeChildByName("CONFIRM_BUTTONBG");
+
+}
+
+void MainVillage::playBuildingDropEffect(Arch* arch)
+{
+    if (!arch) return;
+
+    // 创建简单的落地效果，向下掉落并恢复透明度
+    auto moveAction1 = MoveBy::create(0.5f, Vec2(0, -30));  
+    auto moveAction2 = MoveBy::create(0.2f, Vec2(0, 40)); 
+    auto moveAction3 = MoveBy::create(0.1f, Vec2(0, -10));  
+    auto fadeIn = FadeTo::create(0.3f, 255);  // 恢复透明度
+
+    // 组合动画
+    auto sequence = Sequence::create(moveAction1, moveAction2, moveAction3, fadeIn, nullptr);
+    arch->runAction(sequence);
+}
+
+void MainVillage::showShopPopupWithDelay(float sec)
+{
+    // 创建商店面板的延迟回调函数
+    this->scheduleOnce([this](float dt) {
+        // 创建商店面板
+        auto shopPopup = ShopPopup::create();  // 创建商店面板
+        if (shopPopup) {
+            shopPopup->setGlobalZOrder(9999);  // 确保商店面板显示在最上层
+            shopPopup->show(this);  // 将商店面板显示到当前场景（this 即为当前场景）
+        }
+        }, sec, "show_shop_popup_key");  // 延迟 2 秒调用
 }
 
