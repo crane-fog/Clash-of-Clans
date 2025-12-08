@@ -31,10 +31,11 @@ bool Arch::initWithFile(const std::string& filename)
     setAnchorPoint(Vec2(0.5f, 0.4f));
     unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
     float scale = 1.5f * CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size, 0)).x / this->getContentSize().width;
+    Vec2 middle_pos = Vec2(x_ + size / 2.0f, y_ + size / 2.0f);
     setScale(scale);
-    setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+    setPosition(CoordAdaptor::cellToPixel(base_map_, middle_pos));
     base_map_->archs_.push_back(this);
-    base_map_->addChild(this, 2);
+    base_map_->addChild(this, CoordAdaptor::calcOrder(middle_pos));
 
     // 添加触摸监听
     // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
@@ -56,7 +57,7 @@ void Arch::createHighlight()
     if (highlight_node_) return;
 
     highlight_node_ = Node::create();
-    base_map_->addChild(highlight_node_, 1); // 层级低于建筑
+    base_map_->addChild(highlight_node_, 0); // 层级低于建筑
 
     unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
     for (int i = 0; i < size; ++i) {
@@ -153,7 +154,6 @@ bool Arch::onTouchDown(Touch* touch, Event* event)
 
 void Arch::onTouchUp(Touch* touch, Event* event)
 {
-    this->setLocalZOrder(2); // 恢复层级
     base_map_->setInputEnabled(true); // 恢复地图拖动
     removeHighlight();
     if (!is_dragging_) {
@@ -170,6 +170,8 @@ void Arch::onTouchUp(Touch* touch, Event* event)
             y_ = original_y_;
             this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + my_size / 2.0f, y_ + my_size / 2.0f)));
         }
+        unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+        this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f))); // 恢复并设置新层级
 
         is_dragging_ = false;
     }
