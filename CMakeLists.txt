@@ -82,7 +82,8 @@ list(APPEND GAME_HEADER
      Classes/Arch.h
      Classes/DataHelper.h
      Classes/Troop.h
-     Classes/UIcommon.h;
+     Classes/UIcommon.h
+     Classes/HealthBar.h
      Classes/CalculateHelper.h
      Classes/TroopAttackManager.h
      Classes/TroopTargetManager.h
