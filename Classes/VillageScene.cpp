@@ -19,7 +19,8 @@ bool Village::init()
     this->setContentSize(base_map_->getContentSize());
 
     // 创建UI层（固定UI层）
-    ui_layer_ = UI::create();
+    ui_layer_ = UIBars::create();
+
     if (!ui_layer_) {
         return false;
     }

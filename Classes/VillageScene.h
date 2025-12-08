@@ -9,7 +9,7 @@ class Village : public cocos2d::Scene {
 protected:
     // 用于所有场景中非固定对象的容器，允许界面整体缩放、移动
     BaseMap* base_map_;
-    UI* ui_layer_;  // 在基类中添加UI层
+    UIBars* ui_layer_;  // 在基类中添加UI层
 
 public:
     // 初始化，当对象被创建时被自动调用

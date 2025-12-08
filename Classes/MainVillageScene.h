@@ -25,7 +25,7 @@ public:
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(MainVillage);
     void onShopButtonClick(Ref* sender);
-    bool addBuildingByNO(unsigned char no);
+    bool addBuildingByNO(unsigned char no, int price);
 public:
     void MainVillage::createCancelButton(Arch* pendingArch_);
     void MainVillage::createConfirmButton(Arch* pendingArch_);
@@ -35,6 +35,22 @@ public:
     void MainVillage::playBuildingDropEffect(Arch* arch);
     //延迟调用商店面板，sec为延迟秒数
     void MainVillage::showShopPopupWithDelay(float sec);
+    //获取金币数量
+    unsigned long long getGold(unsigned long long gold_) {
+        return gold_;
+    }
+    //获取圣水数量
+    unsigned long long getElixir(unsigned long long elixir_) {
+        return elixir_;
+    }
+    //更新金币数量
+    void renewGold(unsigned long long num) {
+        gold_ = num;
+    }
+    //更新圣水数量
+    void renewElixir(unsigned long long num) {
+        gold_ = num;
+    }
 };
 
 #endif // __MAIN_VILLAGE_SCENE_H__

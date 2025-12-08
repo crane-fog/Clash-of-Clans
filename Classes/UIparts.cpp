@@ -4,9 +4,13 @@
 USING_NS_CC;
 using namespace ui;
 
-bool UI::init()
+double UIBars::goldSum =5000.0;  
+
+
+bool UIBars::init()
 {
-    if (!Scene::init())
+
+    if (!Node::init())
     {
         return false;
     }
@@ -16,8 +20,8 @@ bool UI::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 创建多个进度条:金币和圣水
-    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", 50.0f, visibleSize.width - 500, visibleSize.height - 50, 100);
-    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", 100.0f, visibleSize.width - 500, visibleSize.height - 150, 100);
+    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", goldSum, visibleSize.width - 500, visibleSize.height - 50, 5000.0);
+    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", goldSum, visibleSize.width - 500, visibleSize.height - 150, 5000.0);
 
 
     // 创建返回按钮 - 固定在左上角
@@ -48,11 +52,11 @@ bool UI::init()
     this->addChild(button);
     return true;
 }
-void UI::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, float percent, float x, float y, int UpperLimit)
+void UIBars::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, double nowAmount, float x, float y,double UpperLimit)
 {
     ProgressBarData data;
     data.title = title;
-
+    float percent = nowAmount/UpperLimit*100;
     // 创建图像图标 
     data.icon = Sprite::create(iconPath); // 图标图片
     if (data.icon) {
@@ -86,7 +90,7 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
     }
 
     // 创建百分比标签
-    data.percentLabel = Label::createWithSystemFont(StringUtils::format("%f%", percent * UpperLimit), "Arial", 30);
+    data.percentLabel = Label::createWithSystemFont(StringUtils::format("%f%", nowAmount), "Arial", 30);
     data.percentLabel->setPosition(Vec2(x + 150, y - 5));
     data.percentLabel->setTextColor(Color4B::BLACK);
     this->addChild(data.percentLabel, 2);
@@ -95,24 +99,14 @@ void UI::createProgressBarWithBackground(const std::string& title, const cocos2d
     progressBars_.push_back(data);
 }
 
-void UI::updateProgressBar(int index, float percent)
-{
-    if (index >= 0 && index < progressBars_.size()) {
-        auto& data = progressBars_[index];
-        if (data.loadingBar && data.percentLabel) {
-            data.loadingBar->setPercent(percent);
-            data.percentLabel->setString(StringUtils::format("%.0f%%", percent));
-        }
-    }
-}
 
-void UI::updateProgressBar(const std::string& title, float percent)
+void UIBars::updateProgressBar(const std::string& title, float percent,double now)
 {
     for (auto& data : progressBars_) {
         if (data.title == title) {
             if (data.loadingBar && data.percentLabel) {
                 data.loadingBar->setPercent(percent);
-                data.percentLabel->setString(StringUtils::format("%.0f%%", percent));
+                data.percentLabel->setString(StringUtils::format("%f%", now));
             }
             break;
         }
