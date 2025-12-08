@@ -1,6 +1,6 @@
 #include "Troop.h"
 #include "TroopAttackManager.h"
-#include "BaseMap.h"
+
 Troop::Troop(BaseMap* base_map,
              int level,
              cocos2d::Vec2 position,
@@ -38,7 +38,6 @@ Troop::Troop(BaseMap* base_map,
     }
     // 初始化当前生命值为最大生命值
     current_hitpoints_ = hitpoints_[level_];
-    health_bar_ = nullptr;
 }
 //TODO:所有子类都需要实现init以及create
 // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池 CREATE_FUNC(<Typename>);
@@ -55,29 +54,6 @@ bool Troop::initWithFile(const std::string& filename) {
     if (!Sprite::initWithFile(filename)) {
         return false;
     }
-	// 创建并添加血条
-    health_bar_ = HealthBar::create(hitpoints_[level_]);
-    if(health_bar_ == nullptr) {
-        return false;
-	}
-    this->addChild(health_bar_);
-    // 设置精灵大小
-    //this->setScale(1.5f);  // 根据需要调整大小
-
-    // 设置锚点为底部中心
-    this->setAnchorPoint(cocos2d::Vec2(0.5, 0));
-
-    this->setPosition(troopPosToPixel());
-    base_map_->addChild(this, 3);//TODO:这个地方的层级需要调整
-    //需要在自身x大于建筑、y小于建筑时显示在建筑之上，反之显示在建筑之下
-
-
-    
-    // 设置血条在士兵头顶正中心
-    float offset_y = this->getContentSize().height + 1.0f; // 2 是额外间距
-    float offset_x = this->getContentSize().width/2;
-    health_bar_->setPosition(cocos2d::Vec2(offset_x, offset_y));
-
     return true;
 }
 
@@ -90,12 +66,11 @@ void Troop::takeDamage(float damage) {
 	if (!isAlive()) return; // 已经死亡的部队不能再受伤
     if (damage < 0) return; // 负伤害无效
     current_hitpoints_ -= damage;
-	health_bar_->takeDamage(damage);
     if (current_hitpoints_ <= 0) {
         current_hitpoints_ = 0;
-        health_bar_->setVisible(false);
 		// TODO: 死亡处理 墓碑显示、禁用攻击与移动等
     }
+	//血条显示、更新等，应当是需要用cocos2d::ui::LoadingBar来实现，然后将它挂靠到Troop的子节点上
 }
 
 void Troop::setLevel(int level) {
