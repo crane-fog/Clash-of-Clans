@@ -104,6 +104,12 @@ public:
     void showArchPanel(Arch* arch);
     void closeArchPanel();
     std::string getArchNameFromEnum(unsigned char archNo);
+    UI getx(Arch * data) {
+        return data->x_;
+    }
+    UI gety(Arch* data) {
+        return this->y_;
+    }
     friend class ShopPopup;
 
     friend struct ArchData;
