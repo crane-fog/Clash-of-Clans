@@ -125,7 +125,7 @@ void MainVillage::onShopButtonClick(Ref* sender)
 }
 
 // 通过NO新建建筑并加入存档 + 加入场景
-bool MainVillage::addBuildingByNO(unsigned char no)
+bool MainVillage::addBuildingByNO(unsigned char no,int price)
 {
     // 默认新建筑等级为1
     unsigned char level = 1;
@@ -174,7 +174,7 @@ void MainVillage::createCancelButton(Arch* pendingArch_)
     cancelButton->setTitleText("取消放置");
     cancelButton->setTitleFontSize(24);
     cancelButton->setTitleColor(Color3B::WHITE);
-    cancelButton->setContentSize(Size(170, 70));
+    cancelButton->setContentSize(Size(300, 200));
 
     // 创建一个纯色背景
     auto buttonBg = LayerColor::create(Color4B(200, 50, 50,200));  // 纯红色背景，透明度255
@@ -188,7 +188,7 @@ void MainVillage::createCancelButton(Arch* pendingArch_)
     cancelButton->setPosition(Vec2(10,10));
     cancelButton->setColor(Color3B::BLACK);
     cancelButton->setName("CANCEL_BUTTON");
-    cancelButton->setGlobalZOrder(900);
+
 
     cancelButton->addTouchEventListener([this,pendingArch_](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
@@ -207,7 +207,7 @@ void MainVillage::createConfirmButton(Arch* pendingArch_)
     confirmButton->setTitleText("确认放置");
     confirmButton->setTitleFontSize(24);
     confirmButton->setTitleColor(Color3B::WHITE);
-    confirmButton->setContentSize(Size(170, 70));
+    confirmButton->setContentSize(Size(300,200));
     // 创建一个纯色背景
     auto buttonBg = LayerColor::create(Color4B(50, 200, 50, 200));  // 纯红色背景，透明度255
     buttonBg->setContentSize(confirmButton->getContentSize());  // 设置背景大小与按钮大小一致
@@ -218,7 +218,7 @@ void MainVillage::createConfirmButton(Arch* pendingArch_)
     confirmButton->setPosition(Vec2(200,10 ));
     confirmButton->setColor(Color3B::BLACK);
     confirmButton->setName("CONFIRM_BUTTON");
-    confirmButton->setGlobalZOrder(900);
+
 
     confirmButton->addTouchEventListener([this, pendingArch_](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
@@ -289,15 +289,32 @@ void MainVillage::playBuildingDropEffect(Arch* arch)
 {
     if (!arch) return;
 
-    // 创建简单的落地效果，向下掉落并恢复透明度
-    auto moveAction1 = MoveBy::create(0.5f, Vec2(0, -30));  
-    auto moveAction2 = MoveBy::create(0.2f, Vec2(0, 40)); 
-    auto moveAction3 = MoveBy::create(0.1f, Vec2(0, -10));  
-    auto fadeIn = FadeTo::create(0.3f, 255);  // 恢复透明度
+    // 创建发光效果，可以使用淡入淡出的效果
+    auto fadeIn = FadeTo::create(0.5f, 255);  // 使建筑恢复透明度
 
-    // 组合动画
-    auto sequence = Sequence::create(moveAction1, moveAction2, moveAction3, fadeIn, nullptr);
-    arch->runAction(sequence);
+
+    // 添加光晕效果（模拟发光）
+    auto glowEffect = cocos2d::Sprite::create();  // 创建一个光晕精灵
+    glowEffect->setTexture("flash.png");  
+    glowEffect->setScale(0.1f);  
+    glowEffect->setOpacity(50);  // 初始透明度较低
+    glowEffect->setPosition(Vec2(arch->getPosition().x, arch->getPosition().y-40));  // 设置光晕的位置与建筑相同
+
+    arch->getParent()->addChild(glowEffect, arch->getLocalZOrder() - 1);  // 将光晕放到建筑的下面
+
+    // 创建光晕的扩散效果
+    auto glowScaleUp = ScaleTo::create(0.4f,0.4f);  // 光晕变大
+    auto glowFadeIn = FadeTo::create(0.3f, 255);  // 光晕逐渐变亮
+    // 添加旋转效果
+    auto glowRotate = RotateBy::create(0.6f, 360);  // 光晕旋转360度
+    // 执行光晕扩散和发光的动画
+    // 在动画结束时移除光晕
+    auto removeGlow = CallFunc::create([glowEffect]() {
+        glowEffect->removeFromParent();  // 移除光晕精灵
+        });
+    auto glowSequence = Sequence::create(glowScaleUp, glowFadeIn,glowRotate,removeGlow,fadeIn, nullptr);
+    glowEffect->runAction(glowSequence);
+
 }
 
 void MainVillage::showShopPopupWithDelay(float sec)

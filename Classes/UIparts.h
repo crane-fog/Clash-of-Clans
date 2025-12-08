@@ -17,25 +17,30 @@ struct ProgressBarData {
 };
 
 // UI部分基类
-class UI : public cocos2d::Scene {
+class UIBars : public cocos2d::Node {
 private:
     std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
 
+
 public:
+
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
-
+    static double goldSum ;
+    static void setgoldValue(double value) {
+        goldSum = value;  // 修改静态变量的值
+    }
     // 创建带背景的进度条
     //title:进度条左边文字标签， barcolor:进度条颜色， iconPath：图标文件路径，percent：当前显示的百分比，x,y位置，UpperLimit:上限
-    void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, float percent, float x, float y, int UpperLimit);
+    void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, double nowAmount, float x, float y, double UpperLimit);
     // 更新指定进度条
-    void updateProgressBar(int index, float percent);
-    void updateProgressBar(const std::string& title, float percent);
+    void updateProgressBar(const std::string& title, float percent,double now);
 
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
-    CREATE_FUNC(UI);
+    CREATE_FUNC(UIBars);
 
 };
+
 struct ShopItem {
     int id;
     std::string name;
@@ -99,18 +104,7 @@ private:
 
     
 public:
-    //延迟调用商店面板，sec为延迟秒数
-    void showShopPopupWithDelay(float sec);
 
-    void startArchPlacement(const ShopItem& item);
-
-
-    void createCancelButton(Arch* pendingArch_);
-    void createConfirmButton(Arch* pendingArch_);
-    void cancelBuildingPlacement(Arch* pendingArch_);
-    void confirmBuildingPlacement(Arch* pendingArch_);
-    void removeCancelAndConfirmButtons();
-    void playBuildingDropEffect(Arch* arch);
     friend class Arch;
 };
 
