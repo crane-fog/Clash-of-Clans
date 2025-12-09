@@ -37,7 +37,7 @@ struct ArchData {
 class Arch : public cocos2d::Sprite, public ITroopTarget {
     typedef unsigned int UI;
     typedef unsigned char UC;
-private:
+protected:
     // 建筑种类的编号
     UC no_;
     // 建筑等级
@@ -111,6 +111,7 @@ public:
 };
 
 class Wall : public Arch {
+    std::vector<cocos2d::Node*> connection_nodes_;
 public:
     Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void updateWall(bool is_moving = false) override;

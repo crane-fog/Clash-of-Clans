@@ -187,8 +187,11 @@ void Arch::onTouchUp(Touch* touch, Event* event)
         }
         unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
         this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f))); // 恢复并设置新层级
-        updateWall();
         is_dragging_ = false;
+
+        for (auto arch : base_map_->archs_) {
+            if (arch->getTargetType() == WALLT) arch->updateWall();
+        }
     }
 }
 
@@ -348,5 +351,72 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
 
 void Wall::updateWall(bool is_moving)
 {
+    // 清理旧的连接节点
+    for (auto node : connection_nodes_) {
+        if (node) node->removeFromParent();
+    }
+    connection_nodes_.clear();
 
+    if (is_moving) return;
+
+    // 创建副本避免冲突
+    std::vector<Arch*> archs_copy = base_map_->archs_;
+
+    for (auto arch : archs_copy) {
+        if (arch->getTargetType() != WALLT) continue;
+        if (arch == this) continue;
+
+        Wall* other = static_cast<Wall*>(arch);
+        int dx = abs(other->x_ - x_);
+        int dy = abs(other->y_ - y_);
+
+        if (dx + dy == 1) {
+            int my_order = this->getLocalZOrder();
+            int other_order = other->getLocalZOrder();
+
+            bool i_am_owner = false;
+            if (my_order < other_order) {
+                i_am_owner = true;
+            }
+            else if (my_order == other_order) {
+                if (this < other) i_am_owner = true;
+            }
+
+            if (i_am_owner) {
+                auto connection_node = Node::create();
+
+                Vec2 mid_cell((x_ + other->x_) / 2.0f + 0.5f, (y_ + other->y_) / 2.0f + 0.5f);
+                Vec2 my_cell(x_ + 0.5f, y_ + 0.5f);
+
+                Vec2 mid_pixel = CoordAdaptor::cellToPixel(base_map_, mid_cell);
+                Vec2 my_pixel = CoordAdaptor::cellToPixel(base_map_, my_cell);
+
+                float scale = this->getScale();
+                if (scale == 0.0f) scale = 1.0f;
+
+                Vec2 local_pos = (mid_pixel - my_pixel) / scale;
+
+                Size size = this->getContentSize();
+                Vec2 anchor_offset(size.width * 0.5f, size.height * 0.4f);
+
+                connection_node->setPosition(anchor_offset + local_pos);
+
+                this->addChild(connection_node);
+                connection_nodes_.push_back(connection_node);
+
+                Vec2 dir(static_cast<float>(other->x_ - x_), static_cast<float>(other->y_ - y_));
+                Vec2 pixel_delta = CoordAdaptor::cellDeltaToPixelDelta(base_map_, dir);
+                Vec2 local_delta = pixel_delta / scale;
+
+                for (int k = 1; k <= 3; ++k) {
+                    auto sprite = Sprite::create(kArchInfo.at(WALL)[level_ - 1].image_);
+                    if (sprite) {
+                        sprite->setScale(0.6f);
+                        sprite->setPosition(local_delta * (k / 4.0f - 0.5f));
+                        connection_node->addChild(sprite);
+                    }
+                }
+            }
+        }
+    }
 }
