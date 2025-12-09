@@ -60,24 +60,24 @@ bool Troop::initWithFile(const std::string& filename) {
     if(health_bar_ == nullptr) {
         return false;
 	}
-    this->addChild(health_bar_);
+    this->addChild(health_bar_,20);
     // 设置精灵大小
     //this->setScale(1.5f);  // 根据需要调整大小
 
     // 设置锚点为底部中心
     this->setAnchorPoint(cocos2d::Vec2(0.5, 0));
 
-    this->setPosition(troopPosToPixel());
-    base_map_->addChild(this, 3);//TODO:这个地方的层级需要调整
-    //需要在自身x大于建筑、y小于建筑时显示在建筑之上，反之显示在建筑之下
+    this->setPosition(getPixelPosition());
+    base_map_->addChild(this, CoordAdaptor::calcOrder(position_));
 
 
     
     // 设置血条在士兵头顶正中心
-    float offset_y = this->getContentSize().height + 1.0f; // 2 是额外间距
+    float offset_y = this->getContentSize().height + 1.0f; // 1 是额外间距
     float offset_x = this->getContentSize().width/2;
     health_bar_->setPosition(cocos2d::Vec2(offset_x, offset_y));
 
+    this->scheduleUpdate();
     return true;
 }
 
@@ -103,5 +103,43 @@ void Troop::setLevel(int level) {
         level_ = level;
         // 升级时恢复满血
         current_hitpoints_ = getMaxHitpoints();
+    }
+}
+
+bool Troop::setCellPosition(const cocos2d::Vec2& position) {
+    if (position.x >= 0 && position.x <= 44 && position.y >= 0 && position.y <= 44) {
+        // 位置在合法范围内
+        position_ = position;
+        return true;
+    }
+    else {
+        // 位置在非法范围内，设置到最近的边框上
+        cocos2d::Vec2 newPos = position;
+
+        // 限制x坐标在[0, 44]范围内
+        if (newPos.x < 0) {
+            newPos.x = 0;
+        }
+        else if (newPos.x > 44) {
+            newPos.x = 44;
+        }
+
+        // 限制y坐标在[0, 44]范围内
+        if (newPos.y < 0) {
+            newPos.y = 0;
+        }
+        else if (newPos.y > 44) {
+            newPos.y = 44;
+        }
+
+        position_ = newPos;
+        return false;
+    }
+}
+
+void Troop::update(float dt) {
+    int currentZ = CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_, getPosition()));
+    if (currentZ != this->getLocalZOrder()) {
+        this->setLocalZOrder(currentZ);
     }
 }
