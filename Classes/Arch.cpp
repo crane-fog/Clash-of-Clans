@@ -159,7 +159,6 @@ bool Arch::onTouchDown(Touch* touch, Event* event)
         touch_start_pos_ = touch->getLocation();
         original_x_ = x_;
         original_y_ = y_;
-        this->setLocalZOrder(100); // 拖动时置顶
         base_map_->setInputEnabled(false); // 临时禁用地图拖动
         return true;
     }
@@ -200,6 +199,7 @@ void Arch::onTouchMove(Touch* touch, Event* event)
     if (touch->getLocation().distance(touch_start_pos_) > 10.0f) {
         if (!is_dragging_) {
             is_dragging_ = true;
+            this->setLocalZOrder(100); // 开始拖动时置顶
             if (this->no_ == WALL) {
                 updateSurroundingWalls(x_, y_, true);
                 this->updateWall(nullptr, true);
