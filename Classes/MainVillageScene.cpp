@@ -119,7 +119,7 @@ void MainVillage::onShopButtonClick(Ref* sender)
     }
 }
 
-// 通过NO新建建筑并加入存档 + 加入场景
+// 通过商店新建建筑并加入存档 + 加入场景
 bool MainVillage::addBuildingByNO(unsigned char no,int price)
 {
     // 默认新建筑等级为1
