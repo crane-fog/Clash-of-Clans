@@ -11,7 +11,13 @@ current_hp_(a->current_hp_), current_capacity_(a->current_capacity_) {}
 
 Arch* Arch::create(const ArchData& data, BaseMap* base_map)
 {
-    Arch* pRet = new(std::nothrow) Arch(data, base_map);
+    Arch* pRet;
+    if (data.no_ == WALL) {
+        pRet = new(std::nothrow) Wall(data, base_map);
+    }
+    else {
+        pRet = new(std::nothrow) Arch(data, base_map);
+    }
     if (pRet && pRet->initWithFile(kArchInfo.at(data.no_)[data.level_ - 1].image_)) {
         pRet->autorelease();
         return pRet;
@@ -37,6 +43,16 @@ bool Arch::initWithFile(const std::string& filename)
     base_map_->archs_.push_back(this);
     base_map_->addChild(this, CoordAdaptor::calcOrder(middle_pos));
 
+    return true;
+}
+
+// todo:规范化各类中的init和onEnter
+void Arch::onEnter()
+{
+    Sprite::onEnter();
+
+    updateWall();
+
     // 添加触摸监听
     // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
     auto listener = EventListenerTouchOneByOne::create();
@@ -48,8 +64,6 @@ bool Arch::initWithFile(const std::string& filename)
     listener->onTouchCancelled = CC_CALLBACK_2(Arch::onTouchCancel, this);
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-
-    return true;
 }
 
 void Arch::createHighlight()
@@ -147,6 +161,7 @@ bool Arch::onTouchDown(Touch* touch, Event* event)
         original_y_ = y_;
         this->setLocalZOrder(100); // 拖动时置顶
         base_map_->setInputEnabled(false); // 临时禁用地图拖动
+        updateWall(true);
         return true;
     }
     return false;
@@ -172,7 +187,7 @@ void Arch::onTouchUp(Touch* touch, Event* event)
         }
         unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
         this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f))); // 恢复并设置新层级
-
+        updateWall();
         is_dragging_ = false;
     }
 }
@@ -222,7 +237,8 @@ void Arch::onTouchMove(Touch* touch, Event* event)
 
 void Arch::onTouchCancel(Touch* touch, Event* event)
 {
-    this->setLocalZOrder(2);
+    unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+    this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
     base_map_->setInputEnabled(true);
     is_dragging_ = false;
     removeHighlight();
@@ -328,4 +344,9 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
         case ARCHER_TOWER: return "箭塔";
         default: return "未知建筑";
     }
+}
+
+void Wall::updateWall(bool is_moving)
+{
+
 }

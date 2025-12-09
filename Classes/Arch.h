@@ -30,17 +30,8 @@ struct ArchData {
 
     ArchData() = default;
     explicit ArchData(Arch*a);
-    explicit ArchData(UC no, UC lv = 1) {
-        no_ = no;
-        level_ = lv;
-
-        // 默认出生在左下角 (可改为中心或随机)
-        x_ = 1;
-        y_ = 1;
-
-        current_hp_ = kArchInfo.at(no)[lv].hp_;
-        current_capacity_ = kArchInfo.at(no)[lv].max_capacity_;
-    }
+    explicit ArchData(UC no, UC lv = 1) : no_(no), level_(lv), x_(1), y_(1),
+        current_hp_(kArchInfo.at(no)[lv].hp_), current_capacity_(kArchInfo.at(no)[lv].max_capacity_) {}
 };
 
 class Arch : public cocos2d::Sprite, public ITroopTarget {
@@ -89,6 +80,10 @@ public:
         current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
     static Arch* create(const ArchData& data, BaseMap* base_map);
     virtual bool initWithFile(const std::string& filename) override;
+    virtual void onEnter() override;
+
+    // 为城墙状态更新预留的接口
+    virtual void updateWall(bool is_moving = false) {}
 
     // ITroopTarget 接口实现
     virtual void takeDamage(float damage) override { current_hp_ -= static_cast<UI>(damage); }
@@ -113,6 +108,12 @@ public:
     friend class ShopPopup;
 
     friend struct ArchData;
+};
+
+class Wall : public Arch {
+public:
+    Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void updateWall(bool is_moving = false) override;
 };
 
 #endif // __ARCH_H__
