@@ -36,22 +36,22 @@ bool MainVillage::init()
         Arch::create(arch, base_map_);
     }
 
-    auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(0, 1));
+    auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(22, 22));
     if (!barbarian2)return false;
     barbarian2->takeDamage(25);
     base_map_->sprites_.push_back(barbarian2);
 
-    // 创建一个角色 Sprite
-    auto barbarian_sprite = Sprite::create("Barbarian.png");
-    if (!barbarian_sprite) {
-        return false;
-    }
-    // 将锚点设置为底部中心
-    barbarian_sprite->setAnchorPoint(Vec2(0.5, 0));
-    barbarian_sprite->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(0, 0)));
-    // 这个 base_map_ 从 Village 基类继承来
-    base_map_->sprites_.push_back(barbarian_sprite);
-    base_map_->addChild(barbarian_sprite, 2);
+    //// 创建一个角色 Sprite
+    //auto barbarian_sprite = Sprite::create("Barbarian.png");
+    //if (!barbarian_sprite) {
+    //    return false;
+    //}
+    //// 将锚点设置为底部中心
+    //barbarian_sprite->setAnchorPoint(Vec2(0.5, 0));
+    //barbarian_sprite->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(0, 0)));
+    //// 这个 base_map_ 从 Village 基类继承来
+    //base_map_->sprites_.push_back(barbarian_sprite);
+    //base_map_->addChild(barbarian_sprite, 2);
 
     // 获取屏幕尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();
@@ -82,12 +82,36 @@ void MainVillage::onEnter()
 {
     Village::onEnter();
 
-    // 让角色动
-    auto move_by1 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(44, 0)));
-    auto move_by2 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, 44)));
-    auto move_by3 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(-44, 0)));
-    auto move_by4 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, -44)));
-    auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
+    //// 让角色动
+    //auto move_by1 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(44, 0)));
+    //auto move_by2 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, 44)));
+    //auto move_by3 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(-44, 0)));
+    //auto move_by4 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, -44)));
+    //auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
+    
+    float moveDuration = 5.0f;  // 移动所需时间（秒）
+    float delayTime = 2.0f;  // 停顿时间（秒）
+
+    // 构建动作序列
+    auto moveToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_,Vec2(22.1,22-0.3)));
+    auto delay1 = DelayTime::create(delayTime);
+
+    auto moveToBottom = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(0.1, 44-0.3)));
+    auto backToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(22.1, 22-0.3)));
+    auto delay2 = DelayTime::create(delayTime);
+
+    auto backToTop = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(44.1, -0.3)));
+
+    // 将所有动作串成一个 Sequence
+    auto seq_action = Sequence::create(
+        moveToMiddle1,
+        delay1,
+        moveToBottom,
+        backToMiddle1,
+        delay2,
+        backToTop,
+        nullptr  // 必须以 nullptr 结尾
+    );
     auto repeatAction = RepeatForever::create(seq_action);
     base_map_->sprites_.back()->runAction(repeatAction);
 }

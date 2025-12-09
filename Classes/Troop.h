@@ -115,6 +115,9 @@ public:
     virtual ArchTargetType getTargetType() const override = 0;
 
     /*以下为get&set*/
+	// 设置当前位置-网格逻辑坐标 合法位置直接写入返回true；非法位置则设置到离设置点最近的方形边框上返回false
+    bool setCellPosition(const cocos2d::Vec2& position);
+
     // 获取当前生命值
     float getCurrentHitpoints() const { return current_hitpoints_; }
 
@@ -134,7 +137,8 @@ public:
     float getCurrentDamage() const { return damage_per_attacks_[level_]; }
 
     /*以下为渲染相关*/
-    cocos2d::Vec2 troopPosToPixel() { return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x + 1, position_.y)); }
+	//获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
+	inline virtual cocos2d::Vec2 getPixelPosition() const{ return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y)); }
 	// 创建士兵实例 由于Troop类不该能直接创建，改为由子类自行实现
 	/*static Troop* createTroop(const std::string& picfilename,
         int level,
@@ -151,7 +155,13 @@ public:
 		const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
 		const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
 		const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);*/
-
+    // 重写setPosition以自动同步ZOrder
+    virtual void setPosition(const cocos2d::Vec2& pos) override {
+        Sprite::setPosition(pos);
+        this->setLocalZOrder(CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_,pos))); // 自动同步
+    }
+	// 每帧更新
+    void update(float dt);
     //TODO:移动
 };
 
