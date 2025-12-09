@@ -6,7 +6,7 @@ public:
     virtual ~ITroopTarget() = default;
 
     // 士兵攻击建筑时调用这个方法
-    virtual void takeDamage(float damage, int attackType) = 0;
+    virtual void takeDamage(float damage) = 0;
 
     // 获取建筑位置-网格逻辑坐标
     // @param size 输出参数，返回建筑占地大小 size*size 格

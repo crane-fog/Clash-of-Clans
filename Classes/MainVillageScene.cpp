@@ -5,6 +5,7 @@
 #include "ShopPopup.h"
 #include "DataHelper.h"
 #include "Arch.h"
+#include "Barbarian.h"
 #include <chrono>
 #include <vector>
 
@@ -34,6 +35,10 @@ bool MainVillage::init()
     for (auto& arch : arch_list) {
         Arch::create(arch, base_map_);
     }
+
+    auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(0, 1));
+    if (!barbarian2)return false;
+    base_map_->sprites_.push_back(barbarian2);
 
     // 创建一个角色 Sprite
     auto barbarian_sprite = Sprite::create("Barbarian.png");
@@ -256,7 +261,7 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
     // 播放建筑落地效果
     playBuildingDropEffect(pendingArch_);
     // 将建筑加入存档数据结构
-    arch_status_[pendingArch_->Arch::getx(pendingArch_)][pendingArch_->Arch::gety(pendingArch_)] = ArchData(pendingArch_);
+    arch_status_[pendingArch_->Arch::getx()][pendingArch_->Arch::gety()] = ArchData(pendingArch_);
 
     // 写入存档数据
     DataHelper::writeArchData(

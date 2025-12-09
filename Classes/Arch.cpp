@@ -11,7 +11,13 @@ current_hp_(a->current_hp_), current_capacity_(a->current_capacity_) {}
 
 Arch* Arch::create(const ArchData& data, BaseMap* base_map)
 {
-    Arch* pRet = new(std::nothrow) Arch(data, base_map);
+    Arch* pRet;
+    if (data.no_ == WALL) {
+        pRet = new(std::nothrow) Wall(data, base_map);
+    }
+    else {
+        pRet = new(std::nothrow) Arch(data, base_map);
+    }
     if (pRet && pRet->initWithFile(kArchInfo.at(data.no_)[data.level_ - 1].image_)) {
         pRet->autorelease();
         return pRet;
@@ -31,10 +37,21 @@ bool Arch::initWithFile(const std::string& filename)
     setAnchorPoint(Vec2(0.5f, 0.4f));
     unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
     float scale = 1.5f * CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size, 0)).x / this->getContentSize().width;
+    Vec2 middle_pos = Vec2(x_ + size / 2.0f, y_ + size / 2.0f);
     setScale(scale);
-    setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+    setPosition(CoordAdaptor::cellToPixel(base_map_, middle_pos));
     base_map_->archs_.push_back(this);
-    base_map_->addChild(this, 2);
+    base_map_->addChild(this, CoordAdaptor::calcOrder(middle_pos));
+
+    return true;
+}
+
+// todo:规范化各类中的init和onEnter
+void Arch::onEnter()
+{
+    Sprite::onEnter();
+
+    updateWall();
 
     // 添加触摸监听
     // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
@@ -47,8 +64,6 @@ bool Arch::initWithFile(const std::string& filename)
     listener->onTouchCancelled = CC_CALLBACK_2(Arch::onTouchCancel, this);
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-
-    return true;
 }
 
 void Arch::createHighlight()
@@ -56,7 +71,7 @@ void Arch::createHighlight()
     if (highlight_node_) return;
 
     highlight_node_ = Node::create();
-    base_map_->addChild(highlight_node_, 1); // 层级低于建筑
+    base_map_->addChild(highlight_node_, 0); // 层级低于建筑
 
     unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
     for (int i = 0; i < size; ++i) {
@@ -144,7 +159,6 @@ bool Arch::onTouchDown(Touch* touch, Event* event)
         touch_start_pos_ = touch->getLocation();
         original_x_ = x_;
         original_y_ = y_;
-        this->setLocalZOrder(100); // 拖动时置顶
         base_map_->setInputEnabled(false); // 临时禁用地图拖动
         return true;
     }
@@ -153,7 +167,6 @@ bool Arch::onTouchDown(Touch* touch, Event* event)
 
 void Arch::onTouchUp(Touch* touch, Event* event)
 {
-    this->setLocalZOrder(2); // 恢复层级
     base_map_->setInputEnabled(true); // 恢复地图拖动
     removeHighlight();
     if (!is_dragging_) {
@@ -170,8 +183,14 @@ void Arch::onTouchUp(Touch* touch, Event* event)
             y_ = original_y_;
             this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + my_size / 2.0f, y_ + my_size / 2.0f)));
         }
-
+        unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+        this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f))); // 恢复并设置新层级
         is_dragging_ = false;
+
+        if (this->no_ == WALL) {
+            updateSurroundingWalls(x_, y_);
+            this->updateWall();
+        }
     }
 }
 
@@ -180,6 +199,11 @@ void Arch::onTouchMove(Touch* touch, Event* event)
     if (touch->getLocation().distance(touch_start_pos_) > 10.0f) {
         if (!is_dragging_) {
             is_dragging_ = true;
+            this->setLocalZOrder(100); // 开始拖动时置顶
+            if (this->no_ == WALL) {
+                updateSurroundingWalls(x_, y_, true);
+                this->updateWall(nullptr, true);
+            }
             createHighlight();
         }
     }
@@ -220,7 +244,10 @@ void Arch::onTouchMove(Touch* touch, Event* event)
 
 void Arch::onTouchCancel(Touch* touch, Event* event)
 {
-    this->setLocalZOrder(2);
+    unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
+    if (is_dragging_) {
+        this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+    }
     base_map_->setInputEnabled(true);
     is_dragging_ = false;
     removeHighlight();
@@ -498,4 +525,90 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a) {
         showArchPanel(arch);
         }, upgradeTime, "UpdateArchPanel");
 
+}
+void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
+{
+    for (auto arch : base_map_->archs_) {
+        if (arch->getTargetType() != WALLT) continue;
+        if (arch == this) continue;
+
+        int dx = abs(static_cast<int>(arch->getx()) - x);
+        int dy = abs(static_cast<int>(arch->gety()) - y);
+
+        if (dx + dy == 1) {
+            arch->updateWall(this, is_moving);
+        }
+    }
+}
+
+void Wall::updateWall(Arch* moving_wall, bool is_moving)
+{
+    // 清理旧的连接节点
+    for (auto node : connection_nodes_) {
+        if (node) node->removeFromParent();
+    }
+    connection_nodes_.clear();
+
+    if (moving_wall == nullptr && is_moving) return;
+
+    // 创建副本避免冲突
+    std::vector<Arch*> archs_copy = base_map_->archs_;
+
+    for (auto arch : archs_copy) {
+        if (arch->getTargetType() != WALLT) continue;
+        if (arch == this) continue;
+
+        Wall* other = static_cast<Wall*>(arch);
+        int dx = abs(other->x_ - x_);
+        int dy = abs(other->y_ - y_);
+
+        if (dx + dy == 1 && (other != moving_wall || !is_moving)) {
+            int my_order = this->getLocalZOrder();
+            int other_order = other->getLocalZOrder();
+
+            bool i_am_owner = false;
+            if (my_order < other_order) {
+                i_am_owner = true;
+            }
+            else if (my_order == other_order) {
+                if (this < other) i_am_owner = true;
+            }
+
+            if (i_am_owner) {
+                auto connection_node = Node::create();
+
+                Vec2 mid_cell((x_ + other->x_) / 2.0f + 0.5f, (y_ + other->y_) / 2.0f + 0.5f);
+                Vec2 my_cell(x_ + 0.5f, y_ + 0.5f);
+
+                Vec2 mid_pixel = CoordAdaptor::cellToPixel(base_map_, mid_cell);
+                Vec2 my_pixel = CoordAdaptor::cellToPixel(base_map_, my_cell);
+
+                float scale = this->getScale();
+                if (scale == 0.0f) scale = 1.0f;
+
+                Vec2 local_pos = (mid_pixel - my_pixel) / scale;
+
+                Size size = this->getContentSize();
+                Vec2 anchor_offset(size.width * 0.5f, size.height * 0.4f);
+
+                connection_node->setPosition(anchor_offset + local_pos);
+
+                this->addChild(connection_node);
+                connection_nodes_.push_back(connection_node);
+
+                Vec2 dir(static_cast<float>(other->x_ - x_), static_cast<float>(other->y_ - y_));
+                Vec2 pixel_delta = CoordAdaptor::cellDeltaToPixelDelta(base_map_, dir);
+                Vec2 local_delta = pixel_delta / scale;
+
+                for (int k = 1; k <= 3; ++k) {
+                    auto sprite = Sprite::create(kArchInfo.at(WALL)[level_ - 1].image_);
+                    if (sprite) {
+                        sprite->setScale(0.6f);
+                        sprite->setPosition(local_delta * (k / 4.0f - 0.5f));
+                        connection_node->addChild(sprite);
+                    }
+                }
+            }
+        }
+    }
 }
