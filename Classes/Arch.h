@@ -118,6 +118,7 @@ public:
         return this->y_;
     }
 
+
     friend class ShopPopup;
 
     friend struct ArchData;

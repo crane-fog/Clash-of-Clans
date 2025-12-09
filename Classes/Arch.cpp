@@ -591,6 +591,7 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
                 Size size = this->getContentSize();
                 Vec2 anchor_offset(size.width * 0.5f, size.height * 0.4f);
 
+
                 connection_node->setPosition(anchor_offset + local_pos);
 
                 this->addChild(connection_node);
