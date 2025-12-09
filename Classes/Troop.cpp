@@ -74,7 +74,7 @@ bool Troop::initWithFile(const std::string& filename) {
 
     
     // 设置血条在士兵头顶正中心
-    float offset_y = this->getContentSize().height + 1.0f; // 2 是额外间距
+    float offset_y = this->getContentSize().height + 1.0f; // 1 是额外间距
     float offset_x = this->getContentSize().width/2;
     health_bar_->setPosition(cocos2d::Vec2(offset_x, offset_y));
 

@@ -38,6 +38,7 @@ bool MainVillage::init()
 
     auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(0, 1));
     if (!barbarian2)return false;
+    barbarian2->takeDamage(25);
     base_map_->sprites_.push_back(barbarian2);
 
     // 创建一个角色 Sprite
