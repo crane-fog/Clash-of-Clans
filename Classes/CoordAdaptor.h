@@ -40,6 +40,12 @@ public:
 
         return cocos2d::Vec2(cx, cy);
     }
+
+    // 层级计算
+    inline static int calcOrder(const cocos2d::Vec2& middle_pos)
+    {
+        return static_cast<int>(middle_pos.x - middle_pos.y) + 50;
+    }
 };
 
 #endif // __COORD_ADAPTOR_H__

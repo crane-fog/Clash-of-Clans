@@ -30,23 +30,14 @@ struct ArchData {
 
     ArchData() = default;
     explicit ArchData(Arch*a);
-    explicit ArchData(UC no, UC lv = 1) {
-        no_ = no;
-        level_ = lv;
-
-        // 默认出生在左下角 (可改为中心或随机)
-        x_ = 1;
-        y_ = 1;
-
-        current_hp_ = kArchInfo.at(no)[lv].hp_;
-        current_capacity_ = kArchInfo.at(no)[lv].max_capacity_;
-    }
+    explicit ArchData(UC no, UC lv = 1) : no_(no), level_(lv), x_(1), y_(1),
+        current_hp_(kArchInfo.at(no)[lv].hp_), current_capacity_(kArchInfo.at(no)[lv].max_capacity_) {}
 };
 
 class Arch : public cocos2d::Sprite, public ITroopTarget {
     typedef unsigned int UI;
     typedef unsigned char UC;
-private:
+protected:
     // 建筑种类的编号
     UC no_;
     // 建筑等级
@@ -84,14 +75,19 @@ public:
     void onTouchUp(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
-public:
+
     Arch(const ArchData& data, BaseMap* base_map) : no_(data.no_), level_(data.level_), x_(data.x_), y_(data.y_),
         current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
     static Arch* create(const ArchData& data, BaseMap* base_map);
     virtual bool initWithFile(const std::string& filename) override;
+    virtual void onEnter() override;
+
+    // 为城墙状态更新预留的接口
+    virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) {}
+    virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) {}
 
     // ITroopTarget 接口实现
-    virtual void takeDamage(float damage, int attackType) override { current_hp_ -= static_cast<UI>(damage); }
+    virtual void takeDamage(float damage) override { current_hp_ -= static_cast<UI>(damage); }
     virtual cocos2d::Vec2 getCellPosition(float& size) const override
     { 
         size = static_cast<float>(kArchInfo.at(no_)[level_ - 1].size_);
@@ -114,14 +110,25 @@ public:
     void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a);
     UI getx(Arch * data) {
         return data->x_;
+      }
+    UI getx() {
+        return this->x_;
     }
-    UI gety(Arch* data) {
+    UI gety() {
         return this->y_;
     }
 
     friend class ShopPopup;
 
     friend struct ArchData;
+};
+
+class Wall : public Arch {
+    std::vector<cocos2d::Node*> connection_nodes_;
+public:
+    Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
+    virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
 };
 
 #endif // __ARCH_H__

@@ -85,6 +85,20 @@ struct ArchInfo {
     }
 };
 
+// 建筑物数量数据
+const std::map<unsigned char, std::vector<unsigned char>> kArchCount = {
+    {TOWN_HALL, {1, 1, 1, 1}},
+    {WALL, {0, 25, 50, 75}},
+    {GOLD_STORAGE, {1, 1, 2, 2}},
+    {ELIXIR_STORAGE, {1, 1, 2, 2}},
+    {GOLD_MINE, {1, 2, 3, 4}},
+    {ELIXIR_COLLECTOR, {1, 2, 3, 4}},
+    {BARRACKS, {1, 1, 1, 1}},
+    {ARMY_CAMP, {1, 1, 2, 2}},
+    {CANNON, {1, 2, 2, 2}},
+    {ARCHER_TOWER, {0, 1, 1, 2}}
+};
+
 // 建筑物信息数据
 const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
     {TOWN_HALL, {
