@@ -161,7 +161,6 @@ bool Arch::onTouchDown(Touch* touch, Event* event)
         original_y_ = y_;
         this->setLocalZOrder(100); // 拖动时置顶
         base_map_->setInputEnabled(false); // 临时禁用地图拖动
-        updateWall(true);
         return true;
     }
     return false;
@@ -189,8 +188,9 @@ void Arch::onTouchUp(Touch* touch, Event* event)
         this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f))); // 恢复并设置新层级
         is_dragging_ = false;
 
-        for (auto arch : base_map_->archs_) {
-            if (arch->getTargetType() == WALLT) arch->updateWall();
+        if (this->no_ == WALL) {
+            updateSurroundingWalls(x_, y_);
+            this->updateWall();
         }
     }
 }
@@ -200,6 +200,10 @@ void Arch::onTouchMove(Touch* touch, Event* event)
     if (touch->getLocation().distance(touch_start_pos_) > 10.0f) {
         if (!is_dragging_) {
             is_dragging_ = true;
+            if (this->no_ == WALL) {
+                updateSurroundingWalls(x_, y_, true);
+                this->updateWall(nullptr, true);
+            }
             createHighlight();
         }
     }
@@ -241,7 +245,9 @@ void Arch::onTouchMove(Touch* touch, Event* event)
 void Arch::onTouchCancel(Touch* touch, Event* event)
 {
     unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
-    this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+    if (is_dragging_) {
+        this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));
+    }
     base_map_->setInputEnabled(true);
     is_dragging_ = false;
     removeHighlight();
@@ -349,7 +355,22 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
     }
 }
 
-void Wall::updateWall(bool is_moving)
+void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
+{
+    for (auto arch : base_map_->archs_) {
+        if (arch->getTargetType() != WALLT) continue;
+        if (arch == this) continue;
+
+        int dx = abs(static_cast<int>(arch->getx()) - x);
+        int dy = abs(static_cast<int>(arch->gety()) - y);
+
+        if (dx + dy == 1) {
+            arch->updateWall(this, is_moving);
+        }
+    }
+}
+
+void Wall::updateWall(Arch* moving_wall, bool is_moving)
 {
     // 清理旧的连接节点
     for (auto node : connection_nodes_) {
@@ -357,7 +378,7 @@ void Wall::updateWall(bool is_moving)
     }
     connection_nodes_.clear();
 
-    if (is_moving) return;
+    if (moving_wall == nullptr && is_moving) return;
 
     // 创建副本避免冲突
     std::vector<Arch*> archs_copy = base_map_->archs_;
@@ -370,7 +391,7 @@ void Wall::updateWall(bool is_moving)
         int dx = abs(other->x_ - x_);
         int dy = abs(other->y_ - y_);
 
-        if (dx + dy == 1) {
+        if (dx + dy == 1 && (other != moving_wall || !is_moving)) {
             int my_order = this->getLocalZOrder();
             int other_order = other->getLocalZOrder();
 

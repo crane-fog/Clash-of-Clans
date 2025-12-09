@@ -75,7 +75,7 @@ public:
     void onTouchUp(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
-public:
+
     Arch(const ArchData& data, BaseMap* base_map) : no_(data.no_), level_(data.level_), x_(data.x_), y_(data.y_),
         current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
     static Arch* create(const ArchData& data, BaseMap* base_map);
@@ -83,7 +83,8 @@ public:
     virtual void onEnter() override;
 
     // 为城墙状态更新预留的接口
-    virtual void updateWall(bool is_moving = false) {}
+    virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) {}
+    virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) {}
 
     // ITroopTarget 接口实现
     virtual void takeDamage(float damage) override { current_hp_ -= static_cast<UI>(damage); }
@@ -99,10 +100,10 @@ public:
     void showArchPanel(Arch* arch);
     void closeArchPanel();
     std::string getArchNameFromEnum(unsigned char archNo);
-    UI getx(Arch * data) {
-        return data->x_;
+    UI getx() {
+        return this->x_;
     }
-    UI gety(Arch* data) {
+    UI gety() {
         return this->y_;
     }
     friend class ShopPopup;
@@ -114,7 +115,8 @@ class Wall : public Arch {
     std::vector<cocos2d::Node*> connection_nodes_;
 public:
     Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
-    virtual void updateWall(bool is_moving = false) override;
+    virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
+    virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
 };
 
 #endif // __ARCH_H__

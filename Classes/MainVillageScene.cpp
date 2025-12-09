@@ -260,7 +260,7 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
     // 播放建筑落地效果
     playBuildingDropEffect(pendingArch_);
     // 将建筑加入存档数据结构
-    arch_status_[pendingArch_->Arch::getx(pendingArch_)][pendingArch_->Arch::gety(pendingArch_)] = ArchData(pendingArch_);
+    arch_status_[pendingArch_->Arch::getx()][pendingArch_->Arch::gety()] = ArchData(pendingArch_);
 
     // 写入存档数据
     DataHelper::writeArchData(
