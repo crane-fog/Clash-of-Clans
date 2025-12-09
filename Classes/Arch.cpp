@@ -255,18 +255,16 @@ void Arch::onTouchCancel(Touch* touch, Event* event)
 
 void Arch::showArchPanel(Arch* arch)
 {
+    // 检查面板是否已经存在，如果存在就不再创建
+    if (this->getChildByName("ARCH_PANEL")) {
+        CCLOG("面板已经存在，不能重复打开！");
+        return; // 面板已经存在，直接返回
+    }
     auto bg = LayerColor::create(Color4B(220, 220, 200, 180));
     bg->setContentSize(Size(400, 300));
-    bg->setPosition(Vec2(90, 130));
-    bg->setGlobalZOrder(99);
-    this->addChild(bg, 10, "ARCH_PANEL");
-
-    // 添加边框
-    auto border = DrawNode::create();
-    float borderWidth = 3.0f;  // 边框粗细
-
-    // 基于bg的实际尺寸
-    Size bgSize = bg->getContentSize();
+    bg->setPosition(Vec2(150, 170));
+    
+    this->addChild(bg, 100, "ARCH_PANEL");
 
     // 绘制边框
     draw_border(bg);
@@ -280,17 +278,16 @@ void Arch::showArchPanel(Arch* arch)
     panel->setPosition(Vec2(30, 10));
     panel->setScale(0.8f); // 初始缩小
     panel->setOpacity(0);  // 初始透明
-    panel->setGlobalZOrder(100);
-    bg->addChild(panel);
+    bg->addChild(panel,100);
 
-    const auto& info = kArchInfo.at(arch->no_)[arch->level_ - 1];
+    const auto& info = kArchInfo.at(arch->no_)[arch->level_-1];
     
     auto label = Label::createWithSystemFont(
         getArchNameFromEnum(arch->no_)+"\n------------------\n" + 
         ("等级: " + std::to_string(arch->level_) + "\n") +
-        ("生命值: " + std::to_string(arch->current_hp_) + "\n") +
+        ("当前生命值: " + std::to_string(arch->current_hp_) + "/" + std::to_string(info.hp_)+ "\n") +
         (info.type_ == RESOURCE ?
-            "容量: " + std::to_string(arch->current_capacity_) : "\n"),
+        ("当前容量: " + std::to_string(arch->current_capacity_) + "/" + std::to_string(info.max_capacity_)) : "\n") ,
         "Arial", 22);
     label->setPosition(Vec2(160, 150));
     panel->addChild(label);
@@ -299,11 +296,30 @@ void Arch::showArchPanel(Arch* arch)
     auto closeBtn = cocos2d::ui::Button::create();
     closeBtn->setTitleText("关闭");
     closeBtn->setTitleFontSize(24);
-    closeBtn->setPosition(Vec2(160, 40));
+    closeBtn->setPosition(Vec2(70, 30));
     closeBtn->addClickEventListener([=](Ref*) {
         this->removeChildByName("ARCH_PANEL");
         });
     panel->addChild(closeBtn);
+
+
+    // 创建升级按钮
+    auto upgradeBtn = cocos2d::ui::Button::create();
+    upgradeBtn->setTitleText("升级");
+    upgradeBtn->setTitleFontSize(24);
+    upgradeBtn->setPosition(Vec2(230, 30));  // 设置按钮位置在左下角
+    upgradeBtn->setContentSize(Size(100, 40));  // 设置按钮大小
+    upgradeBtn->addClickEventListener([=](Ref*) {
+        // 处理升级操作
+        CCLOG("升级按钮点击");
+        archUpgrade(arch);
+        });
+    panel->addChild(upgradeBtn);
+
+    // 吞噬所有触摸
+    panel->setTouchEnabled(true); // 启用触摸事件
+    panel->setSwallowTouches(true); // 吞噬触摸事件
+
     // 执行显示动画序列
     auto showSequence = Sequence::create(
         // 第一步：淡入遮罩
@@ -355,6 +371,161 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
     }
 }
 
+void Arch::archUpgrade(Arch* arch) {
+    
+    unsigned char max_ = 4;
+    if (arch->level_ < max_) {
+
+        // 创建一个新的面板显示升级前后的数据和金币提示
+        createUpgradeComparisonPanel(arch);
+    }
+    else {
+        // 弹出提示窗显示“当前已是最高等级”
+        showMaxLevelPopup();
+    }
+}
+// 创建显示"当前已是最高等级"的弹窗
+void Arch::showMaxLevelPopup() {
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    // 创建背景遮罩
+    auto popupBg = LayerColor::create(Color4B(0, 0, 0, 180)); // 半透明背景
+    popupBg->setContentSize(Size(400, 200));
+    popupBg->setPosition(Vec2(visibleSize.width / 2 - 200, visibleSize.height / 2 - 100));
+    this->addChild(popupBg, 1000);  // 设置层级
+
+    // 创建提示标签
+    auto label = Label::createWithSystemFont("当前已是最高等级", "Arial", 30);
+    label->setPosition(Vec2(popupBg->getContentSize().width / 2, popupBg->getContentSize().height / 2));
+    label->setTextColor(Color4B::RED);
+    popupBg->addChild(label);
+
+    // 弹窗消失动画
+    auto fadeOut = FadeOut::create(1.0f);  // 设置渐隐动画
+    auto removePopup = RemoveSelf::create();  // 移除弹窗
+    auto sequence = Sequence::create(fadeOut, DelayTime::create(4.0f),removePopup, nullptr);  // 延迟4秒再消失
+
+    popupBg->runAction(sequence);  // 应用到整个弹窗（背景和文字）
+    label->runAction(sequence->clone());
+    
+}
+
+void Arch::createUpgradeComparisonPanel(Arch* arch) {
+
+    // 创建背景遮罩
+    auto popupBg = LayerColor::create(Color4B(255, 255, 255,255)); // 半透明背景
+    popupBg->setContentSize(Size(400, 300));
+    popupBg->setPosition(Vec2(150,170));
+    popupBg->setTag(1000);
+    this->addChild(popupBg, 1000);  // 设置层级
+    // 绘制边框
+    draw_border(popupBg);
+    // 创建标题标签
+    auto titleLabel = Label::createWithSystemFont("确认升级", "Arial", 30);
+    titleLabel->setPosition(Vec2(popupBg->getContentSize().width / 2, popupBg->getContentSize().height - 40));
+    titleLabel->setTextColor(Color4B::BLACK);
+    popupBg->addChild(titleLabel);
+
+    //数据
+    unsigned char no_ = arch->no_;
+    unsigned char currentLevel = arch->level_;
+
+    // 创建升级前后的数据对比标签
+    auto infoLabel = Label::createWithSystemFont(
+        "当前等级: " + std::to_string(arch->level_) + " -> "  +std::to_string(arch->level_ +1)+ "\n" +
+        "生命值  : " + std::to_string(kArchInfo.at(no_)[currentLevel-1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel ].hp_) + "\n" +
+        "容量    : " + std::to_string(kArchInfo.at(no_)[currentLevel -1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel].max_capacity_) + "\n" + "\n" + "\n" +
+        "金币需求: " + std::to_string(kArchInfo.at(no_)[currentLevel ].upgrade_cost_amount_)+ "\n" +
+        "升级用时: " + std::to_string(kArchInfo.at(no_)[currentLevel].upgrade_time_), "Arial", 24);
+    infoLabel->setPosition(Vec2(popupBg->getContentSize().width / 2, popupBg->getContentSize().height / 2));
+    infoLabel->setTextColor(Color4B::BLACK);
+    popupBg->addChild(infoLabel);
+
+    // 创建取消按钮
+    auto cancelLabel = Label::createWithSystemFont("取消", "Arial", 30);
+    cancelLabel->setTextColor(Color4B::RED);  // 设置字体颜色为红色
+    auto cancelButton = MenuItemLabel::create(
+        cancelLabel,
+        CC_CALLBACK_1(Arch::onUpgradeCancel, this));
+    cancelButton->setPosition(Vec2(popupBg->getContentSize().width / 3, 30));
+
+    // 创建确认按钮
+    auto confirmLabel = Label::createWithSystemFont("确认", "Arial", 30);
+    confirmLabel->setTextColor(Color4B::GREEN);  // 设置字体颜色为红色
+    auto confirmButton = MenuItemLabel::create(
+        confirmLabel,
+        CC_CALLBACK_1(Arch::Buiding_Upgrading, this, arch, UPGRADING));
+    confirmButton->setPosition(Vec2(popupBg->getContentSize().width * 2 / 3, 30));
+
+    // 将按钮添加到菜单中
+    auto menu = Menu::create(cancelButton, confirmButton, nullptr);
+    menu->setPosition(Vec2::ZERO);
+    popupBg->addChild(menu);
+}
+
+void Arch::onUpgradeCancel(Ref* sender) {
+    // 关闭升级面板
+    this->removeChildByTag(1000);  // 1000是面板的tag，可以根据需要调整
+}
+
+void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a) {
+    std::string Notice_;
+    // 执行升级逻辑
+    if (a) {
+        arch->level_++;
+        Notice_ = "升级";
+    }
+    else {
+        Notice_ = "建造";
+    }
+    arch->current_hp_ = kArchInfo.at(arch->no_)[arch->level_-1].hp_;
+    //更新图片纹理
+    auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
+    // 获取升级时间（持续的总时长）
+    unsigned int upgradeTime = kArchInfo.at(arch->no_)[arch->level_ - 1].upgrade_time_;
+
+    // 创建升级标签
+    auto upgradeLabel = Label::createWithSystemFont(
+        Notice_ + "中...还需: " + std::to_string(upgradeTime) + " 秒 " , "Arial", 22);
+    upgradeLabel->setPosition(Vec2(120,200));
+    upgradeLabel->setTextColor(Color4B::BLACK);
+    upgradeLabel->setName("upgrading");
+    this->addChild(upgradeLabel);
+
+    // 添加亮暗效果的动画
+    auto fadeOut = FadeTo::create(0.5f, 50);  // 1秒内从亮变暗
+    auto fadeIn = FadeTo::create(0.5f, 255);   // 1秒内从暗变亮
+    auto sequence = Sequence::create(fadeOut, fadeIn, nullptr);  // 交替执行淡入淡出
+
+     // 关闭面板
+        this->removeChildByTag(1000);
+        this->removeChildByName("ARCH_PANEL");
+    // 执行动画
+    this->runAction(Repeat::create(sequence, upgradeTime));
+
+    auto timer = CountdownTimer::create();
+    this->addChild(timer);
+    timer->start(upgradeTime,
+        [Notice_ ,this, upgradeLabel](int remaining) {
+            // 每秒回调
+            upgradeLabel->setString(Notice_ + "中...还需: " + std::to_string(remaining) + " 秒");
+        },
+        [Notice_ ,this, upgradeLabel]() {
+            // 完成回调
+            upgradeLabel->setString(Notice_ + "完成！");
+            this->removeChildByName("upgrading");
+        }
+    );
+
+    // 执行升级动画完成后的操作
+    scheduleOnce([=](float) {
+        // 更新建筑纹理
+        arch->setTexture(newImg);
+        // 更新UI显示
+        showArchPanel(arch);
+        }, upgradeTime, "UpdateArchPanel");
+
+}
 void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
 {
     for (auto arch : base_map_->archs_) {
