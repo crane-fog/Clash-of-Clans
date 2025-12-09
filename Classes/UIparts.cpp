@@ -112,3 +112,41 @@ void UIBars::updateProgressBar(const std::string& title, float percent,double no
         }
     }
 }
+
+
+//倒计时类相关
+void CountdownTimer::start(unsigned int seconds,
+    std::function<void(int)> onTick,
+    std::function<void()> onComplete) {
+    remainingTime_ = seconds;
+    totalTime_ = seconds;
+    onTick_ = onTick;
+    onComplete_ = onComplete;
+    isRunning_ = true;
+
+    schedule([this](float dt) {
+        this->updateTimer(dt);
+        }, 1.0f, CC_REPEAT_FOREVER, 0, "TimerUpdate");
+}
+
+void CountdownTimer::updateTimer(float dt) {
+    if (!isRunning_) return;
+
+    if (remainingTime_ > 0) {
+        remainingTime_--;
+
+        // 回调通知
+        if (onTick_) {
+            onTick_(remainingTime_);
+        }
+
+        if (remainingTime_ == 0) {
+            unschedule("TimerUpdate");
+            isRunning_ = false;
+
+            if (onComplete_) {
+                onComplete_();
+            }
+        }
+    }
+}

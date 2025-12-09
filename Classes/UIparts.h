@@ -7,6 +7,7 @@
 #include "BaseMap.h"
 #include "cocos/ui/CocosGUI.h"
 #include"Arch.h"
+#include<string.h>
 // 进度条结构体
 struct ProgressBarData {
     cocos2d::ui::LoadingBar* loadingBar;
@@ -106,6 +107,30 @@ private:
 public:
 
     friend class Arch;
+};
+
+//倒计时
+class CountdownTimer : public cocos2d::Node {
+public:
+    CREATE_FUNC(CountdownTimer);
+
+    void start(unsigned int seconds,
+        std::function<void(int remaining)> onTick = nullptr,
+        std::function<void()> onComplete = nullptr);
+
+private:
+    unsigned int remainingTime_;
+    unsigned int totalTime_;
+    bool isRunning_;
+    std::function<void(int)> onTick_;
+    std::function<void()> onComplete_;
+
+    void updateTimer(float dt);
+};
+
+enum Buidlingtype : bool{
+    NEW_BUIDING = 0,
+    UPGRADING = 1
 };
 
 #endif // __UI_PARTS_H__

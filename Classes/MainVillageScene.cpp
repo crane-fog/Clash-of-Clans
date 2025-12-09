@@ -218,6 +218,7 @@ void MainVillage::createConfirmButton(Arch* pendingArch_)
     confirmButton->addTouchEventListener([this, pendingArch_](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
             this->confirmBuildingPlacement(pendingArch_);
+            pendingArch_->Buiding_Upgrading(sender, pendingArch_, NEW_BUIDING);
         }
         });
 
@@ -266,7 +267,6 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
 
     
 
-    // 重新回到商店界面
     CCLOG("建筑放置成功");
 
 }
@@ -287,27 +287,24 @@ void MainVillage::playBuildingDropEffect(Arch* arch)
     // 创建发光效果，可以使用淡入淡出的效果
     auto fadeIn = FadeTo::create(0.5f, 255);  // 使建筑恢复透明度
 
-
     // 添加光晕效果（模拟发光）
     auto glowEffect = cocos2d::Sprite::create();  // 创建一个光晕精灵
     glowEffect->setTexture("flash.png");  
     glowEffect->setScale(0.1f);  
-    glowEffect->setOpacity(50);  // 初始透明度较低
+    glowEffect->setOpacity(255);  // 初始透明度较低
     glowEffect->setPosition(Vec2(arch->getPosition().x, arch->getPosition().y-40));  // 设置光晕的位置与建筑相同
 
     arch->getParent()->addChild(glowEffect, arch->getLocalZOrder() - 1);  // 将光晕放到建筑的下面
 
     // 创建光晕的扩散效果
-    auto glowScaleUp = ScaleTo::create(0.4f,0.4f);  // 光晕变大
-    auto glowFadeIn = FadeTo::create(0.3f, 255);  // 光晕逐渐变亮
-    // 添加旋转效果
-    auto glowRotate = RotateBy::create(0.6f, 360);  // 光晕旋转360度
-    // 执行光晕扩散和发光的动画
+    auto glowScaleUp = ScaleTo::create(0.3f,0.4f);  // 光晕变大
+    auto glowFadeIn = FadeTo::create(0.3f, 0);  // 光晕逐渐变暗
+
     // 在动画结束时移除光晕
     auto removeGlow = CallFunc::create([glowEffect]() {
         glowEffect->removeFromParent();  // 移除光晕精灵
         });
-    auto glowSequence = Sequence::create(glowScaleUp, glowFadeIn,glowRotate,removeGlow,fadeIn, nullptr);
+    auto glowSequence = Sequence::create(glowScaleUp, glowFadeIn,removeGlow,fadeIn, nullptr);
     glowEffect->runAction(glowSequence);
 
 }

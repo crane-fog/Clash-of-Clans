@@ -108,16 +108,17 @@ public:
     // 创建显示"当前已是最高等级"的弹窗
     void Arch::showMaxLevelPopup();
     std::string getArchNameFromEnum(unsigned char archNo);
-    void Arch::createUpgradeComparisonPanel(Arch* arch, unsigned char currentLevel, int currentHp, int currentCapacity, int nextHp, int nextCapacity, int goldRequired);
+    void Arch::createUpgradeComparisonPanel(Arch* arch);
 
     void Arch::onUpgradeCancel(Ref* sender);
-    void Arch::onUpgradeConfirm(Ref* sender, Arch* arch);
+    void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a);
     UI getx(Arch * data) {
         return data->x_;
     }
     UI gety(Arch* data) {
         return this->y_;
     }
+
     friend class ShopPopup;
 
     friend struct ArchData;
