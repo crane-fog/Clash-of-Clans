@@ -49,31 +49,6 @@ bool ShopPopup::init()
         return false;
     }
 
-    // 定义三个板块的商品数据
-    std::vector<ShopItem> buildingItems = {
-        {1, "大本营", 100, true, "", "arch/Town_Hall1.webp"},
-        {2, "城墙", 150, false, "等级不足", "arch/Wall1.webp"},
-        {3, "金库", 50, true, "", "arch/Gold_Storage1.webp"},
-        {4, "圣水罐", 200, false, "金币不足", "arch/Elixir_Storage1.webp"},
-        {5, "金矿", 120, true, "", "arch/Gold_Mine1.webp"},
-        {6, "圣水收集器", 180, false, "需要完成前置任务", "arch/Elixir_Collector1.webp"},
-        {7, "箭塔", 250, false, "VIP only", "arch/Archer_Tower1.webp"},
-        {8, "加农炮", 250, false, "VIP only", "arch/Cannon1.webp"}
-    };
-
-    std::vector<ShopItem> soldierItems = {
-        {101, "野蛮人", 30, true, "", "Barbarian.png"},
-        {102, "弓箭手", 45, true, "", "Barbarian.png"},
-        {103, "巨人", 150, false, "需要2级兵营", "Barbarian.png"},
-        {104, "哥布林", 25, true, "", "Barbarian.png"},
-        {105, "炸弹人", 50, false, "需要完成训练", "Barbarian.png"},
-
-    };
-
-    std::vector<ShopItem> gachaItems = {
-        {201, "神秘宝箱", 1000, true, "有机会获得稀有物品！", "lucky.png"}
-    };
-
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     setupBackground();
@@ -191,7 +166,7 @@ bool ShopPopup::init()
     scrollView->setContentSize(Size(panelBg->getContentSize().width - 40,
         panelBg->getContentSize().height)); 
 
-    scrollView->setInnerContainerSize(Size(270 * buildingItems.size(),
+    scrollView->setInnerContainerSize(Size(270 * kShopItemsInfo.at(1).size(),
         panelBg->getContentSize().height));
     scrollView->setDirection(ui::ScrollView::Direction::HORIZONTAL);
     scrollView->setPosition(Vec2(20, 100));
@@ -204,13 +179,13 @@ bool ShopPopup::init()
 
     // 保存商品数据供切换使用
     currentTab_ = 1; // 默认显示建筑
-    buildingItems_ = buildingItems;
-    soldierItems_ = soldierItems;
-    gachaItems_ = gachaItems;
+    buildingItems_ = kShopItemsInfo.at(1);
+    soldierItems_ = kShopItemsInfo.at(2);
+    gachaItems_ = kShopItemsInfo.at(3);
     scrollView_ = scrollView; // 保存滚动容器引用
 
     // 初始显示建筑商品
-    showItemsInScrollView(buildingItems, scrollView);
+    showItemsInScrollView(buildingItems_, scrollView);
     // 初始化抽卡池
     initGachaPool();
     return true;
@@ -258,6 +233,7 @@ void ShopPopup::switchToTab(int tabIndex) {
 }
 // 在滚动容器中显示商品的辅助函数
 void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::ScrollView* scrollView, int tabIndex) {
+
     auto scrollBg = LayerColor::create(Color4B(255, 230, 200, 255), 270 * buildingItems_.size(),
                 scrollView->getContentSize().height-240);
     scrollBg->setPosition(Vec2::ZERO);
@@ -266,7 +242,6 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
     scrollView->addChild(scrollBg);
     for (int i = 0; i < items.size(); i++) {
         const auto& item = items[i];
-
         // 商品背景
         auto itemBg = LayerColor::create(Color4B(160, 180, 230, 255), 250, 300);
         itemBg->setPosition(Vec2(20 + i * 270, 20));
@@ -274,8 +249,8 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         // 根据商品ID确定建筑类型
         unsigned char archNo = INVALID_ARCH_NO;
         switch (item.id) {
-            case 1: // 大本营
-                archNo = TOWN_HALL;
+            case 1: // 兵营
+                archNo = ARMY_CAMP;
                 break;
             case 2: // 城墙
                 archNo = WALL;
@@ -298,28 +273,29 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             case 8: // 加农炮
                 archNo = CANNON;
                 break;
+            case 9: // 训练营
+                archNo = BARRACKS;
+                break;
                 return;
         }
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
-
         listener->onTouchBegan = [this, itemBg, item,scrollView,archNo](Touch* touch, Event* event) -> bool {
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
             Rect rect = Rect(0, 0, size.width, size.height);
+            auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());  
+            unsigned long long MyGold = scene->getGold();
 
             if (rect.containsPoint(locationInNode)) {
-
-                if (item.isAvailable&&UIBars::goldSum>item.price) {
+                if (item.isAvailable&&MyGold>item.price) {//
                     itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
                     // 按下即购买
-                    UIBars::setgoldValue(UIBars::goldSum - item.price);
-                    
+                    scene->MainVillage::renewGold(MyGold  - item.price);
+                    scene->addBuildingByNO(archNo, item.price);
                     this->close();
-                    auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());
-                    scene->addBuildingByNO(archNo,item.price);  
-                    
+                    //UIBars::updateProgressBar("金币", MyGold - item.price);
                     // 添加购买反馈效果
                     auto scaleDown = ScaleTo::create(0.1f, 0.95f);
                     itemBg->runAction(scaleDown);
@@ -352,7 +328,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, itemBg);
 
         // 如果商品不可用，添加灰色遮罩
-        if (!item.isAvailable || (UIBars::goldSum < item.price)) {
+        if (!item.isAvailable ) {
             Size bgSize = itemBg->getContentSize();
             auto grayMask = LayerColor::create(Color4B(128, 128, 128, 150), bgSize.width, bgSize.height);
             grayMask->setPosition(Vec2::ZERO);
@@ -387,7 +363,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             itemBg->getContentSize().height - 30));
         itemLabel->setColor(Color3B::BLACK);
         itemBg->addChild(itemLabel);
-        if (tabIndex == 3) {
+        if (tabIndex == 3||kArchInfo.at(archNo)[0].upgrade_cost_type_) {
             // 商品价格图标
             auto goldIcon = Sprite::create("Elixir.png");
             goldIcon->setPosition(Vec2(itemBg->getContentSize().width / 3, 30));

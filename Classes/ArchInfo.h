@@ -50,7 +50,7 @@ struct ArchInfo {
     UC type_;
 
     // 升到这一级所需要的资源类型（0=金币，1=圣水）（在1级时即为建筑初始建造时长）
-    UC upgrade_cost_type_;
+    bool upgrade_cost_type_;
     // 升到这一级所需要的资源数量
     UI upgrade_cost_amount_;
     // 升级时间秒数
@@ -78,7 +78,7 @@ struct ArchInfo {
     // 伤害溅射范围（伤害类型为0时则为0）
     float splash_range_;
 
-    ArchInfo(std::string i, UC lvl, UC size, UC type, UC uct, UI uca, UI ut, int hp, UI cap = 0,
+    ArchInfo(std::string i, UC lvl, UC size, UC type, bool uct, UI uca, UI ut, int hp, UI cap = 0,
         UI prod = 0, UI dmg = 0, UI atkInt = 0, UI range = 0, UC tgt = 0, UC dmgType = 0, float splash = 0.0f) :
         image_(i), level_(lvl), size_(size), type_(type), upgrade_cost_type_(uct), upgrade_cost_amount_(uca), upgrade_time_(ut), hp_(hp), max_capacity_(cap),
         produce_speed_(prod), damage_(dmg), attack_interval_(atkInt), attack_range_(range), target_type_(tgt), damage_type_(dmgType), splash_range_(splash)

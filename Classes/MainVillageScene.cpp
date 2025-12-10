@@ -10,6 +10,7 @@
 #include <vector>
 
 USING_NS_CC;
+ 
 
 bool MainVillage::init()
 {
@@ -28,6 +29,8 @@ bool MainVillage::init()
     if (!DataHelper::readArchData(kMainVillageDataFile, data_time, this->arch_status_)) {
         return false;
     }
+    //读取圣水和金币储量
+    DataHelper::readSourceData("data/SourceData.dat", gold_, elixir_);
 
     std::vector<ArchData> arch_list;
     DataHelper::mapToList(arch_status_, arch_list);
@@ -53,17 +56,26 @@ bool MainVillage::init()
     //base_map_->sprites_.push_back(barbarian_sprite);
     //base_map_->addChild(barbarian_sprite, 2);
 
+    // 创建UI层（固定UI层）
+    ui_layer_ = UIBars::create();
+
+    if (!ui_layer_) {
+        return false;
+    }
+    // UI层直接添加到场景，不受base_map变换影响
+    this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
+
     // 获取屏幕尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     auto shopButton =cocos2d::ui::Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
     //商店标签
-    shopButton->setTitleText("SHOP");
-    shopButton->setTitleAlignment(TextHAlignment::LEFT, TextVAlignment::TOP); // 居中
+    shopButton->setTitleText("商店");
+    shopButton->setTitleAlignment(TextHAlignment::LEFT, TextVAlignment::BOTTOM); // 居中
     shopButton->setTitleFontSize(50);
 
     //商店图标
-    shopButton->setPosition(Vec2(visibleSize.width - 100, 100));
+    shopButton->setPosition(Vec2(visibleSize.width - 100, 200));
     shopButton->setScale(0.5f);
     shopButton->setContentSize(Size(300, 300));  // 设置足够的触摸区域
     shopButton->setTouchEnabled(true);
@@ -75,6 +87,21 @@ bool MainVillage::init()
         }
         });
     this->addChild(shopButton,300);
+
+    auto attackButton = cocos2d::ui::Button::create("attack.png");
+    //进攻图标
+    attackButton->setPosition(Vec2(100, 200));
+    attackButton->setScale(0.9f);
+    attackButton->setContentSize(Size(300, 300));  // 设置足够的触摸区域
+    attackButton->setTouchEnabled(true);
+    attackButton->setEnabled(true);
+
+    attackButton->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+            //this->onShopButtonClick(sender);
+        }
+        });
+    this->addChild(attackButton, 200);
     return true;
 }
 
@@ -322,7 +349,7 @@ void MainVillage::playBuildingDropEffect(Arch* arch)
     glowEffect->setTexture("flash.png");  
     glowEffect->setScale(0.1f);  
     glowEffect->setOpacity(255);  // 初始透明度较低
-    glowEffect->setPosition(Vec2(arch->getPosition().x, arch->getPosition().y-40));  // 设置光晕的位置与建筑相同
+    glowEffect->setPosition(Vec2(arch->getPosition().x, arch->getPosition().y-50));  // 设置光晕的位置与建筑相同
 
     arch->getParent()->addChild(glowEffect, arch->getLocalZOrder() - 1);  // 将光晕放到建筑的下面
 

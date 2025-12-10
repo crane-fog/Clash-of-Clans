@@ -12,6 +12,8 @@ protected:
     UIBars* ui_layer_;  // 在基类中添加UI层
 
 public:
+    unsigned long long Mygold;
+    unsigned long long Myexilir;
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池

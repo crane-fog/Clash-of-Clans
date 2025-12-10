@@ -10,11 +10,11 @@ class MainVillage : public Village {
 private:
     // 村庄中的建筑状态数据
     ArchData arch_status_[MAP_SIZE][MAP_SIZE];
-
     // 金币储量
     unsigned long long gold_;
     // 圣水储量
-    unsigned long long elixir_;
+    unsigned long long elixir_ ;
+
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
@@ -35,22 +35,26 @@ public:
     void MainVillage::playBuildingDropEffect(Arch* arch);
     //延迟调用商店面板，sec为延迟秒数
     void MainVillage::showShopPopupWithDelay(float sec);
-    //获取金币数量
-    unsigned long long getGold(unsigned long long gold_) {
-        return gold_;
-    }
-    //获取圣水数量
-    unsigned long long getElixir(unsigned long long elixir_) {
-        return elixir_;
-    }
-    //更新金币数量
-    void renewGold(unsigned long long num) {
-        gold_ = num;
-    }
-    //更新圣水数量
-    void renewElixir(unsigned long long num) {
-        gold_ = num;
-    }
+//获取金币数量
+unsigned long long getGold() {
+    return gold_;
+}
+//获取圣水数量
+unsigned long long getElixir() {
+    return elixir_;
+}
+
+
+//更新金币数量
+void renewGold(unsigned long long num) {
+    gold_ = num;
+}
+//更新圣水数量
+void renewElixir(unsigned long long num) {
+    elixir_ = num;
+}
+
 };
+
 
 #endif // __MAIN_VILLAGE_SCENE_H__

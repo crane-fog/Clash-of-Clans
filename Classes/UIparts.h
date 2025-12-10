@@ -16,26 +16,28 @@ struct ProgressBarData {
     cocos2d::Sprite* icon;
     std::string title;
 };
+//进度条上限数量
+enum UpperLimit :unsigned long long {
+    GoldLimit = 50000,
+    ElixirLimit = 50000
+};
 
 // UI部分基类
 class UIBars : public cocos2d::Node {
 private:
     std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
 
-
+    cocos2d::EventListenerCustom* goldUpdateListener;  // 存储监听器
 public:
 
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
-    static double goldSum ;
-    static void setgoldValue(double value) {
-        goldSum = value;  // 修改静态变量的值
-    }
+
     // 创建带背景的进度条
-    //title:进度条左边文字标签， barcolor:进度条颜色， iconPath：图标文件路径，percent：当前显示的百分比，x,y位置，UpperLimit:上限
-    void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, double nowAmount, float x, float y, double UpperLimit);
+    //title:进度条左边文字标签， barcolor:进度条颜色， iconPath：图标文件路径，nowAmount：当前数量，x,y位置，UpperLimit:上限
+    void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, unsigned long long nowAmount, float x, float y, unsigned long long UpperLimit);
     // 更新指定进度条
-    void updateProgressBar(const std::string& title, float percent,double now);
+    void updateProgressBar(const std::string& title, unsigned long long nowAmount);
 
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(UIBars);
@@ -44,15 +46,59 @@ public:
 
 };
 
-struct ShopItem {
-    int id;
-    std::string name;
-    int price;
-    bool isAvailable;
-    std::string unavailableReason;
-    std::string imagePath;
-    int rarity; // 添加：0-N, 1-R, 2-SR, 3-SSR
+enum ShopType :int {
+    buildingItems = 1,
+    soldierItems=2,
+    gachaItems=3
 };
+
+struct ShopItem {
+    //标签
+    int id;
+    //建筑名称
+    std::string name;
+    //所需资源
+    unsigned int price;
+    //是否可购
+    bool isAvailable;
+    //不可购原因
+    std::string unavailableReason;
+    //图片路径
+    std::string imagePath;
+    //珍稀度
+    int rarity; // 添加：0-N, 1-R, 2-SR, 3-SSR
+
+    // 构造函数
+    ShopItem(int i, const std::string& n,unsigned int p, bool available, const std::string& reason, const std::string& path, int r=0)
+        : id(i), name(n), price(p), isAvailable(available), unavailableReason(reason), imagePath(path), rarity(r) {
+    }
+
+};
+// 定义三个板块的商品数据
+const std::map<int, std::vector<ShopItem>> kShopItemsInfo = {
+        {buildingItems, {
+        {1, "兵营", kArchInfo.at(ARMY_CAMP)[0].upgrade_cost_amount_, true, "", "arch/Army_Camp1.webp"},
+        {2, "城墙", kArchInfo.at(WALL)[0].upgrade_cost_amount_, false, "等级不足", "arch/Wall1.webp"},
+        {3, "金库", kArchInfo.at(GOLD_STORAGE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Storage1.webp"},
+        {4, "圣水罐", kArchInfo.at(ELIXIR_STORAGE)[0].upgrade_cost_amount_, false, "等级不足", "arch/Elixir_Storage1.webp"},
+        {5, "金矿", kArchInfo.at(GOLD_MINE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Mine1.webp"},
+        {6, "圣水收集器", kArchInfo.at(ELIXIR_COLLECTOR)[0].upgrade_cost_amount_, false, "需要完成前置任务", "arch/Elixir_Collector1.webp"},
+        {7, "箭塔", kArchInfo.at(ARCHER_TOWER)[0].upgrade_cost_amount_, false, "VIP only", "arch/Archer_Tower1.webp"},
+        {8, "加农炮", kArchInfo.at(CANNON)[0].upgrade_cost_amount_, false, "VIP only", "arch/Cannon1.webp"},
+        {9, "训练营", kArchInfo.at(BARRACKS)[0].upgrade_cost_amount_, false, "VIP only", "arch/Barracks1.webp"}}},
+
+        {soldierItems, {
+        {101, "野蛮人", 30, true, "", "Barbarian.png"},
+        {102, "弓箭手", 45, true, "", "Barbarian.png"},
+        {103, "巨人", 150, false, "需要2级兵营", "Barbarian.png"},
+        {104, "哥布林", 25, true, "", "Barbarian.png"},
+        {105, "炸弹人", 50, false, "需要完成训练", "Barbarian.png"}}},
+
+        {gachaItems, {
+        {201, "神秘宝箱", 1000, true, "有机会获得稀有物品！", "lucky.png"}}},
+};
+
+
 class ShopPopup : public cocos2d::Layer
 {
 public:
@@ -134,5 +180,7 @@ enum Buidlingtype : bool{
     NEW_BUIDING = 0,
     UPGRADING = 1
 };
+
+
 
 #endif // __UI_PARTS_H__
