@@ -4,6 +4,25 @@
 #include "cocos2d.h"
 #include "VillageScene.h"
 #include "Arch.h"
+//尝试把资源单独出来一个类，之前的获取有点搞不来
+class GameManager {
+public:
+    static GameManager* getInstance() {
+        static GameManager instance;
+        return &instance;
+    }
+
+    void setGold(unsigned long long gold) {
+        this->gold = gold;
+    }
+
+    unsigned long long getGold() const {
+        return gold;
+    }
+
+private:
+    unsigned long long gold = 0;
+};
 
 // 主村庄场景类
 class MainVillage : public Village {
