@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "ArchInfo.h"
 #include "ITroopTarget.h"
+#include"UIparts.h"
 #include <string.h>
 
 class BaseMap;

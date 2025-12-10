@@ -1,11 +1,9 @@
 #include "UIparts.h"
 #include "cocos/ui/CocosGUI.h"
-
+#include"MainVillageScene.h"
+#include"DataHelper.h"
 USING_NS_CC;
 using namespace ui;
-
-double UIBars::goldSum =5000.0;  
-
 
 bool UIBars::init()
 {
@@ -19,9 +17,21 @@ bool UIBars::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
+    unsigned long long gold = 100;
+    unsigned long long elixir = 0;
+    bool success = DataHelper::readSourceData("data/SourceData.dat", gold, elixir);
+
+    if (success) {
+        CCLOG("金币储量: %llu", gold);
+        CCLOG("圣水储量: %llu", elixir);
+    }
+    else {
+        CCLOG("读取文件失败！");
+    }
+
     // 创建多个进度条:金币和圣水
-    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", goldSum, visibleSize.width - 500, visibleSize.height - 50, 5000.0);
-    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", goldSum, visibleSize.width - 500, visibleSize.height - 150, 5000.0);
+    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visibleSize.width - 500, visibleSize.height - 50, GoldLimit);
+    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", elixir, visibleSize.width - 500, visibleSize.height - 150, ElixirLimit);
 
 
     // 创建返回按钮 - 固定在左上角
@@ -52,11 +62,11 @@ bool UIBars::init()
     this->addChild(button);
     return true;
 }
-void UIBars::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, double nowAmount, float x, float y,double UpperLimit)
+void UIBars::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, unsigned long long nowAmount, float x, float y, unsigned long long UpperLimit)
 {
     ProgressBarData data;
     data.title = title;
-    float percent = nowAmount/UpperLimit*100;
+    float percent = nowAmount*100/UpperLimit;
     // 创建图像图标 
     data.icon = Sprite::create(iconPath); // 图标图片
     if (data.icon) {
@@ -72,7 +82,7 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
     this->addChild(titleLabel);
 
     // 创建背景框
-    auto background = LayerColor::create(Color4B(0, 0, 0, 150), 500, 40); // 黑色半透明
+    auto background = LayerColor::create(Color4B(255, 255, 255, 150), 500, 40); // 黑色半透明
     background->setPosition(Vec2(x - 100, y - 24.0f)); // 设置位置
     this->addChild(background, 0);
     data.background = nullptr; // 由于使用LayerColor，这里设为null
@@ -89,8 +99,8 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
         this->addChild(data.loadingBar, 1);
     }
 
-    // 创建百分比标签
-    data.percentLabel = Label::createWithSystemFont(StringUtils::format("%f%", nowAmount), "Arial", 30);
+    // 创建数量标签
+    data.percentLabel = Label::createWithSystemFont(StringUtils::format(" %llu %", nowAmount), "Arial", 30);
     data.percentLabel->setPosition(Vec2(x + 150, y - 5));
     data.percentLabel->setTextColor(Color4B::BLACK);
     this->addChild(data.percentLabel, 2);
@@ -100,13 +110,13 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
 }
 
 
-void UIBars::updateProgressBar(const std::string& title, float percent,double now)
+void UIBars::updateProgressBar(const std::string& title, unsigned long long nowAmount)
 {
     for (auto& data : progressBars_) {
         if (data.title == title) {
             if (data.loadingBar && data.percentLabel) {
-                data.loadingBar->setPercent(percent);
-                data.percentLabel->setString(StringUtils::format("%f%", now));
+                data.loadingBar->setPercent(nowAmount*100/GoldLimit);
+                data.percentLabel->setString(StringUtils::format("%llu %", nowAmount));
             }
             break;
         }

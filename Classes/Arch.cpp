@@ -478,19 +478,12 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a) {
     else {
         Notice_ = "建造";
     }
+    
     arch->current_hp_ = kArchInfo.at(arch->no_)[arch->level_-1].hp_;
     //更新图片纹理
     auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
     // 获取升级时间（持续的总时长）
     unsigned int upgradeTime = kArchInfo.at(arch->no_)[arch->level_ - 1].upgrade_time_;
-
-    // 创建升级标签
-    auto upgradeLabel = Label::createWithSystemFont(
-        Notice_ + "中...还需: " + std::to_string(upgradeTime) + " 秒 " , "Arial", 22);
-    upgradeLabel->setPosition(Vec2(120,200));
-    upgradeLabel->setTextColor(Color4B::BLACK);
-    upgradeLabel->setName("upgrading");
-    this->addChild(upgradeLabel);
 
     // 添加亮暗效果的动画
     auto fadeOut = FadeTo::create(0.5f, 50);  // 1秒内从亮变暗
@@ -502,21 +495,28 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a) {
         this->removeChildByName("ARCH_PANEL");
     // 执行动画
     this->runAction(Repeat::create(sequence, upgradeTime));
-
-    auto timer = CountdownTimer::create();
-    this->addChild(timer);
-    timer->start(upgradeTime,
-        [Notice_ ,this, upgradeLabel](int remaining) {
-            // 每秒回调
-            upgradeLabel->setString(Notice_ + "中...还需: " + std::to_string(remaining) + " 秒");
-        },
-        [Notice_ ,this, upgradeLabel]() {
-            // 完成回调
-            upgradeLabel->setString(Notice_ + "完成！");
-            this->removeChildByName("upgrading");
-        }
-    );
-
+    if (upgradeTime) {
+        // 创建升级标签
+        auto upgradeLabel = Label::createWithSystemFont(
+            Notice_ + "中...还需: " + std::to_string(upgradeTime) + " 秒 ", "Arial", 22);
+        upgradeLabel->setPosition(Vec2(120, 200));
+        upgradeLabel->setTextColor(Color4B::BLACK);
+        upgradeLabel->setName("upgrading");
+        this->addChild(upgradeLabel);
+        auto timer = CountdownTimer::create();
+        this->addChild(timer);
+        timer->start(upgradeTime,
+            [Notice_, this, upgradeLabel](int remaining) {
+                // 每秒回调
+                upgradeLabel->setString(Notice_ + "中...还需: " + std::to_string(remaining) + " 秒");
+            },
+            [Notice_, this, upgradeLabel]() {
+                // 完成回调
+                upgradeLabel->setString(Notice_ + "完成！");
+                this->removeChildByName("upgrading");
+            }
+        );
+    }
     // 执行升级动画完成后的操作
     scheduleOnce([=](float) {
         // 更新建筑纹理
