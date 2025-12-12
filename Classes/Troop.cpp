@@ -94,8 +94,13 @@ void Troop::takeDamage(float damage) {
     if (current_hitpoints_ <= 0) {
         current_hitpoints_ = 0;
         health_bar_->setVisible(false);
-		// TODO: 死亡处理 墓碑显示、禁用攻击与移动等
+		onDeath();
     }
+}
+
+void Troop::onDeath() {
+	this->setTexture("troop/tomb.png");
+	this->setScale(0.6f);  // 根据需要调整大小
 }
 
 void Troop::setLevel(int level) {
@@ -138,6 +143,9 @@ bool Troop::setCellPosition(const cocos2d::Vec2& position) {
 }
 
 void Troop::update(float dt) {
+    if(!isAlive()) {
+        return;
+	}
     int currentZ = CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_, getPosition()));
     if (currentZ != this->getLocalZOrder()) {
         this->setLocalZOrder(currentZ);

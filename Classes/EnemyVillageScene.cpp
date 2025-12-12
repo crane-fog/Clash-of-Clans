@@ -7,6 +7,7 @@
 #include "CoordAdaptor.h"
 #include <set>
 #include <utility>
+#include "Barbarian.h"
 
 EnemyVillage* EnemyVillage::create(int level, unsigned long long gold, unsigned long long elixir)
 {
@@ -92,6 +93,11 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
     auto menu = cocos2d::Menu::create(closeItem, NULL);
     menu->setPosition(cocos2d::Vec2::ZERO);
     this->addChild(menu, 100);
+
+    auto barbarian2 = Barbarian::create(base_map_, 1, cocos2d::Vec2(0.5, 0.5));
+    if (!barbarian2)return false;
+    barbarian2->takeDamage(500);
+    base_map_->sprites_.push_back(barbarian2);
 
     return true;
 }
