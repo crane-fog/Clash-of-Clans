@@ -8,6 +8,9 @@
 
 const std::string kSourceDataFile = "data/SourceData.dat";
 const std::string kMainVillageDataFile = "data/MainVillageData.dat";
+const std::string kOfflineDataFile[] = {
+    "data/Level1.dat"
+};
 
 // 数据文件操作
 class DataHelper {

@@ -62,6 +62,113 @@ def generate_multi_arch_file(filename, arch_list):
     print("-" * 30)
 
 
+def append_to_arch_file(filename, new_arch_list):
+    """
+    在已有数据文件末尾追加 ArchData
+    :param filename: 文件名
+    :param new_arch_list: 新增的 ArchData 列表
+    """
+    if not os.path.exists(filename):
+        print(f"文件 {filename} 不存在，将创建新文件。")
+        generate_multi_arch_file(filename, new_arch_list)
+        return
+
+    # ==========================
+    # 1. 准备新数据
+    # ==========================
+    struct_fmt = "<BBBBII"
+    new_body_data = bytearray()
+    for arch in new_arch_list:
+        packed_item = struct.pack(struct_fmt, arch["no"], arch["level"], arch["x"], arch["y"], arch["current_hp"], arch["current_capacity"])
+        new_body_data.extend(packed_item)
+
+    with open(filename, "r+b") as f:
+        # ==========================
+        # 2. 读取并更新头部
+        # ==========================
+        header_bytes = f.read(10)
+        if len(header_bytes) < 10:
+            print("文件头损坏或文件为空")
+            return
+
+        old_timestamp, old_count = struct.unpack("<qH", header_bytes)
+
+        new_count = old_count + len(new_arch_list)
+        if new_count > 65535:
+            raise ValueError(f"追加后数量 ({new_count}) 超过 unsigned short 最大值 (65535)")
+
+        new_timestamp = int(time.time())
+
+        print(f"正在追加数据到: {filename}")
+        print(f"原数量: {old_count}, 新增: {len(new_arch_list)}, 总计: {new_count}")
+
+        # 覆写头部
+        f.seek(0)
+        f.write(struct.pack("<qH", new_timestamp, new_count))
+
+        # ==========================
+        # 3. 追加数据体
+        # ==========================
+        f.seek(0, 2)  # 移动到文件末尾
+        f.write(new_body_data)
+
+    print(f"追加完成。")
+    print("-" * 30)
+
+
+def modify_arch_in_file(filename, index, new_arch_data):
+    """
+    修改指定索引位置的 ArchData
+    :param filename: 文件名
+    :param index: 要修改的记录索引 (0-based)
+    :param new_arch_data: 新的 ArchData 字典
+    """
+    if not os.path.exists(filename):
+        print(f"文件 {filename} 不存在")
+        return
+
+    struct_fmt = "<BBBBII"
+    struct_size = 12
+    header_size = 10
+
+    with open(filename, "r+b") as f:
+        # 1. 读取头部以检查索引有效性
+        header_bytes = f.read(header_size)
+        if len(header_bytes) < header_size:
+            print("文件头损坏")
+            return
+
+        timestamp, count = struct.unpack("<qH", header_bytes)
+
+        if index < 0 or index >= count:
+            print(f"索引 {index} 超出范围 (当前数量: {count})")
+            return
+
+        # 2. 准备新数据
+        packed_item = struct.pack(
+            struct_fmt,
+            new_arch_data["no"],
+            new_arch_data["level"],
+            new_arch_data["x"],
+            new_arch_data["y"],
+            new_arch_data["current_hp"],
+            new_arch_data["current_capacity"],
+        )
+
+        # 3. 定位并写入
+        offset = header_size + index * struct_size
+        f.seek(offset)
+        f.write(packed_item)
+
+        # 4. 更新时间戳
+        f.seek(0)
+        new_timestamp = int(time.time())
+        f.write(struct.pack("<qH", new_timestamp, count))
+
+    print(f"已修改索引 {index} 的数据。")
+    print("-" * 30)
+
+
 def verify_file(filename):
     """
     读取并解析文件，验证数据正确性
@@ -114,25 +221,38 @@ if __name__ == "__main__":
 
     # hp在存储的数据文件里不重要，只是一个占位填充
     data_list = [
-        {"no": 0, "level": 4, "x": 0, "y": 0, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 4, "x": 10, "y": 0, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 4, "x": 11, "y": 0, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 4, "x": 10, "y": 1, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 4, "x": 11, "y": 1, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 1, "x": 10, "y": 2, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 1, "x": 11, "y": 2, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 1, "x": 10, "y": 3, "current_hp": 0, "current_capacity": 0},
-        {"no": 1, "level": 1, "x": 11, "y": 3, "current_hp": 0, "current_capacity": 0},
-        {"no": 10, "level": 1, "x": 30, "y": 30, "current_hp": 0, "current_capacity": 10},
-        {"no": 11, "level": 4, "x": 30, "y": 33, "current_hp": 0, "current_capacity": 10},
-        {"no": 12, "level": 1, "x": 30, "y": 36, "current_hp": 0, "current_capacity": 10},
-        {"no": 13, "level": 1, "x": 30, "y": 39, "current_hp": 0, "current_capacity": 10},
+        {"no": 0, "level": 4, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 4, "x": 10, "y": 0, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 4, "x": 11, "y": 0, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 4, "x": 10, "y": 1, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 4, "x": 11, "y": 1, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 1, "x": 10, "y": 2, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 1, "x": 11, "y": 2, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 1, "x": 10, "y": 3, "current_hp": 0, "current_capacity": 0},
+        # {"no": 1, "level": 1, "x": 11, "y": 3, "current_hp": 0, "current_capacity": 0},
+        # {"no": 10, "level": 1, "x": 30, "y": 30, "current_hp": 0, "current_capacity": 10},
+        # {"no": 11, "level": 4, "x": 30, "y": 33, "current_hp": 0, "current_capacity": 10},
+        # {"no": 12, "level": 1, "x": 30, "y": 36, "current_hp": 0, "current_capacity": 10},
+        # {"no": 13, "level": 1, "x": 30, "y": 39, "current_hp": 0, "current_capacity": 10},
+        {"no": 20, "level": 1, "x": 30, "y": 42, "current_hp": 0, "current_capacity": 0},
+        {"no": 30, "level": 1, "x": 30, "y": 46, "current_hp": 0, "current_capacity": 0},
+        {"no": 31, "level": 1, "x": 30, "y": 50, "current_hp": 0, "current_capacity": 0},
     ]
 
+    for i in range(40):
+        data_list.append({"no": 1, "level": 1, "x": 0, "y": i, "current_hp": 0, "current_capacity": 0})
     # 生成
-    generate_multi_arch_file(output_file, data_list)
+    # generate_multi_arch_file(output_file, data_list)
+
+    # 追加
+    # append_list = [{"no": 1, "level": 1, "x": 0, "y": _, "current_hp": 0, "current_capacity": 0} for _ in range(0, 6)]
+    # append_to_arch_file("data/MainVillageData.dat", append_list)
+
+    # 修改
+    modify_data = {"no": 0, "level": 1, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0}
+    modify_arch_in_file("data/MainVillageData.dat", 22, modify_data)
 
     # 验证
-    verify_file(output_file)
+    verify_file("data/MainVillageData.dat")
 
     # write_two_longlong(4000, 6000, "SourceData.dat")

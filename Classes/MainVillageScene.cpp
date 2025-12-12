@@ -6,6 +6,7 @@
 #include "DataHelper.h"
 #include "Arch.h"
 #include "Barbarian.h"
+#include "CocController.h"
 #include <chrono>
 #include <vector>
 
@@ -96,7 +97,7 @@ bool MainVillage::init()
 
     attackButton->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
         if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
-            //this->onShopButtonClick(sender);
+            this->onAttackButtonClick(sender);
         }
         });
     this->addChild(attackButton, 200);
@@ -152,6 +153,11 @@ void MainVillage::cleanup()
     DataHelper::writeSourceData(kSourceDataFile, gold_, elixir_);
     DataHelper::writeArchData(kMainVillageDataFile, std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(), arch_status_);
     Village::cleanup();
+}
+
+void MainVillage::onAttackButtonClick(Ref* sender)
+{
+    CocController::getInstance()->changeScene(1, gold_, elixir_);
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)
