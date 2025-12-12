@@ -9,7 +9,8 @@
 const std::string kSourceDataFile = "data/SourceData.dat";
 const std::string kMainVillageDataFile = "data/MainVillageData.dat";
 const std::string kOfflineDataFile[] = {
-    "data/Level1.dat"
+    "data/Level1.dat",
+    "data/Level2.dat",
 };
 
 // 数据文件操作

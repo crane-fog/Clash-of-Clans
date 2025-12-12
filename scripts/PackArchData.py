@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     # hp在存储的数据文件里不重要，只是一个占位填充
     data_list = [
-        {"no": 0, "level": 4, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0},
+        {"no": 0, "level": 2, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0},
         # {"no": 1, "level": 4, "x": 10, "y": 0, "current_hp": 0, "current_capacity": 0},
         # {"no": 1, "level": 4, "x": 11, "y": 0, "current_hp": 0, "current_capacity": 0},
         # {"no": 1, "level": 4, "x": 10, "y": 1, "current_hp": 0, "current_capacity": 0},
@@ -232,25 +232,27 @@ if __name__ == "__main__":
         # {"no": 1, "level": 1, "x": 11, "y": 3, "current_hp": 0, "current_capacity": 0},
         # {"no": 10, "level": 1, "x": 30, "y": 30, "current_hp": 0, "current_capacity": 10},
         # {"no": 11, "level": 4, "x": 30, "y": 33, "current_hp": 0, "current_capacity": 10},
-        # {"no": 12, "level": 1, "x": 30, "y": 36, "current_hp": 0, "current_capacity": 10},
-        # {"no": 13, "level": 1, "x": 30, "y": 39, "current_hp": 0, "current_capacity": 10},
-        {"no": 20, "level": 1, "x": 30, "y": 42, "current_hp": 0, "current_capacity": 0},
-        {"no": 30, "level": 1, "x": 30, "y": 46, "current_hp": 0, "current_capacity": 0},
+        {"no": 12, "level": 1, "x": 30, "y": 36, "current_hp": 0, "current_capacity": 1000},
+        {"no": 13, "level": 1, "x": 30, "y": 39, "current_hp": 0, "current_capacity": 1000},
+        {"no": 12, "level": 1, "x": 35, "y": 36, "current_hp": 0, "current_capacity": 1000},
+        {"no": 13, "level": 1, "x": 35, "y": 39, "current_hp": 0, "current_capacity": 1000},
+        # {"no": 20, "level": 1, "x": 30, "y": 42, "current_hp": 0, "current_capacity": 0},
+        {"no": 30, "level": 4, "x": 30, "y": 46, "current_hp": 0, "current_capacity": 0},
         {"no": 31, "level": 1, "x": 30, "y": 50, "current_hp": 0, "current_capacity": 0},
     ]
 
-    for i in range(40):
-        data_list.append({"no": 1, "level": 1, "x": 0, "y": i, "current_hp": 0, "current_capacity": 0})
+    for i in range(80):
+        data_list.append({"no": 1, "level": 1 + i // 40, "x": i // 40, "y": i % 40, "current_hp": 0, "current_capacity": 0})
     # 生成
-    # generate_multi_arch_file(output_file, data_list)
+    generate_multi_arch_file(output_file, data_list)
 
     # 追加
     # append_list = [{"no": 1, "level": 1, "x": 0, "y": _, "current_hp": 0, "current_capacity": 0} for _ in range(0, 6)]
     # append_to_arch_file("data/MainVillageData.dat", append_list)
 
     # 修改
-    modify_data = {"no": 0, "level": 1, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0}
-    modify_arch_in_file("data/MainVillageData.dat", 22, modify_data)
+    # modify_data = {"no": 0, "level": 1, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0}
+    # modify_arch_in_file("data/MainVillageData.dat", 22, modify_data)
 
     # 验证
     verify_file("data/MainVillageData.dat")
