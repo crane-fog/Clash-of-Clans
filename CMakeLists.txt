@@ -69,6 +69,7 @@ list(APPEND GAME_SOURCE
      Classes/TroopTargetManager.cpp
      Classes/Barbarian.cpp
      Classes/ShopPopup.cpp
+     Classes/HealthBar.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h

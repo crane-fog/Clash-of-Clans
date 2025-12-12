@@ -29,8 +29,6 @@ bool MainVillage::init()
     if (!DataHelper::readArchData(kMainVillageDataFile, data_time, this->arch_status_)) {
         return false;
     }
-    //读取圣水和金币储量
-    DataHelper::readSourceData("data/SourceData.dat", gold_, elixir_);
 
     std::vector<ArchData> arch_list;
     DataHelper::mapToList(arch_status_, arch_list);
@@ -313,7 +311,7 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
     // 播放建筑落地效果
     playBuildingDropEffect(pendingArch_);
     // 将建筑加入存档数据结构
-    arch_status_[pendingArch_->Arch::getx()][pendingArch_->Arch::gety()] = ArchData(pendingArch_);
+    arch_status_[pendingArch_->getx()][pendingArch_->gety()] = ArchData(pendingArch_);
 
     // 写入存档数据
     DataHelper::writeArchData(

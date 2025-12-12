@@ -26,7 +26,7 @@ public:
     CREATE_FUNC(MainVillage);
     void onShopButtonClick(Ref* sender);
     bool addBuildingByNO(unsigned char no, int price);
-public:
+
     void MainVillage::createCancelButton(Arch* pendingArch_);
     void MainVillage::createConfirmButton(Arch* pendingArch_);
     void MainVillage::cancelBuildingPlacement(Arch* pendingArch_);
@@ -36,11 +36,11 @@ public:
     //延迟调用商店面板，sec为延迟秒数
     void MainVillage::showShopPopupWithDelay(float sec);
 //获取金币数量
-unsigned long long getGold() {
+unsigned long long getGold() const {
     return gold_;
 }
 //获取圣水数量
-unsigned long long getElixir() {
+unsigned long long getElixir() const {
     return elixir_;
 }
 

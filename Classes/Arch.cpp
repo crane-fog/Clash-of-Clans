@@ -1,4 +1,4 @@
-  #include <vector>
+#include <vector>
 #include "Arch.h"
 #include "BaseMap.h"
 #include "CoordAdaptor.h"
@@ -375,7 +375,6 @@ void Arch::archUpgrade(Arch* arch) {
     
     unsigned char max_ = 4;
     if (arch->level_ < max_) {
-
         // 创建一个新的面板显示升级前后的数据和金币提示
         createUpgradeComparisonPanel(arch);
     }
