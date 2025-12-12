@@ -6,6 +6,8 @@
 #include "DataHelper.h"
 #include "Arch.h"
 #include "Barbarian.h"
+#include "Archer.h"
+#include "Giant.h"
 #include "CocController.h"
 #include <chrono>
 #include <vector>
@@ -38,10 +40,20 @@ bool MainVillage::init()
         Arch::create(arch, base_map_);
     }
 
-    auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(22, 22));
+    /*auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(22, 22));
     if (!barbarian2)return false;
     barbarian2->takeDamage(25);
-    base_map_->sprites_.push_back(barbarian2);
+    base_map_->sprites_.push_back(barbarian2);*/
+
+    /*auto archer = Archer::create(base_map_, 1, Vec2(22, 22));
+    if (!archer)return false;
+    archer->takeDamage(20);
+    base_map_->sprites_.push_back(archer);*/
+
+    auto giant = Giant::create(base_map_, 1, Vec2(22, 22));
+    if (!giant)return false;
+    giant->takeDamage(200);
+    base_map_->sprites_.push_back(giant);
 
     //// 创建一个角色 Sprite
     //auto barbarian_sprite = Sprite::create("Barbarian.png");

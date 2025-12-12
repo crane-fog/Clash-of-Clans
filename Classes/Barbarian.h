@@ -3,7 +3,7 @@
 #include<vector>
 #include<string>
 #include "Troop.h"
-const std::vector<std::string> pics = {
+const std::vector<std::string> pics_barbarian = {
         "troop/Barbarian1-2.webp",
         "troop/Barbarian1-2.webp",
         "troop/Barbarian1-2.webp",

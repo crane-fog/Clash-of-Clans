@@ -14,7 +14,7 @@ Barbarian::Barbarian(BaseMap* base_map, int level, cocos2d::Vec2 position)
 
 Barbarian* Barbarian::create(BaseMap* base_map, int level, cocos2d::Vec2 position) {
     Barbarian* pRet = new(std::nothrow) Barbarian(base_map,level,position); 
-    if (pRet && pRet->initWithFile(pics.at(level))) {
+    if (pRet && pRet->initWithFile(pics_barbarian.at(level))) {
         pRet->autorelease(); 
         return pRet;
     }
