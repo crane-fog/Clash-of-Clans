@@ -28,6 +28,10 @@ protected:
 	};
     //当前状态
 	Status status_;
+    // 当前目标
+    ITroopTarget* current_target_;
+    // 当前移动方向
+    cocos2d::Vec2 current_path_direction_;
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     //每次伤害
     const std::array<float, MAX_TROOP_LEVEL + 1> damage_per_attacks_;
@@ -108,6 +112,16 @@ public:
 
     // 检查是否可以攻击
     virtual bool canAttack() const;
+
+    // 状态机相关方法
+    void changeStatus(Status new_status);
+    virtual void findNewTarget();
+
+    // 状态更新方法
+    void updateIdleState(float dt);
+    void updateMovingState(float dt);
+    void updateAttackingState(float dt);
+    void updateTargetLostState(float dt);
 
 	// 死亡处理（这里提供基础如墓碑显示，如有需要子类重写如死亡溅射伤害等等）
     virtual void onDeath();

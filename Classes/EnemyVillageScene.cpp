@@ -44,6 +44,9 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
         TroopTargetManager::getInstance()->registerTroopTarget(p);
     }
 
+    // 预计算所有建筑的距离场
+    TroopTargetManager::getInstance()->precomputeDistanceFields();
+
 
     
     // 显示红色底色（我方可下兵范围）

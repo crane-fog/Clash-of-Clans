@@ -1,5 +1,6 @@
 #include "Troop.h"
 #include "TroopAttackManager.h"
+#include "TroopTargetManager.h"
 #include "BaseMap.h"
 Troop::Troop(BaseMap* base_map,
              int level,
@@ -32,6 +33,9 @@ Troop::Troop(BaseMap* base_map,
     , research_costs_(research_costs)
     , research_times_(research_times)
     , laboratory_level_requireds_(laboratory_level_requireds)
+    , status_(IDLE)
+    , current_target_(nullptr)
+    , current_path_direction_(cocos2d::Vec2::ZERO)
 {
     if (level_ < 1 || level_ > MAX_TROOP_LEVEL) {
         level_ = 1; // 默认等级为1，防止越界
@@ -146,8 +150,102 @@ void Troop::update(float dt) {
     if(!isAlive()) {
         return;
 	}
+
+    // 状态机逻辑
+    switch (status_) {
+        case IDLE:
+            updateIdleState(dt);
+            break;
+        case MOVING:
+            updateMovingState(dt);
+            break;
+        case ATTACKING:
+            updateAttackingState(dt);
+            break;
+        case TARGET_LOST:
+            updateTargetLostState(dt);
+            break;
+    }
+}
+
+void Troop::updateIdleState(float dt) {
+    // 查找目标
+    findNewTarget();
+
+    // 如果找到目标，切换到移动状态
+    if (current_target_) {
+        changeStatus(MOVING);
+    }
+}
+
+void Troop::updateMovingState(float dt) {
+    // 更新ZOrder
     int currentZ = CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_, getPosition()));
     if (currentZ != this->getLocalZOrder()) {
         this->setLocalZOrder(currentZ);
     }
+    // 检查目标是否还有效
+    if (!current_target_ || !current_target_->isAlive()) {
+        changeStatus(TARGET_LOST);
+        return;
+    }
+
+    // 检查是否已经在攻击范围内
+    if (TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, range_)) {
+        changeStatus(ATTACKING);
+        return;
+    }
+
+    // 获取移动方向
+    current_path_direction_ = TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, range_);
+
+    // 执行移动
+    if (current_path_direction_ != cocos2d::Vec2::ZERO) {
+        cocos2d::Vec2 new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
+        setCellPosition(new_position);
+        setPosition(getPixelPosition());//TODO:使用MoveTo？
+    }
+}
+
+void Troop::updateAttackingState(float dt) {
+    // 检查目标是否还有效
+    if (!current_target_ || !current_target_->isAlive()) {
+        changeStatus(TARGET_LOST);
+        return;
+    }
+
+    // 检查是否还在攻击范围内
+    if (!TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, range_)) {
+        changeStatus(MOVING);
+        return;
+    }
+
+    // 执行攻击（由TroopAttackManager处理定时）
+	// TODO: 考虑直接在这里定时攻击
+}
+
+void Troop::updateTargetLostState(float dt) {
+    // 清除当前目标
+    current_target_ = nullptr;
+    current_path_direction_ = cocos2d::Vec2::ZERO;
+
+    // 查找新目标
+    findNewTarget();
+
+    // 如果找到目标，切换到移动状态；否则保持IDLE状态
+    if (current_target_) {
+        changeStatus(MOVING);
+    } else {
+        changeStatus(IDLE);
+    }
+}
+
+void Troop::changeStatus(Status new_status) {
+    status_ = new_status;
+}
+
+void Troop::findNewTarget() {
+    float min_dist;
+    current_target_ = TroopTargetManager::getInstance()->getNearestTroopTarget(
+        getCellPosition(), min_dist, false, preferred_target_);
 }
