@@ -30,7 +30,7 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     time_t data_time = 0;
-    if (!DataHelper::readArchData(kOfflineDataFile[level - 1], data_time, arch_status_)) {
+    if (!DataHelper::readArchData(kOfflineDataFile[level], data_time, arch_status_)) {
         return false;
     }
 

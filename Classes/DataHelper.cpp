@@ -138,3 +138,31 @@ bool DataHelper::writeSourceData(const std::string& file_name, const unsigned lo
     outfile.write(reinterpret_cast<const char*>(&elixir), sizeof(unsigned long long));
     return true;
 }
+
+bool DataHelper::readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list)
+{
+    unsigned short num = 0;
+    std::ifstream infile(file_name, std::ios::binary);
+    if (!infile) {
+        return false;
+    }
+    infile.read(reinterpret_cast<char*>(&num), sizeof(unsigned short));
+    level_info_list.resize(num);
+    infile.read(reinterpret_cast<char*>(level_info_list.data()), sizeof(LevelInfo) * num);
+    infile.close();
+    return true;
+}
+
+bool DataHelper::writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list)
+{
+    unsigned short num = static_cast<unsigned short>(level_info_list.size());
+    std::ofstream outfile(file_name, std::ios::binary);
+    if (!outfile) {
+        return false;
+    }
+    outfile.write(reinterpret_cast<const char*>(&num), sizeof(unsigned short));
+    if (num > 0) {
+        outfile.write(reinterpret_cast<const char*>(level_info_list.data()), sizeof(LevelInfo) * num);
+    }
+    return true;
+}

@@ -205,6 +205,72 @@ def verify_file(filename):
             print(f"  #{i+1}: No={vals[0]}, Level={vals[1]}, Pos=({vals[2]},{vals[3]}), HP={vals[4]}, Cap={vals[5]}")
 
 
+def generate_level_info_file(filename, level_list):
+    """
+    生成包含多份 LevelInfo 的二进制文件
+    Struct LevelInfo {
+        int level;
+        unsigned char progress_;
+        unsigned int gold_;
+        unsigned int elixir_;
+    };
+    """
+    timestamp = int(time.time())
+    count = len(level_list)
+    if count > 65535:
+        raise ValueError("数量超过 unsigned short 最大值")
+
+    print(f"准备生成 LevelInfo 文件: {filename}")
+    print(f"数量: {count}")
+
+    # 仅存储数量，不存储时间戳
+    header_data = struct.pack("<H", count)
+
+    # LevelInfo 结构:
+    # level(i), progress(B), padding(3x), gold(I), elixir(I)
+    # 4 + 1 + 3 + 4 + 4 = 16 字节 (假设默认4字节对齐)
+    # 如果 C++ 端使用了 #pragma pack(1)，请改为 "<iBII"
+    struct_fmt = "<iB3xII"
+
+    body_data = bytearray()
+    for item in level_list:
+        packed_item = struct.pack(struct_fmt, item["level"], item["progress"], item["gold"], item["elixir"])
+        body_data.extend(packed_item)
+
+    with open(filename, "wb") as f:
+        f.write(header_data + body_data)
+
+    print(f"写入完成，文件大小: {len(header_data) + len(body_data)}")
+    print("-" * 30)
+
+
+def verify_level_info_file(filename):
+    if not os.path.exists(filename):
+        print(f"文件 {filename} 不存在")
+        return
+
+    print(f"验证 LevelInfo 文件: {filename}")
+    with open(filename, "rb") as f:
+        # 读取头部 (2字节: count)
+        header = f.read(2)
+        if len(header) < 2:
+            print("文件头损坏")
+            return
+        count = struct.unpack("<H", header)[0]
+        print(f"Count: {count}")
+
+        struct_fmt = "<iB3xII"
+        struct_size = 16
+
+        for i in range(count):
+            data = f.read(struct_size)
+            if len(data) < struct_size:
+                print("数据不完整")
+                break
+            vals = struct.unpack(struct_fmt, data)
+            print(f"  #{i+1}: Level={vals[0]}, Prog={vals[1]}, Gold={vals[2]}, Elixir={vals[3]}")
+
+
 def write_two_longlong(a: int, b: int, filename: str):
     # C++ long long = 8 字节 = struct 的 'q'
     # '<qq' 表示 little-endian、两个 long long
@@ -221,7 +287,7 @@ if __name__ == "__main__":
 
     # hp在存储的数据文件里不重要，只是一个占位填充
     data_list = [
-        {"no": 0, "level": 2, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0},
+        {"no": 0, "level": 4, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0},
         # {"no": 1, "level": 4, "x": 10, "y": 0, "current_hp": 0, "current_capacity": 0},
         # {"no": 1, "level": 4, "x": 11, "y": 0, "current_hp": 0, "current_capacity": 0},
         # {"no": 1, "level": 4, "x": 10, "y": 1, "current_hp": 0, "current_capacity": 0},
@@ -232,19 +298,17 @@ if __name__ == "__main__":
         # {"no": 1, "level": 1, "x": 11, "y": 3, "current_hp": 0, "current_capacity": 0},
         # {"no": 10, "level": 1, "x": 30, "y": 30, "current_hp": 0, "current_capacity": 10},
         # {"no": 11, "level": 4, "x": 30, "y": 33, "current_hp": 0, "current_capacity": 10},
-        {"no": 12, "level": 1, "x": 30, "y": 36, "current_hp": 0, "current_capacity": 1000},
-        {"no": 13, "level": 1, "x": 30, "y": 39, "current_hp": 0, "current_capacity": 1000},
-        {"no": 12, "level": 1, "x": 35, "y": 36, "current_hp": 0, "current_capacity": 1000},
-        {"no": 13, "level": 1, "x": 35, "y": 39, "current_hp": 0, "current_capacity": 1000},
-        # {"no": 20, "level": 1, "x": 30, "y": 42, "current_hp": 0, "current_capacity": 0},
-        {"no": 30, "level": 4, "x": 30, "y": 46, "current_hp": 0, "current_capacity": 0},
+        # {"no": 12, "level": 1, "x": 30, "y": 36, "current_hp": 0, "current_capacity": 10},
+        # {"no": 13, "level": 1, "x": 30, "y": 39, "current_hp": 0, "current_capacity": 10},
+        {"no": 20, "level": 1, "x": 30, "y": 42, "current_hp": 0, "current_capacity": 0},
+        {"no": 30, "level": 1, "x": 30, "y": 46, "current_hp": 0, "current_capacity": 0},
         {"no": 31, "level": 1, "x": 30, "y": 50, "current_hp": 0, "current_capacity": 0},
     ]
 
-    for i in range(80):
-        data_list.append({"no": 1, "level": 1 + i // 40, "x": i // 40, "y": i % 40, "current_hp": 0, "current_capacity": 0})
+    for i in range(40):
+        data_list.append({"no": 1, "level": 1, "x": 0, "y": i, "current_hp": 0, "current_capacity": 0})
     # 生成
-    generate_multi_arch_file(output_file, data_list)
+    # generate_multi_arch_file(output_file, data_list)
 
     # 追加
     # append_list = [{"no": 1, "level": 1, "x": 0, "y": _, "current_hp": 0, "current_capacity": 0} for _ in range(0, 6)]
@@ -255,6 +319,14 @@ if __name__ == "__main__":
     # modify_arch_in_file("data/MainVillageData.dat", 22, modify_data)
 
     # 验证
-    verify_file("data/MainVillageData.dat")
+    verify_file("data/level2.dat")
+
+    # LevelInfo 示例
+    level_data = [
+        {"level": 1, "progress": 0, "gold": 0, "elixir": 0},
+        {"level": 2, "progress": 0, "gold": 2000, "elixir": 2000},
+    ]
+    generate_level_info_file("data/LevelInfo.dat", level_data)
+    verify_level_info_file("data/LevelInfo.dat")
 
     # write_two_longlong(4000, 6000, "SourceData.dat")
