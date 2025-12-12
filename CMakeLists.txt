@@ -70,6 +70,7 @@ list(APPEND GAME_SOURCE
      Classes/Barbarian.cpp
      Classes/ShopPopup.cpp
      Classes/HealthBar.cpp
+     Classes/EnemyVillageScene.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -91,6 +92,7 @@ list(APPEND GAME_HEADER
      Classes/ITroopTarget.h
      Classes/Barbarian.h
      Classes/IArchTarget.h
+     Classes/EnemyVillageScene.h
      )
 
 if(ANDROID)

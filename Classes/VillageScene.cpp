@@ -18,7 +18,5 @@ bool Village::init()
     this->addChild(base_map_, 0);
     this->setContentSize(base_map_->getContentSize());
 
-
-
     return true;
 }
