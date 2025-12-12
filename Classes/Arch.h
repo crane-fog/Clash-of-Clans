@@ -4,7 +4,7 @@
 #include "cocos2d.h"
 #include "ArchInfo.h"
 #include "ITroopTarget.h"
-#include"UIparts.h"
+#include "UIparts.h"
 #include <string.h>
 
 class BaseMap;
@@ -109,13 +109,11 @@ public:
 
     void Arch::onUpgradeCancel(Ref* sender);
     void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a);
-    UI getx(Arch * data) {
-        return data->x_;
-      }
-    UI getx() {
+
+    UI getx() const {
         return this->x_;
     }
-    UI gety() {
+    UI gety() const {
         return this->y_;
     }
 

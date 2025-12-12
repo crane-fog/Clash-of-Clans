@@ -23,8 +23,6 @@ private:
     cocos2d::Vec2 last_mouse_pos_;
     cocos2d::EventListenerMouse* mouse_listener_ = nullptr;
 
-    
-
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
@@ -45,8 +43,6 @@ public:
     void setInputEnabled(bool enabled);//禁用鼠标调用
 
     cocos2d::Node* currentArchPanel_ = nullptr;  // 当前打开的建筑面板
-
-
 };
 
 #endif // __BASE_MAP_H__
