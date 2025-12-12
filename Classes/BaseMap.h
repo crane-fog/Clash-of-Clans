@@ -28,6 +28,8 @@ public:
     virtual bool init() override;
     // 当对象被渲染时被自动调用
     virtual void onEnter() override;
+    // 当对象退出时被自动调用
+    virtual void onExit() override;
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(BaseMap);
 

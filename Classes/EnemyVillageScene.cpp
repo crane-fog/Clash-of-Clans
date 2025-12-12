@@ -3,6 +3,10 @@
 #include "MainVillageScene.h"
 #include "CocController.h"
 #include "TroopTargetManager.h"
+#include "Arch.h"
+#include "CoordAdaptor.h"
+#include <set>
+#include <utility>
 
 EnemyVillage* EnemyVillage::create(int level, unsigned long long gold, unsigned long long elixir)
 {
@@ -26,7 +30,7 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     time_t data_time = 0;
-    if (!DataHelper::readArchData(kOfflineDataFile[level - 1], data_time, arch_status_)) {
+    if (!DataHelper::readArchData(kOfflineDataFile[level], data_time, arch_status_)) {
         return false;
     }
 
@@ -35,8 +39,41 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
 
     Arch* p = nullptr;
     for (auto& arch : arch_list) {
-        p = Arch::create(arch, base_map_);
+        p = Arch::create(arch, base_map_, false);
         TroopTargetManager::getInstance()->registerTroopTarget(p);
+    }
+
+
+    
+    // 显示红色底色（我方可下兵范围）
+    // 包裹的范围是所有地方建筑向外延伸1格
+    std::set<std::pair<int, int>> occupied_cells;
+    for (auto arch : base_map_->archs_) {
+        float size_f;
+        arch->getCellPosition(size_f);
+        int size = static_cast<int>(size_f);
+        int x = static_cast<int>(arch->getx());
+        int y = static_cast<int>(arch->gety());
+
+        for (int i = x - 1; i < x + size + 1; ++i) {
+            for (int j = y - 1; j < y + size + 1; ++j) {
+                if (i >= 0 && i < MAP_SIZE && j >= 0 && j < MAP_SIZE) {
+                    occupied_cells.insert({ i, j });
+                }
+            }
+        }
+    }
+
+    auto red_layer = cocos2d::Node::create();
+    base_map_->addChild(red_layer, 0);
+
+    for (const auto& cell : occupied_cells) {
+        auto sprite = cocos2d::Sprite::create("SingleCellAlphaRed.png");
+        if (sprite) {
+            cocos2d::Vec2 pos = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(cell.first + 0.5f, cell.second + 0.5f));
+            sprite->setPosition(pos);
+            red_layer->addChild(sprite);
+        }
     }
 
 

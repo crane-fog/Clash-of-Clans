@@ -9,7 +9,7 @@ USING_NS_CC;
 ArchData::ArchData(Arch* a) : no_(a->no_), level_(a->level_), x_(a->x_), y_(a->y_),
 current_hp_(a->current_hp_), current_capacity_(a->current_capacity_) {}
 
-Arch* Arch::create(const ArchData& data, BaseMap* base_map)
+Arch* Arch::create(const ArchData& data, BaseMap* base_map, bool is_mine)
 {
     Arch* pRet;
     if (data.no_ == WALL) {
@@ -19,6 +19,7 @@ Arch* Arch::create(const ArchData& data, BaseMap* base_map)
         pRet = new(std::nothrow) Arch(data, base_map);
     }
     if (pRet && pRet->initWithFile(kArchInfo.at(data.no_)[data.level_ - 1].image_)) {
+        pRet->is_mine_ = is_mine;
         pRet->autorelease();
         return pRet;
     }
@@ -55,15 +56,26 @@ void Arch::onEnter()
 
     // 添加触摸监听
     // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
-    auto listener = EventListenerTouchOneByOne::create();
-    listener->setSwallowTouches(true);
+    if (is_mine_) {
+        touch_listener_ = EventListenerTouchOneByOne::create();
+        touch_listener_->setSwallowTouches(true);
 
-    listener->onTouchBegan = CC_CALLBACK_2(Arch::onTouchDown, this);
-    listener->onTouchMoved = CC_CALLBACK_2(Arch::onTouchMove, this);
-    listener->onTouchEnded = CC_CALLBACK_2(Arch::onTouchUp, this);
-    listener->onTouchCancelled = CC_CALLBACK_2(Arch::onTouchCancel, this);
+        touch_listener_->onTouchBegan = CC_CALLBACK_2(Arch::onTouchDown, this);
+        touch_listener_->onTouchMoved = CC_CALLBACK_2(Arch::onTouchMove, this);
+        touch_listener_->onTouchEnded = CC_CALLBACK_2(Arch::onTouchUp, this);
+        touch_listener_->onTouchCancelled = CC_CALLBACK_2(Arch::onTouchCancel, this);
 
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+        _eventDispatcher->addEventListenerWithSceneGraphPriority(touch_listener_, this);
+    }
+}
+
+void Arch::onExit()
+{
+    if (is_mine_ && touch_listener_) {
+        _eventDispatcher->removeEventListener(touch_listener_);
+        touch_listener_ = nullptr;
+    }
+    Sprite::onExit();
 }
 
 void Arch::createHighlight()

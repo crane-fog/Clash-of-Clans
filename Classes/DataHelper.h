@@ -9,7 +9,21 @@
 const std::string kSourceDataFile = "data/SourceData.dat";
 const std::string kMainVillageDataFile = "data/MainVillageData.dat";
 const std::string kOfflineDataFile[] = {
-    "data/Level1.dat"
+    "data/LevelInfo.dat",
+    "data/Level1.dat",
+    "data/Level2.dat",
+};
+
+struct LevelInfo {
+    // 关卡ID
+    int level;
+
+    // 关卡最大进度(0-100)
+    unsigned char progress_;
+
+    // 剩余可获取的资源量
+    unsigned int gold_;
+    unsigned int elixir_;
 };
 
 // 数据文件操作
@@ -25,9 +39,11 @@ public:
     // 读数据文件
     static bool readArchData(const std::string& file_name, time_t& time, ArchData target[MAP_SIZE][MAP_SIZE]);
     static bool readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir);
+    static bool readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list);
 
     // 写数据文件
     static bool writeArchData(const std::string& file_name, time_t time, const ArchData source[MAP_SIZE][MAP_SIZE]);
     static bool writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir);
+    static bool writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list);
 };
 #endif // __DATA_HELPER_H__
