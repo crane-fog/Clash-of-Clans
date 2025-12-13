@@ -43,8 +43,10 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
         p = Arch::create(arch, base_map_, false);
         TroopTargetManager::getInstance()->registerTroopTarget(p);
     }
-
+    auto barbarian = Barbarian::create(base_map_, 1, cocos2d::Vec2(0.5, 0.5));
+    if (!barbarian)return false;
 	std::vector<Troop*> troop_list;
+	troop_list.push_back(barbarian);
     // 预计算所有建筑的距离场
     TroopTargetManager::getInstance()->precomputeDistanceFields(troop_list);
 

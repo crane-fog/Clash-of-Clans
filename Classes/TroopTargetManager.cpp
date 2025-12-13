@@ -125,15 +125,44 @@ ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& pos
 void TroopTargetManager::onTargetDestroyed(ITroopTarget* target) {
     if (!target) return;
 
-    // 清理该建筑对应的所有距离场数据（墙除外，墙应该没有距离场数据）
-    for (auto& troop_distance_fields : distance_fields_) {
-        troop_distance_fields.erase(target);
+    // 获取建筑位置
+    float target_size;
+    cocos2d::Vec2 target_pos = target->getCellPosition(target_size);
+
+    if (target->getTargetType() == Troop::WALLT) {
+        // 墙被摧毁：将wall_cost_map_中对应位置设为普通地面
+        // 墙是1x1的，只需要把其格子设置为地面
+        int x = static_cast<int>(target_pos.x);
+        int y = static_cast<int>(target_pos.y);
+        if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+            wall_cost_map_[x][y] = 0.0f; // 设为普通地面
+        }
+
+        // 墙的摧毁会影响所有地面兵种的路径，但这里暂时不重新计算
+        // 因为重新计算所有距离场开销太大，应该在需要时延迟计算
+        // TODO: 延迟计算
     }
-    // TODO:建筑摧毁后更新相关距离场数据
-    // 注意：这里不重新计算wall_cost_map_，因为：
-    // 1. 建筑摧毁后，该位置变为空地，不影响其他建筑的路径
-    // 2. 如果需要重新计算wall_cost_map_，应该在建筑被摧毁后重新调用precomputeWallCostMap()
-    // 3. 这样可以避免频繁重新计算代价地图
+    else {
+        // 其他建筑被摧毁：清除对应的距离场数据
+        for (auto& troop_distance_fields : distance_fields_) {
+            troop_distance_fields.erase(target);
+        }
+        // 计算建筑占据的格子范围
+        int left = static_cast<int>(target_pos.x - target_size / 2.0f);
+        int right = static_cast<int>(target_pos.x + target_size / 2.0f);
+        int bottom = static_cast<int>(target_pos.y - target_size / 2.0f);
+        int top = static_cast<int>(target_pos.y + target_size / 2.0f);
+
+        // 将wall_cost_map_中对应位置设为普通地面
+        for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
+            for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+                wall_cost_map_[x][y] = 0.0f; // 设为普通地面
+            }
+        }
+
+        // 其他建筑的摧毁会影响现有路径
+        // TODO: 延迟计算
+    }
 }
 
 void TroopTargetManager::precomputeWallCostMap() {
