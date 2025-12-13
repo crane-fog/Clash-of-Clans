@@ -32,25 +32,26 @@ bool Barbarian::initWithFile(const std::string& filename) {
 }
 
 void Barbarian::performAttack() {
-    // 查找最近的目标建筑（优先资源建筑）
-    float distance;
-    ITroopTarget* target = TroopTargetManager::getInstance()
-        ->getNearestTroopTarget(getCellPosition(),distance,true,NONE);
-
-    if (!target || !target->isAlive()) {
-        return;  // 没有有效目标
+    if (!current_target_ || !current_target_->isAlive()) {
+        changeStatus(TARGET_LOST);
+        return;
     }
 
-    // 检查是否在攻击范围内（近战攻击需要非常近的距离）
-    if (distance > range_) {
-        return;  // 距离太远，无法攻击
+    // 检查是否在攻击范围内
+    if (!TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, this)) {
+        changeStatus(MOVING);
+        return;
     }
 
     // 执行近战攻击
     float damage = getCurrentDamage();
-    target->takeDamage(damage);
+    current_target_->takeDamage(damage);
+
+    // 如果目标被摧毁，标记为目标丢失
+    if (!current_target_->isAlive()) {
+        changeStatus(TARGET_LOST);
+    }
 
     // 播放攻击动画
-
     // 播放攻击音效
 }

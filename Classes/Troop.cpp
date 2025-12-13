@@ -191,13 +191,13 @@ void Troop::updateMovingState(float dt) {
     }
 
     // 检查是否已经在攻击范围内
-    if (TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, range_)) {
+    if (TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, this)) {
         changeStatus(ATTACKING);
         return;
     }
 
     // 获取移动方向
-    current_path_direction_ = TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, range_);
+    current_path_direction_ = TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, this);
 
     // 执行移动
     if (current_path_direction_ != cocos2d::Vec2::ZERO) {
@@ -215,7 +215,7 @@ void Troop::updateAttackingState(float dt) {
     }
 
     // 检查是否还在攻击范围内
-    if (!TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, range_)) {
+    if (!TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, this)) {
         changeStatus(MOVING);
         return;
     }

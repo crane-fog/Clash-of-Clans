@@ -44,8 +44,9 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
         TroopTargetManager::getInstance()->registerTroopTarget(p);
     }
 
+	std::vector<Troop*> troop_list;
     // 预计算所有建筑的距离场
-    TroopTargetManager::getInstance()->precomputeDistanceFields();
+    TroopTargetManager::getInstance()->precomputeDistanceFields(troop_list);
 
 
     

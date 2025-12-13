@@ -2,6 +2,7 @@
 #define __TROOP_H__
 #include "cocos2d.h"
 #include "IArchTarget.h"
+#include "ITroopTarget.h"
 #include "HealthBar.h"
 #include "CoordAdaptor.h"
 #include "BaseMap.h"
@@ -49,6 +50,15 @@ protected:
     const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
 
 public:
+    enum TroopType : unsigned char {
+        BARBARIAN = 0,
+        ARCHER = 1,
+        GIANT = 2,
+        WALL_BREAKER = 3,
+        DRAGON = 4,
+        BALLOON = 5
+    };
+
     /*以下为升级时不改变的属性，初始化时直接赋值，由于是const直接设置为public允许外部读取*/
     enum PreferredTarget : uchar {//与ArchInfo.h里的ArchType对应
         OTHER = 0, // 其它
@@ -125,6 +135,9 @@ public:
 
 	// 死亡处理（这里提供基础如墓碑显示，如有需要子类重写如死亡溅射伤害等等）
     virtual void onDeath();
+
+	// 获取士兵类型索引（用于区分不同子类类型）
+    virtual TroopType getTroopTypeIndex() const = 0;
 
     /*以下为对接口IArchTarget的实现*/
     // 受到伤害
