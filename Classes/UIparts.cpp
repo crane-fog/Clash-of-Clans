@@ -42,24 +42,11 @@ bool UIBars::init()
         });
     this->addChild(backButton);
 
-    auto button = Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
+    // 注册金币更新事件监听
+    goldUpdateListener = cocos2d::EventListenerCustom::create("update_gold_event", CC_CALLBACK_1(UIBars::onGoldUpdated, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(goldUpdateListener, this);
 
-    button->setTitleText("SHOP");
-    button->setScale(0.5f);
-    button->setPosition(Vec2(visibleSize.width-100, 100)); 
-    button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-        switch (type)
-        {
-            case ui::Widget::TouchEventType::BEGAN:
-                break;
-            case ui::Widget::TouchEventType::ENDED:
-                break;
-            default:
-                break;
-        }
-        });
 
-    this->addChild(button);
     return true;
 }
 void UIBars::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, unsigned long long nowAmount, float x, float y, unsigned long long UpperLimit)
@@ -121,6 +108,13 @@ void UIBars::updateProgressBar(const std::string& title, unsigned long long nowA
             break;
         }
     }
+}
+
+
+
+void UIBars::onGoldUpdated(cocos2d::EventCustom* event) {
+    unsigned long long gold = *static_cast<unsigned long long*>(event->getUserData());
+    updateProgressBar("金币", gold);
 }
 
 

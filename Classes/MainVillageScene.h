@@ -4,7 +4,10 @@
 #include "cocos2d.h"
 #include "VillageScene.h"
 #include "Arch.h"
-//尝试把资源单独出来一个类，之前的获取有点搞不来
+//尝试把资源单独出来一个类单例，之前的获取有点搞不来
+//使用例子：       
+// unsigned long long currentGold = GameManager::getInstance()->getGold();
+//GameManager::getInstance()->setGold(currentGold - item.price);
 class GameManager {
 public:
     static GameManager* getInstance() {
@@ -13,16 +16,34 @@ public:
     }
 
     void setGold(unsigned long long gold) {
-        this->gold = gold;
+        this->MyGold = gold;
+        // 发布金币更新事件
+        cocos2d::EventCustom event("update_gold_event");
+        event.setUserData(&this->MyGold);
+        cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
     }
 
     unsigned long long getGold() const {
-        return gold;
+        return MyGold;
+    }
+    void setExixir(unsigned long long gold) {
+        this->MyExilir = gold;
+        // 发布金币更新事件
+        cocos2d::EventCustom event("update_exilir_event");
+        event.setUserData(&this->MyExilir);
+        cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+    }
+
+    unsigned long long getExilir() const {
+        return MyExilir;
     }
 
 private:
-    unsigned long long gold = 0;
+    unsigned long long MyGold = 1000;
+    unsigned long long MyExilir = 1000;
 };
+
+
 
 // 主村庄场景类
 class MainVillage : public Village {
@@ -33,6 +54,7 @@ private:
     unsigned long long gold_;
     // 圣水储量
     unsigned long long elixir_ ;
+
 
 public:
     // 初始化，当对象被创建时被自动调用

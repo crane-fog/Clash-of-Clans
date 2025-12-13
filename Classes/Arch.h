@@ -10,6 +10,8 @@
 class BaseMap;
 class Arch;
 
+
+
 // 建筑数据
 struct ArchData {
     typedef unsigned int UI;
