@@ -201,6 +201,9 @@ void Troop::updateMovingState(float dt) {
 
     // 执行移动
     if (current_path_direction_ != cocos2d::Vec2::ZERO) {
+        // 归一化方向向量，确保所有方向的移动速度一致
+        // 斜向向量（如{1,1}）的模长为sqrt(2)，需要归一化为单位向量
+        current_path_direction_.normalize();
         cocos2d::Vec2 new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
         setCellPosition(new_position);
         setPosition(getPixelPosition());//TODO:使用MoveTo？
