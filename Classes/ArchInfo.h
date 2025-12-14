@@ -123,15 +123,15 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
         {"arch/Elixir_Storage3.webp", 3, 3, RESOURCE, GOLD, 1500, 300, 450, 6000},
         {"arch/Elixir_Storage4.webp", 4, 3, RESOURCE, GOLD, 3000, 900, 600, 12000}}},
     {GOLD_MINE, {
-        {"arch/Gold_Mine1.webp", 1, 3, RESOURCE, ELIXIR, 150, 5, 75, 1000, 200},
-        {"arch/Gold_Mine2.webp", 2, 3, RESOURCE, ELIXIR, 300, 15, 150, 2000, 400},
+        {"arch/Gold_Mine1.webp", 1, 3, RESOURCE, ELIXIR, 150, 5, 75, 1000, 300},
+        {"arch/Gold_Mine2.webp", 2, 3, RESOURCE, ELIXIR, 300, 15, 150, 2000, 450},
         {"arch/Gold_Mine3.webp", 3, 3, RESOURCE, ELIXIR, 700, 60, 300, 3000, 600},
-        {"arch/Gold_Mine4.webp", 4, 3, RESOURCE, ELIXIR, 1400, 120, 400, 5000, 800}}},
+        {"arch/Gold_Mine4.webp", 4, 3, RESOURCE, ELIXIR, 1400, 120, 400, 5000, 900}}},
     {ELIXIR_COLLECTOR, {
-        {"arch/Elixir_Collector1.webp", 1, 3, RESOURCE, GOLD, 150, 5, 75, 1000, 200},
-        {"arch/Elixir_Collector2.webp", 2, 3, RESOURCE, GOLD, 300, 15, 150, 2000, 400},
+        {"arch/Elixir_Collector1.webp", 1, 3, RESOURCE, GOLD, 150, 5, 75, 1000, 300},
+        {"arch/Elixir_Collector2.webp", 2, 3, RESOURCE, GOLD, 300, 15, 150, 2000, 450},
         {"arch/Elixir_Collector3.webp", 3, 3, RESOURCE, GOLD, 700, 60, 300, 3000, 600},
-        {"arch/Elixir_Collector4.webp", 4, 3, RESOURCE, GOLD, 1400, 120, 400, 5000, 800}}},
+        {"arch/Elixir_Collector4.webp", 4, 3, RESOURCE, GOLD, 1400, 120, 400, 5000, 900}}},
     {BARRACKS, {
         {"arch/Barracks1.webp", 1, 3, OTHER, ELIXIR, 100, 10, 100},
         {"arch/Barracks2.webp", 2, 3, OTHER, ELIXIR, 500, 15, 200},
