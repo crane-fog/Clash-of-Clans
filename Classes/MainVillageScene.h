@@ -76,6 +76,8 @@ public:
     void MainVillage::playBuildingDropEffect(Arch* arch);
     //延迟调用商店面板，sec为延迟秒数
     void MainVillage::showShopPopupWithDelay(float sec);
+
+    void onAttackButtonClick(Ref* sender);
 //获取金币数量
 unsigned long long getGold() {
     return gold_;
