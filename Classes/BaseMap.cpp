@@ -77,6 +77,15 @@ void BaseMap::onEnter()
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouse_listener_, this);
 }
 
+void BaseMap::onExit()
+{
+    if (mouse_listener_) {
+        _eventDispatcher->removeEventListener(mouse_listener_);
+        mouse_listener_ = nullptr;
+    }
+    Node::onExit();
+}
+
 void BaseMap::changeLinedMap()
 {
     sprites_[0]->setVisible(!sprites_[0]->isVisible());

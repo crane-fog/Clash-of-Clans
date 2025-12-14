@@ -6,6 +6,9 @@
 #include "DataHelper.h"
 #include "Arch.h"
 #include "Barbarian.h"
+#include "Archer.h"
+#include "Giant.h"
+#include "CocController.h"
 #include <chrono>
 #include <vector>
 
@@ -29,8 +32,6 @@ bool MainVillage::init()
     if (!DataHelper::readArchData(kMainVillageDataFile, data_time, this->arch_status_)) {
         return false;
     }
-    //读取圣水和金币储量
-    DataHelper::readSourceData("data/SourceData.dat", gold_, elixir_);
 
     std::vector<ArchData> arch_list;
     DataHelper::mapToList(arch_status_, arch_list);
@@ -39,21 +40,33 @@ bool MainVillage::init()
         Arch::create(arch, base_map_);
     }
 
-    auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(0, 1));
+    /*auto barbarian2 = Barbarian::create(base_map_, 1, Vec2(22, 22));
     if (!barbarian2)return false;
-    base_map_->sprites_.push_back(barbarian2);
+    barbarian2->takeDamage(25);
+    base_map_->sprites_.push_back(barbarian2);*/
 
-    // 创建一个角色 Sprite
-    auto barbarian_sprite = Sprite::create("Barbarian.png");
-    if (!barbarian_sprite) {
-        return false;
-    }
-    // 将锚点设置为底部中心
-    barbarian_sprite->setAnchorPoint(Vec2(0.5, 0));
-    barbarian_sprite->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(0, 0)));
-    // 这个 base_map_ 从 Village 基类继承来
-    base_map_->sprites_.push_back(barbarian_sprite);
-    base_map_->addChild(barbarian_sprite, 2);
+    /*auto archer = Archer::create(base_map_, 1, Vec2(22, 22));
+    if (!archer)return false;
+    archer->takeDamage(20);
+    base_map_->sprites_.push_back(archer);*/
+
+    auto giant = Giant::create(base_map_, 1, Vec2(22, 22));
+    if (!giant)return false;
+    giant->setDead();
+    giant->takeDamage(200);
+    base_map_->sprites_.push_back(giant);
+
+    //// 创建一个角色 Sprite
+    //auto barbarian_sprite = Sprite::create("Barbarian.png");
+    //if (!barbarian_sprite) {
+    //    return false;
+    //}
+    //// 将锚点设置为底部中心
+    //barbarian_sprite->setAnchorPoint(Vec2(0.5, 0));
+    //barbarian_sprite->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(0, 0)));
+    //// 这个 base_map_ 从 Village 基类继承来
+    //base_map_->sprites_.push_back(barbarian_sprite);
+    //base_map_->addChild(barbarian_sprite, 2);
 
     // 创建UI层（固定UI层）
     ui_layer_ = UIBars::create();
@@ -100,7 +113,7 @@ bool MainVillage::init()
 
     attackButton->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
         if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
-            //this->onShopButtonClick(sender);
+            this->onAttackButtonClick(sender);
         }
         });
     this->addChild(attackButton, 200);
@@ -112,12 +125,36 @@ void MainVillage::onEnter()
 {
     Village::onEnter();
 
-    // 让角色动
-    auto move_by1 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(44, 0)));
-    auto move_by2 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, 44)));
-    auto move_by3 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(-44, 0)));
-    auto move_by4 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, -44)));
-    auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
+    //// 让角色动
+    //auto move_by1 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(44, 0)));
+    //auto move_by2 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, 44)));
+    //auto move_by3 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(-44, 0)));
+    //auto move_by4 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, -44)));
+    //auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
+    
+    float moveDuration = 5.0f;  // 移动所需时间（秒）
+    float delayTime = 2.0f;  // 停顿时间（秒）
+
+    // 构建动作序列
+    auto moveToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_,Vec2(22.1,22-0.3)));
+    auto delay1 = DelayTime::create(delayTime);
+
+    auto moveToBottom = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(0.1, 44-0.3)));
+    auto backToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(22.1, 22-0.3)));
+    auto delay2 = DelayTime::create(delayTime);
+
+    auto backToTop = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(44.1, -0.3)));
+
+    // 将所有动作串成一个 Sequence
+    auto seq_action = Sequence::create(
+        moveToMiddle1,
+        delay1,
+        moveToBottom,
+        backToMiddle1,
+        delay2,
+        backToTop,
+        nullptr  // 必须以 nullptr 结尾
+    );
     auto repeatAction = RepeatForever::create(seq_action);
     base_map_->sprites_.back()->runAction(repeatAction);
 }
@@ -133,6 +170,11 @@ void MainVillage::cleanup()
     DataHelper::writeSourceData(kSourceDataFile, gold_, elixir_);
     DataHelper::writeArchData(kMainVillageDataFile, std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(), arch_status_);
     Village::cleanup();
+}
+
+void MainVillage::onAttackButtonClick(Ref* sender)
+{
+    CocController::getInstance()->changeScene(1, gold_, elixir_);
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)
@@ -292,7 +334,7 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
     // 播放建筑落地效果
     playBuildingDropEffect(pendingArch_);
     // 将建筑加入存档数据结构
-    arch_status_[pendingArch_->Arch::getx()][pendingArch_->Arch::gety()] = ArchData(pendingArch_);
+    arch_status_[pendingArch_->getx()][pendingArch_->gety()] = ArchData(pendingArch_);
 
     // 写入存档数据
     DataHelper::writeArchData(

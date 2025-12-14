@@ -11,7 +11,6 @@ private:
     // 变量示例：
     // 一个记录当前正在运行的场景的变量，0=MainVillage，1=EnemyVillage
     int current_scene_;
-
 public:
     // 获取单例实例，第一次调用时创建
     static CocController* getInstance();
@@ -21,7 +20,7 @@ public:
 
     // 控制器函数示例：
     // 切换当前场景，此处的暂定机制为：在任何时候的 Scene 栈中最多只有两个 Scene：自己村庄的 Scene、正在攻击的村庄的 Scene
-    void changeScene();
+    void changeScene(int level_no = 0, unsigned long long gold = 0, unsigned long long elixir = 0);
 };
 
 #endif // __COCCONTROLLER_H__

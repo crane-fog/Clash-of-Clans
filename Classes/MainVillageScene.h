@@ -28,7 +28,7 @@ public:
     }
     void setElixir(unsigned long long Elixir) {
         this->MyElixir = Elixir;
-        // 发布金币更新事件
+        // 发布圣水更新事件
         cocos2d::EventCustom event("update_elixir_event");
         event.setUserData(&this->MyElixir);
         cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
@@ -76,6 +76,8 @@ public:
     void MainVillage::playBuildingDropEffect(Arch* arch);
     //延迟调用商店面板，sec为延迟秒数
     void MainVillage::showShopPopupWithDelay(float sec);
+
+    void onAttackButtonClick(Ref* sender);
 //获取金币数量
 unsigned long long getGold() {
     return gold_;

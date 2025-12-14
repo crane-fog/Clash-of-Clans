@@ -1,5 +1,6 @@
 #include "CocController.h"
 #include "MainVillageScene.h"
+#include "EnemyVillageScene.h"
 
 USING_NS_CC;
 
@@ -22,14 +23,16 @@ void CocController::endGame()
     Director::getInstance()->end();
 }
 
-void CocController::changeScene()
+void CocController::changeScene(int level_no, unsigned long long gold, unsigned long long elixir)
 {
     // 在自己的村庄时
     if (current_scene_ == 0) {
-        // Director::getInstance()->pushScene(EnemyVillage::create());
+        current_scene_ = 1;
+        Director::getInstance()->pushScene(EnemyVillage::create(level_no, gold, elixir));
     }
     // 在敌人村庄时
     else if (current_scene_ == 1) {
-        // Director::getInstance()->popScene();
+        current_scene_ = 0;
+        Director::getInstance()->popScene();
     }
 }

@@ -2,6 +2,7 @@
 #define __TROOP_H__
 #include "cocos2d.h"
 #include "IArchTarget.h"
+#include "ITroopTarget.h"
 #include "HealthBar.h"
 #include "CoordAdaptor.h"
 #include "BaseMap.h"
@@ -20,6 +21,19 @@ protected:
     cocos2d::Vec2 position_;
     // 当前生命值
     float current_hitpoints_;
+    enum Status : uchar {
+        IDLE = 0, // 空闲
+        MOVING = 1, // 移动
+        ATTACKING = 2, // 攻击
+		TARGET_LOST = 3, // 目标丢失
+		DEAD = 4 // 死亡
+	};
+    //当前状态
+	Status status_;
+    // 当前目标
+    ITroopTarget* current_target_;
+    // 当前移动方向
+    cocos2d::Vec2 current_path_direction_;
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     //每次伤害
     const std::array<float, MAX_TROOP_LEVEL + 1> damage_per_attacks_;
@@ -37,6 +51,15 @@ protected:
     const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
 
 public:
+    enum TroopType : unsigned char {
+        BARBARIAN = 0,
+        ARCHER = 1,
+        GIANT = 2,
+        WALL_BREAKER = 3,
+        DRAGON = 4,
+        BALLOON = 5
+    };
+
     /*以下为升级时不改变的属性，初始化时直接赋值，由于是const直接设置为public允许外部读取*/
     enum PreferredTarget : uchar {//与ArchInfo.h里的ArchType对应
         OTHER = 0, // 其它
@@ -101,6 +124,23 @@ public:
     // 检查是否可以攻击
     virtual bool canAttack() const;
 
+    // 状态机相关方法
+    void changeStatus(Status new_status);
+	void setDead() { status_ = DEAD; }
+    virtual void findNewTarget();
+
+    // 状态更新方法
+    void updateIdleState(float dt);
+    void updateMovingState(float dt);
+    void updateAttackingState(float dt);
+    void updateTargetLostState(float dt);
+
+	// 死亡处理（这里提供基础如墓碑显示，如有需要子类重写如死亡溅射伤害等等）
+    virtual void onDeath();
+
+	// 获取士兵类型索引（用于区分不同子类类型）
+    virtual TroopType getTroopTypeIndex() const = 0;
+
     /*以下为对接口IArchTarget的实现*/
     // 受到伤害
     virtual void takeDamage(float damage)override;
@@ -115,6 +155,9 @@ public:
     virtual ArchTargetType getTargetType() const override = 0;
 
     /*以下为get&set*/
+	// 设置当前位置-网格逻辑坐标 合法位置直接写入返回true；非法位置则设置到离设置点最近的方形边框上返回false
+    bool setCellPosition(const cocos2d::Vec2& position);
+
     // 获取当前生命值
     float getCurrentHitpoints() const { return current_hitpoints_; }
 
@@ -134,7 +177,8 @@ public:
     float getCurrentDamage() const { return damage_per_attacks_[level_]; }
 
     /*以下为渲染相关*/
-    cocos2d::Vec2 troopPosToPixel() { return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x + 1, position_.y)); }
+	//获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
+	inline virtual cocos2d::Vec2 getPixelPosition() const{ return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y)); }
 	// 创建士兵实例 由于Troop类不该能直接创建，改为由子类自行实现
 	/*static Troop* createTroop(const std::string& picfilename,
         int level,
@@ -151,8 +195,13 @@ public:
 		const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
 		const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
 		const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);*/
-
-    //TODO:移动
+    // 重写setPosition以自动同步ZOrder
+    virtual void setPosition(const cocos2d::Vec2& pos) override {
+        Sprite::setPosition(pos);
+        this->setLocalZOrder(CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_,pos))); // 自动同步
+    }
+	// 每帧更新
+    void update(float dt);
 };
 
 #endif // __TROOP_H__
