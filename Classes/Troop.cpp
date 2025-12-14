@@ -206,7 +206,7 @@ void Troop::updateMovingState(float dt) {
         current_path_direction_.normalize();
         cocos2d::Vec2 new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
         setCellPosition(new_position);
-        setPosition(getPixelPosition());//TODO:使用MoveTo？
+        setPosition(getPixelPosition());
     }
 }
 

@@ -52,6 +52,7 @@ bool MainVillage::init()
 
     auto giant = Giant::create(base_map_, 1, Vec2(22, 22));
     if (!giant)return false;
+    giant->setDead();
     giant->takeDamage(200);
     base_map_->sprites_.push_back(giant);
 
