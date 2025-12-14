@@ -228,7 +228,7 @@ bool MainVillage::addBuildingByNO(unsigned char no,int price)
 
     // 展示取消按钮和确认按钮
     createCancelButton(arch);
-    createConfirmButton(arch);
+    createConfirmButton(arch,price, kArchInfo.at(no)[level - 1].upgrade_cost_type_);
 
     // 创建建筑预览（建筑会显示在默认位置）
     arch->setOpacity(150);  // 设置为半透明
@@ -272,7 +272,7 @@ void MainVillage::createCancelButton(Arch* pendingArch_)
     pendingArch_->addChild(cancelButton,900);
 }
 
-void MainVillage::createConfirmButton(Arch* pendingArch_)
+void MainVillage::createConfirmButton(Arch* pendingArch_, int price,bool type_)
 {
 
     // 创建确认按钮
@@ -291,12 +291,17 @@ void MainVillage::createConfirmButton(Arch* pendingArch_)
     confirmButton->setPosition(Vec2(200,10 ));
     confirmButton->setColor(Color3B::BLACK);
     confirmButton->setName("CONFIRM_BUTTON");
-
-
-    confirmButton->addTouchEventListener([this, pendingArch_](Ref* sender, ui::Widget::TouchEventType type) {
+    unsigned long long currentGold = GameManager::getInstance()->getGold();
+    unsigned long long currentExilir = GameManager::getInstance()->getExilir();
+    confirmButton->addTouchEventListener([this, pendingArch_, currentGold, currentExilir, price,type_](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
             this->confirmBuildingPlacement(pendingArch_);
-            pendingArch_->Buiding_Upgrading(sender, pendingArch_, NEW_BUIDING);
+            if (type_ == GOLD) {
+                pendingArch_->Buiding_Upgrading(sender, pendingArch_, NEW_BUIDING, price, currentGold, type_);
+            }
+            else {
+                pendingArch_->Buiding_Upgrading(sender, pendingArch_, NEW_BUIDING, price, currentExilir, type_);
+            }
         }
         });
 

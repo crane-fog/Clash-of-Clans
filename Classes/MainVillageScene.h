@@ -69,7 +69,7 @@ public:
     bool addBuildingByNO(unsigned char no, int price);
 public:
     void MainVillage::createCancelButton(Arch* pendingArch_);
-    void MainVillage::createConfirmButton(Arch* pendingArch_);
+    void MainVillage::createConfirmButton(Arch* pendingArch_,  int price, bool type_);
     void MainVillage::cancelBuildingPlacement(Arch* pendingArch_);
     void MainVillage::confirmBuildingPlacement(Arch* pendingArch_);
     void MainVillage::removeCancelAndConfirmButtons(Arch* pendingArch_);

@@ -299,7 +299,6 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
                         itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
                         // 按下即购买
                         scene->addBuildingByNO(archNo, item.price);
-                        GameManager::getInstance()->setGold(currentGold - item.price);  // 减少金币
 
                         this->close();
                         // 添加购买反馈效果
@@ -318,7 +317,6 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
                         itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
                         // 按下即购买
                         scene->addBuildingByNO(archNo, item.price);
-                        GameManager::getInstance()->setElixir(currentElixir - item.price);  // 减少金币
 
                         this->close();
                         // 添加购买反馈效果

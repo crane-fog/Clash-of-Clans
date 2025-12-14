@@ -109,13 +109,14 @@ public:
     void closeArchPanel();
     //升级按钮
     void Arch::archUpgrade(Arch* arch);
-    // 创建显示"当前已是最高等级"的弹窗
-    void Arch::showMaxLevelPopup();
+    // 创建显示的弹窗
+    void Arch::showRefusePopup(std::string text_);
     std::string getArchNameFromEnum(unsigned char archNo);
     void Arch::createUpgradeComparisonPanel(Arch* arch);
 
     void Arch::onUpgradeCancel(Ref* sender);
-    void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a);
+
+    void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, unsigned long long currentGold, bool type);
 
     UI getx() const {
         return this->x_;
