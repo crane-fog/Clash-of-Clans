@@ -2,6 +2,7 @@
 #define __TROOP_H__
 #include "cocos2d.h"
 #include "IArchTarget.h"
+#include "ITroopTarget.h"
 #include "HealthBar.h"
 #include "CoordAdaptor.h"
 #include "BaseMap.h"
@@ -20,6 +21,18 @@ protected:
     cocos2d::Vec2 position_;
     // 当前生命值
     float current_hitpoints_;
+    enum Status : uchar {
+        IDLE = 0, // 空闲
+        MOVING = 1, // 移动
+        ATTACKING = 2, // 攻击
+		TARGET_LOST = 3 // 目标丢失
+	};
+    //当前状态
+	Status status_;
+    // 当前目标
+    ITroopTarget* current_target_;
+    // 当前移动方向
+    cocos2d::Vec2 current_path_direction_;
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     //每次伤害
     const std::array<float, MAX_TROOP_LEVEL + 1> damage_per_attacks_;
@@ -37,6 +50,15 @@ protected:
     const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
 
 public:
+    enum TroopType : unsigned char {
+        BARBARIAN = 0,
+        ARCHER = 1,
+        GIANT = 2,
+        WALL_BREAKER = 3,
+        DRAGON = 4,
+        BALLOON = 5
+    };
+
     /*以下为升级时不改变的属性，初始化时直接赋值，由于是const直接设置为public允许外部读取*/
     enum PreferredTarget : uchar {//与ArchInfo.h里的ArchType对应
         OTHER = 0, // 其它
@@ -100,6 +122,22 @@ public:
 
     // 检查是否可以攻击
     virtual bool canAttack() const;
+
+    // 状态机相关方法
+    void changeStatus(Status new_status);
+    virtual void findNewTarget();
+
+    // 状态更新方法
+    void updateIdleState(float dt);
+    void updateMovingState(float dt);
+    void updateAttackingState(float dt);
+    void updateTargetLostState(float dt);
+
+	// 死亡处理（这里提供基础如墓碑显示，如有需要子类重写如死亡溅射伤害等等）
+    virtual void onDeath();
+
+	// 获取士兵类型索引（用于区分不同子类类型）
+    virtual TroopType getTroopTypeIndex() const = 0;
 
     /*以下为对接口IArchTarget的实现*/
     // 受到伤害

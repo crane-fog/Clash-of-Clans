@@ -68,6 +68,8 @@ list(APPEND GAME_SOURCE
      Classes/TroopAttackManager.cpp
      Classes/TroopTargetManager.cpp
      Classes/Barbarian.cpp
+     Classes/Archer.cpp
+     Classes/Giant.cpp
      Classes/ShopPopup.cpp
      Classes/HealthBar.cpp
      Classes/EnemyVillageScene.cpp
@@ -91,6 +93,8 @@ list(APPEND GAME_HEADER
      Classes/TroopTargetManager.h
      Classes/ITroopTarget.h
      Classes/Barbarian.h
+     Classes/Archer.h
+     Classes/Giant.h
      Classes/IArchTarget.h
      Classes/EnemyVillageScene.h
      )
