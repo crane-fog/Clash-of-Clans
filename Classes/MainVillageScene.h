@@ -28,7 +28,7 @@ public:
     }
     void setElixir(unsigned long long Elixir) {
         this->MyElixir = Elixir;
-        // 发布金币更新事件
+        // 发布圣水更新事件
         cocos2d::EventCustom event("update_elixir_event");
         event.setUserData(&this->MyElixir);
         cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);

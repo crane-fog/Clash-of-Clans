@@ -11,7 +11,6 @@ private:
         Troop* troop;
         float time_since_last_attack_;
     };
-	//TODO:有没有比vector更合适的数据结构？
     std::vector<AttackEntry> attack_queue_;
 
     TroopAttackManager() = default;

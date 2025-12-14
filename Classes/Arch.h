@@ -4,7 +4,7 @@
 #include "cocos2d.h"
 #include "ArchInfo.h"
 #include "ITroopTarget.h"
-#include"UIparts.h"
+#include "UIparts.h"
 #include <string.h>
 
 class BaseMap;
@@ -32,7 +32,7 @@ struct ArchData {
     UI current_capacity_;
 
     ArchData() = default;
-    explicit ArchData(Arch*a);
+    explicit ArchData(Arch* a);
     explicit ArchData(UC no, UC lv = 1) : no_(no), level_(lv), x_(1), y_(1),
         current_hp_(kArchInfo.at(no)[lv].hp_), current_capacity_(kArchInfo.at(no)[lv].max_capacity_) {}
 };
@@ -57,6 +57,10 @@ protected:
 
     // 所在的地图指针
     BaseMap* base_map_;
+    cocos2d::EventListenerTouchOneByOne* touch_listener_ = nullptr;
+
+    // 指示是否为自己的建筑（拖动）
+    bool is_mine_;
 public:
     // 拖动相关
     bool is_dragging_ = false;
@@ -81,9 +85,10 @@ public:
 
     Arch(const ArchData& data, BaseMap* base_map) : no_(data.no_), level_(data.level_), x_(data.x_), y_(data.y_),
         current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
-    static Arch* create(const ArchData& data, BaseMap* base_map);
+    static Arch* create(const ArchData& data, BaseMap* base_map, bool is_mine = true);
     virtual bool initWithFile(const std::string& filename) override;
     virtual void onEnter() override;
+    virtual void onExit() override;
 
     // 为城墙状态更新预留的接口
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) {}
@@ -111,13 +116,11 @@ public:
 
     void Arch::onUpgradeCancel(Ref* sender);
     void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a);
-    UI getx(Arch * data) {
-        return data->x_;
-      }
-    UI getx() {
+
+    UI getx() const {
         return this->x_;
     }
-    UI gety() {
+    UI gety() const {
         return this->y_;
     }
 

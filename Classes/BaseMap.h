@@ -23,13 +23,13 @@ private:
     cocos2d::Vec2 last_mouse_pos_;
     cocos2d::EventListenerMouse* mouse_listener_ = nullptr;
 
-    
-
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
     // 当对象被渲染时被自动调用
     virtual void onEnter() override;
+    // 当对象退出时被自动调用
+    virtual void onExit() override;
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(BaseMap);
 
@@ -45,8 +45,6 @@ public:
     void setInputEnabled(bool enabled);//禁用鼠标调用
 
     cocos2d::Node* currentArchPanel_ = nullptr;  // 当前打开的建筑面板
-
-
 };
 
 #endif // __BASE_MAP_H__
