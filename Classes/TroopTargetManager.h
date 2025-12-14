@@ -64,6 +64,16 @@ class TroopTargetManager {
         bool isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, Troop* troop) const;
 
     private:
+        struct Compare {
+            bool operator()(const std::tuple<cocos2d::Vec2, float>& a,
+                const std::tuple<cocos2d::Vec2, float>& b) const {
+                return std::get<1>(a) > std::get<1>(b); // 小顶堆示例
+            }
+        };
+        using DistancePQ = std::priority_queue<std::tuple<cocos2d::Vec2, float>, std::vector<std::tuple<cocos2d::Vec2, float>>,Compare>;
+
+		// 初始化优先队列距离场
+		void pqInit(DistancePQ& pq, std::vector<std::vector<float>>& distance_field, ITroopTarget* target, Troop* troop);
         // 检查兵种是否需要考虑墙障碍
         bool doesTroopConsiderWalls(Troop::TroopType troop_type) const {
             return troop_type == Troop::BARBARIAN ||
