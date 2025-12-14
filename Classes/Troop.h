@@ -25,7 +25,8 @@ protected:
         IDLE = 0, // 空闲
         MOVING = 1, // 移动
         ATTACKING = 2, // 攻击
-		TARGET_LOST = 3 // 目标丢失
+		TARGET_LOST = 3, // 目标丢失
+		DEAD = 4 // 死亡
 	};
     //当前状态
 	Status status_;
@@ -125,6 +126,7 @@ public:
 
     // 状态机相关方法
     void changeStatus(Status new_status);
+	void setDead() { status_ = DEAD; }
     virtual void findNewTarget();
 
     // 状态更新方法

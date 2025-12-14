@@ -35,6 +35,9 @@ class TroopTargetManager {
     public:
         static TroopTargetManager* getInstance();
 
+		//清除所有数据，在离开场景时调用
+        void clear();
+
         // 建筑把自己注册为可攻击目标
         void registerTroopTarget(ITroopTarget* target);
 

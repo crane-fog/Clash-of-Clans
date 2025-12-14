@@ -26,6 +26,12 @@ TroopTargetManager* TroopTargetManager::getInstance() {
     return &instance;
 }
 
+void TroopTargetManager::clear() {
+	targets_.clear();
+	distance_fields_.clear();
+    wall_cost_map_.clear();
+}
+
 void TroopTargetManager::registerTroopTarget(ITroopTarget* target) {
     if (!target) return;
 
