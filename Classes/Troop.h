@@ -202,7 +202,6 @@ public:
     }
 	// 每帧更新
     void update(float dt);
-    //TODO:移动
 };
 
 #endif // __TROOP_H__
