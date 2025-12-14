@@ -20,7 +20,8 @@ bool UIBars::init()
     unsigned long long gold = 100;
     unsigned long long elixir = 0;
     bool success = DataHelper::readSourceData("data/SourceData.dat", gold, elixir);
-
+    GameManager::getInstance()->setGold(gold);
+    GameManager::getInstance()->setElixir(elixir);
     if (success) {
         CCLOG("金币储量: %llu", gold);
         CCLOG("圣水储量: %llu", elixir);
@@ -46,6 +47,9 @@ bool UIBars::init()
     goldUpdateListener = cocos2d::EventListenerCustom::create("update_gold_event", CC_CALLBACK_1(UIBars::onGoldUpdated, this));
     cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(goldUpdateListener, this);
 
+    // 注册圣水更新事件监听
+    elixirUpdateListener = cocos2d::EventListenerCustom::create("update_elixir_event", CC_CALLBACK_1(UIBars::onElixirUpdated, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixirUpdateListener, this);
 
     return true;
 }
@@ -116,7 +120,10 @@ void UIBars::onGoldUpdated(cocos2d::EventCustom* event) {
     unsigned long long gold = *static_cast<unsigned long long*>(event->getUserData());
     updateProgressBar("金币", gold);
 }
-
+void UIBars::onElixirUpdated(cocos2d::EventCustom* event) {
+    unsigned long long  elixir = *static_cast<unsigned long long*>(event->getUserData());
+    updateProgressBar("圣水", elixir);
+}
 
 //倒计时类相关
 void CountdownTimer::start(unsigned int seconds,

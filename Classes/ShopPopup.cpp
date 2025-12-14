@@ -281,35 +281,56 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         }
         // 获取并修改金币
         unsigned long long currentGold = GameManager::getInstance()->getGold();
+        unsigned long long currentElixir = GameManager::getInstance()->getExilir();
         CCLOG("当前金币: %llu", currentGold);
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
-        listener->onTouchBegan = [this, itemBg, item,scrollView,archNo, currentGold](Touch* touch, Event* event) -> bool {
+        listener->onTouchBegan = [this, itemBg, item,scrollView,archNo, currentGold, currentElixir](Touch* touch, Event* event) -> bool {
 
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
             Rect rect = Rect(0, 0, size.width, size.height);
             auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());  
 
-
             if (rect.containsPoint(locationInNode)) {
-                if (item.isAvailable&& currentGold >item.price) {//
-                    itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
-                    // 按下即购买
-                    scene->addBuildingByNO(archNo, item.price);
-                    GameManager::getInstance()->setGold(currentGold - item.price);  // 减少金币
+                if (item.p_type == GOLD) {
+                    if (item.isAvailable && currentGold > item.price) {//
+                        itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+                        // 按下即购买
+                        scene->addBuildingByNO(archNo, item.price);
+                        GameManager::getInstance()->setGold(currentGold - item.price);  // 减少金币
 
-                    this->close();
-                    // 添加购买反馈效果
-                    auto scaleDown = ScaleTo::create(0.1f, 0.95f);
-                    itemBg->runAction(scaleDown);
+                        this->close();
+                        // 添加购买反馈效果
+                        auto scaleDown = ScaleTo::create(0.1f, 0.95f);
+                        itemBg->runAction(scaleDown);
+                    }
+                    else {
+                        if (currentGold < item.price) {
+                            this->showUnavailableBubble(item, itemBg, scrollView, "金币不足");
+                        }
+                        else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                    }
                 }
                 else {
-                    if (currentGold < item.price) {
-                        this->showUnavailableBubble(item, itemBg, scrollView,"金币不足");
+                    if (item.isAvailable && currentElixir > item.price) {//
+                        itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+                        // 按下即购买
+                        scene->addBuildingByNO(archNo, item.price);
+                        GameManager::getInstance()->setElixir(currentElixir - item.price);  // 减少金币
+
+                        this->close();
+                        // 添加购买反馈效果
+                        auto scaleDown = ScaleTo::create(0.1f, 0.95f);
+                        itemBg->runAction(scaleDown);
                     }
-                    else this->showUnavailableBubble(item, itemBg, scrollView,"");
+                    else {
+                        if (currentElixir < item.price) {
+                            this->showUnavailableBubble(item, itemBg, scrollView, "圣水不足");
+                        }
+                        else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                    }
                 }
                 return true;
             }
@@ -336,7 +357,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, itemBg);
 
         // 如果商品不可用，添加灰色遮罩
-        if (!item.isAvailable|| currentGold < item.price) {
+        if (!item.isAvailable|| (item.p_type==GOLD&&(currentGold < item.price))|| (item.p_type == ELIXIR && (currentElixir < item.price))) {
             Size bgSize = itemBg->getContentSize();
             auto grayMask = LayerColor::create(Color4B(128, 128, 128, 150), bgSize.width, bgSize.height);
             grayMask->setPosition(Vec2::ZERO);

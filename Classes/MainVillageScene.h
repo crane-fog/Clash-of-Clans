@@ -26,21 +26,21 @@ public:
     unsigned long long getGold() const {
         return MyGold;
     }
-    void setExixir(unsigned long long gold) {
-        this->MyExilir = gold;
+    void setElixir(unsigned long long Elixir) {
+        this->MyElixir = Elixir;
         // 发布金币更新事件
-        cocos2d::EventCustom event("update_exilir_event");
-        event.setUserData(&this->MyExilir);
+        cocos2d::EventCustom event("update_elixir_event");
+        event.setUserData(&this->MyElixir);
         cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
     }
 
     unsigned long long getExilir() const {
-        return MyExilir;
+        return MyElixir;
     }
 
 private:
     unsigned long long MyGold = 1000;
-    unsigned long long MyExilir = 1000;
+    unsigned long long MyElixir = 1000;
 };
 
 

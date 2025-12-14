@@ -31,7 +31,7 @@ enum ArchType : unsigned char {
     WALLT = 3 // 城墙
 };
 
-enum ResourceType : unsigned char {
+enum ResourceType : bool {
     GOLD = 0, // 金币
     ELIXIR = 1 // 圣水
 };

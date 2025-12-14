@@ -27,6 +27,7 @@ class UIBars : public cocos2d::Node {
 private:
     std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
     cocos2d::EventListenerCustom* goldUpdateListener;  // 存储监听器
+    cocos2d::EventListenerCustom* elixirUpdateListener;  // 存储监听器
 public:
 
     // 初始化，当对象被创建时被自动调用
@@ -40,7 +41,8 @@ public:
 
     // 更新金币进度条的回调函数
     void onGoldUpdated(cocos2d::EventCustom* event);
-
+    // 更新圣水进度条的回调函数
+    void onElixirUpdated(cocos2d::EventCustom* event);
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(UIBars);
 
@@ -74,25 +76,26 @@ struct ShopItem {
     std::string imagePath;
     //珍稀度
     int rarity; // 添加：0-N, 1-R, 2-SR, 3-SSR
-
+    //所需资源类型
+    bool p_type;
     // 构造函数
-    ShopItem(int i, const std::string& n,unsigned int p, bool available, const std::string& reason, const std::string& path, int r=0)
-        : id(i), name(n), price(p), isAvailable(available), unavailableReason(reason), imagePath(path), rarity(r) {
+    ShopItem(int i, const std::string& n,unsigned int p, bool available, const std::string& reason, const std::string& path, int r=0, bool type =GOLD)
+        : id(i), name(n), price(p), isAvailable(available), unavailableReason(reason), imagePath(path), rarity(r) , p_type(type){
     }
 
 };
 // 定义三个板块的商品数据
 const std::map<int, std::vector<ShopItem>> kShopItemsInfo = {
         {buildingItems, {
-        {1, "兵营", kArchInfo.at(ARMY_CAMP)[0].upgrade_cost_amount_, true, "", "arch/Army_Camp1.webp"},
-        {2, "城墙", kArchInfo.at(WALL)[0].upgrade_cost_amount_, false, "等级不足", "arch/Wall1.webp"},
-        {3, "金库", kArchInfo.at(GOLD_STORAGE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Storage1.webp"},
-        {4, "圣水罐", kArchInfo.at(ELIXIR_STORAGE)[0].upgrade_cost_amount_, false, "等级不足", "arch/Elixir_Storage1.webp"},
-        {5, "金矿", kArchInfo.at(GOLD_MINE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Mine1.webp"},
-        {6, "圣水收集器", kArchInfo.at(ELIXIR_COLLECTOR)[0].upgrade_cost_amount_, false, "需要完成前置任务", "arch/Elixir_Collector1.webp"},
-        {7, "箭塔", kArchInfo.at(ARCHER_TOWER)[0].upgrade_cost_amount_, false, "VIP only", "arch/Archer_Tower1.webp"},
-        {8, "加农炮", kArchInfo.at(CANNON)[0].upgrade_cost_amount_, false, "VIP only", "arch/Cannon1.webp"},
-        {9, "训练营", kArchInfo.at(BARRACKS)[0].upgrade_cost_amount_, false, "VIP only", "arch/Barracks1.webp"}}},
+        {1, "兵营", kArchInfo.at(ARMY_CAMP)[0].upgrade_cost_amount_, true, "", "arch/Army_Camp1.webp",0,kArchInfo.at(ARMY_CAMP)[0].upgrade_cost_type_},
+        {2, "城墙", kArchInfo.at(WALL)[0].upgrade_cost_amount_, false, "等级不足", "arch/Wall1.webp",0,kArchInfo.at(WALL)[0].upgrade_cost_type_},
+        {3, "金库", kArchInfo.at(GOLD_STORAGE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Storage1.webp",0,kArchInfo.at(GOLD_STORAGE)[0].upgrade_cost_type_},
+        {4, "圣水罐", kArchInfo.at(ELIXIR_STORAGE)[0].upgrade_cost_amount_, false, "等级不足", "arch/Elixir_Storage1.webp",0,kArchInfo.at(ELIXIR_STORAGE)[0].upgrade_cost_type_},
+        {5, "金矿", kArchInfo.at(GOLD_MINE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Mine1.webp",0,kArchInfo.at(GOLD_MINE)[0].upgrade_cost_type_},
+        {6, "圣水收集器", kArchInfo.at(ELIXIR_COLLECTOR)[0].upgrade_cost_amount_, false, "需要完成前置任务", "arch/Elixir_Collector1.webp",0,kArchInfo.at(ELIXIR_COLLECTOR)[0].upgrade_cost_type_},
+        {7, "箭塔", kArchInfo.at(ARCHER_TOWER)[0].upgrade_cost_amount_, true, "VIP only", "arch/Archer_Tower1.webp",0,kArchInfo.at(ARCHER_TOWER)[0].upgrade_cost_type_},
+        {8, "加农炮", kArchInfo.at(CANNON)[0].upgrade_cost_amount_, false, "VIP only", "arch/Cannon1.webp",0,kArchInfo.at(CANNON)[0].upgrade_cost_type_},
+        {9, "训练营", kArchInfo.at(BARRACKS)[0].upgrade_cost_amount_, false, "VIP only", "arch/Barracks1.webp",0,kArchInfo.at(BARRACKS)[0].upgrade_cost_type_}}},
 
         {soldierItems, {
         {1, "野蛮人", 30,false, "", "Barbarian.png"},
@@ -105,7 +108,7 @@ const std::map<int, std::vector<ShopItem>> kShopItemsInfo = {
         {201, "神秘宝箱", 1000, true, "有机会获得稀有物品！", "lucky.png"}}},
 };
 
-// 定义三个板块的商品数据
+// 定义抽卡奖品
 const std::map<int, std::vector<ShopItem>> kGachaItemsInfo = {
         {1, {
         // SSR物品 (5%)
