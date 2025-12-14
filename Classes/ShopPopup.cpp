@@ -217,7 +217,7 @@ void ShopPopup::switchToTab(int tabIndex) {
         case 2: // 士兵
             scrollView->setInnerContainerSize(Size(270 * soldierItems_.size(),
                 scrollView->getContentSize().height));
-            showItemsInScrollView(soldierItems_, scrollView, tabIndex);
+            showItemsInScrollView(kShopItemsInfo.at(2), scrollView, tabIndex);
             break;
         case 3: // 抽卡
             //scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),
@@ -276,32 +276,61 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             case 9: // 训练营
                 archNo = BARRACKS;
                 break;
+
                 return;
         }
+        // 获取并修改金币
+        unsigned long long currentGold = GameManager::getInstance()->getGold();
+        unsigned long long currentElixir = GameManager::getInstance()->getExilir();
+        CCLOG("当前金币: %llu", currentGold);
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
-        listener->onTouchBegan = [this, itemBg, item,scrollView,archNo](Touch* touch, Event* event) -> bool {
+        listener->onTouchBegan = [this, itemBg, item,scrollView,archNo, currentGold, currentElixir](Touch* touch, Event* event) -> bool {
+
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
             Rect rect = Rect(0, 0, size.width, size.height);
             auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());  
-            unsigned long long MyGold = scene->getGold();
 
             if (rect.containsPoint(locationInNode)) {
-                if (item.isAvailable&&MyGold>item.price) {//
-                    itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
-                    // 按下即购买
-                    scene->MainVillage::renewGold(MyGold  - item.price);
-                    scene->addBuildingByNO(archNo, item.price);
-                    this->close();
-                    //UIBars::updateProgressBar("金币", MyGold - item.price);
-                    // 添加购买反馈效果
-                    auto scaleDown = ScaleTo::create(0.1f, 0.95f);
-                    itemBg->runAction(scaleDown);
+                if (item.p_type == GOLD) {
+                    if (item.isAvailable && currentGold > item.price) {//
+                        itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+                        // 按下即购买
+                        scene->addBuildingByNO(archNo, item.price);
+                        GameManager::getInstance()->setGold(currentGold - item.price);  // 减少金币
+
+                        this->close();
+                        // 添加购买反馈效果
+                        auto scaleDown = ScaleTo::create(0.1f, 0.95f);
+                        itemBg->runAction(scaleDown);
+                    }
+                    else {
+                        if (currentGold < item.price) {
+                            this->showUnavailableBubble(item, itemBg, scrollView, "金币不足");
+                        }
+                        else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                    }
                 }
                 else {
-                    this->showUnavailableBubble(item, itemBg, scrollView);
+                    if (item.isAvailable && currentElixir > item.price) {//
+                        itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
+                        // 按下即购买
+                        scene->addBuildingByNO(archNo, item.price);
+                        GameManager::getInstance()->setElixir(currentElixir - item.price);  // 减少金币
+
+                        this->close();
+                        // 添加购买反馈效果
+                        auto scaleDown = ScaleTo::create(0.1f, 0.95f);
+                        itemBg->runAction(scaleDown);
+                    }
+                    else {
+                        if (currentElixir < item.price) {
+                            this->showUnavailableBubble(item, itemBg, scrollView, "圣水不足");
+                        }
+                        else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                    }
                 }
                 return true;
             }
@@ -328,7 +357,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, itemBg);
 
         // 如果商品不可用，添加灰色遮罩
-        if (!item.isAvailable ) {
+        if (!item.isAvailable|| (item.p_type==GOLD&&(currentGold < item.price))|| (item.p_type == ELIXIR && (currentElixir < item.price))) {
             Size bgSize = itemBg->getContentSize();
             auto grayMask = LayerColor::create(Color4B(128, 128, 128, 150), bgSize.width, bgSize.height);
             grayMask->setPosition(Vec2::ZERO);
@@ -430,7 +459,7 @@ void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)
         close();
     }
 }
-void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView) {
+void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView,std::string reason) {
 
     // 创建提示气泡（相对于商品背景的本地坐标）
     auto bubble = Node::create();
@@ -457,9 +486,12 @@ void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor*
 
     // 原因文本
     auto reasonLabel = Label::createWithSystemFont(
-        item.unavailableReason,
+        reason,
         "Arial", 25
     );
+    if (reason.empty()) {
+        reasonLabel->setString(item.unavailableReason);
+    }
     reasonLabel->setColor(Color3B::RED);
     reasonLabel->setPosition(Vec2(100, 40));
     reasonLabel->setWidth(180);
@@ -488,37 +520,7 @@ void ShopPopup::onShopButtonClick(Ref* sender)
 }
 // 初始化抽卡池
 void ShopPopup::initGachaPool() {
-    gachaPool_ = {
-        // SSR物品 (5%)
-        {301, "传奇之剑", 0, true, "SSR稀有物品！", "arch/Town_Hall4.webp", 3},
-        {302, "神圣护甲", 0, true, "SSR稀有物品！", "arch/Town_Hall4.webp", 3},
-        {303, "龙之宝珠", 0, true, "SSR稀有物品！", "arch/Town_Hall4.webp", 3},
-
-        // SR物品 (15%)
-        {304, "魔法法杖", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
-        {305, "精灵之弓", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
-        {306, "勇士盾牌", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
-        {307, "智慧之书", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
-        {308, "凤凰羽毛", 0, true, "SR稀有物品！", "arch/Town_Hall3.webp", 2},
-
-        // R物品 (30%)
-        {309, "银质长剑", 0, true, "R稀有物品！", "arch/Town_Hall2.webp", 1},
-        {310, "钢铁盔甲", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
-        {311, "治疗药水", 0, true, "R稀有物品！", "arch/Town_Hall2.webp", 1},
-        {312, "魔法卷轴", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
-        {313, "力量戒指", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
-        {314, "速度之靴", 0, true, "R稀有物品！",  "arch/Town_Hall2.webp", 1},
-
-        // N物品 (50%)
-        {315, "普通长剑", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
-        {316, "皮革盔甲", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
-        {317, "小型药水", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
-        {318, "火把", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
-        {319, "面包", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
-        {320, "钥匙", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
-        {321, "绳子", 0, true, "普通物品", "arch/Town_Hall1.webp", 0},
-        {322, "箭袋", 0, true, "普通物品","arch/Town_Hall1.webp", 0}
-    };
+    gachaPool_ = kGachaItemsInfo.at(1);
 }
 
 // 创建抽卡界面
@@ -575,8 +577,29 @@ void ShopPopup::createGachaItem() {
     gachaButton->setTitleFontSize(32);
     gachaButton->setTitleColor(Color3B::WHITE);
     gachaButton->setContentSize(Size(200, 70));
-    gachaButton->setPosition(Vec2(175, 120));
+    gachaButton->setPosition(Vec2(100, 150));
     gachaButton->setColor(Color3B(200, 50, 50));
+
+    // 十连抽按钮
+    auto tenGachaButton = ui::Button::create();
+    tenGachaButton->setTitleText("十连抽");
+    tenGachaButton->setTitleFontSize(28);
+    tenGachaButton->setTitleColor(Color3B::WHITE);
+    tenGachaButton->setContentSize(Size(200, 70));
+    tenGachaButton->setPosition(Vec2(250, 150));
+    tenGachaButton->setColor(Color3B(180, 100, 50));
+
+    tenGachaButton->addTouchEventListener(
+        [this](Ref*, ui::Widget::TouchEventType type) {
+            if (type == ui::Widget::TouchEventType::ENDED) {
+                this->startTenGacha();
+            }
+        }
+    );
+
+    gachaBg->addChild(tenGachaButton);
+
+
 
     // 按钮发光效果
     auto buttonGlow = Sprite::create("ui/glow_circle.png");
@@ -596,7 +619,7 @@ void ShopPopup::createGachaItem() {
 
     gachaButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
-            this->performGacha();
+            this->performSingleGacha(nullptr);;
         }
         });
     gachaBg->addChild(gachaButton);
@@ -612,57 +635,40 @@ void ShopPopup::createGachaItem() {
 }
 
 // 执行抽卡
-void ShopPopup::performGacha() {
+void ShopPopup::performSingleGacha(
+    const std::function<void(ShopItem)>& onFinished
+) {
     int randomValue = rand() % 100;
     Rarity rarity = RARITY_N;
-// 随机选择物品
-    if (randomValue < 5) { // 5% SSR
-        rarity = RARITY_SSR;
-    }
-    else if (randomValue < 20) { // 15% SR
-        rarity = RARITY_SR;
-    }
-    else if (randomValue < 50) { // 30% R
-        rarity = RARITY_R;
-    }
+
+    if (randomValue < 5) rarity = RARITY_SSR;
+    else if (randomValue < 20) rarity = RARITY_SR;
+    else if (randomValue < 50) rarity = RARITY_R;
     else { // 50% N
-        rarity = RARITY_N;
-    }
-    int r = rarity;
-    // 先播放抽卡动画
-    showGachaAnimation(r);
+        rarity = RARITY_N; }
 
-    // 延迟后显示结果
-    this->scheduleOnce([this,rarity](float dt) {
-        ShopItem* selectedItem = nullptr;
-        // 从对应稀有度的物品中随机选择
-        std::vector<ShopItem*> itemsOfRarity;
+    showGachaAnimation(rarity);
+
+    this->scheduleOnce([this, rarity, onFinished](float) {
+        std::vector<ShopItem*> items;
+
         for (auto& item : gachaPool_) {
-            // 暂时使用id范围判断
-            if (rarity == RARITY_SSR && item.id >= 301 && item.id <= 303) {
-                itemsOfRarity.push_back(&item);
-            }
-            else if (rarity == RARITY_SR && item.id >= 304 && item.id <= 308) {
-                itemsOfRarity.push_back(&item);
-            }
-            else if (rarity == RARITY_R && item.id >= 309 && item.id <= 314) {
-                itemsOfRarity.push_back(&item);
-            }
-            else if (rarity == RARITY_N && item.id >= 315 && item.id <= 322) {
-                itemsOfRarity.push_back(&item);
+            if (item.rarity == rarity) {
+                items.push_back(&item);
             }
         }
 
-        if (!itemsOfRarity.empty()) {
-            int randomIndex = rand() % itemsOfRarity.size();
-            selectedItem = itemsOfRarity[randomIndex];
+        if (items.empty()) return;
+
+        ShopItem result = *items[rand() % items.size()];
+
+        showGachaResult(result);
+
+        if (onFinished) {
+            onFinished(result);
         }
 
-        // 显示结果
-        if (selectedItem) {
-            this->showGachaResult(*selectedItem);
-        }
-        }, 2.5f, "show_gacha_result");
+        }, 2.5f, "single_gacha_result");
 }
 
 // 显示抽卡动画
@@ -684,8 +690,11 @@ void ShopPopup::showGachaAnimation(int rarity) {
     else if (rarity == RARITY_SR) {
         flash->setTexture("SRflash.png"); 
     }
-    else {
+    else  if (rarity == RARITY_R) {
         flash->setTexture("Rflash.png");
+    }
+    else {
+        flash->setTexture("Nflash.png");
     }
     flash->setPosition(Vec2(
         Director::getInstance()->getVisibleSize().width / 2,
@@ -716,13 +725,16 @@ void ShopPopup::showGachaAnimation(int rarity) {
     for (int i = 0; i < 8; i++) {
         auto ray = Sprite::create("flash.png");
         if (rarity == RARITY_SSR) {
-
+            ray->setTexture("flash.png");
         }
         else if (rarity == RARITY_SR) {
             ray->setTexture("SRflash.png");
         }
-        else {
+        else  if (rarity == RARITY_R) {
             ray->setTexture("Rflash.png");
+        }
+        else {
+            ray->setTexture("Nflash.png");
         }
         ray->setPosition(Vec2(0, 150));
         ray->setRotation(i * 45);
@@ -810,19 +822,18 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
     std::string rarityText;
     float glowIntensity = 1.0f;
 
-    // 根据物品ID判断稀有度（实际应该用rarity字段）
-    int itemId = item.id;
-    if (itemId >= 301 && itemId <= 303) { // SSR
+    // 根据物品rarity判断稀有度
+    if (item.rarity ==RARITY_SSR) { // SSR
         borderColor = Color3B(255, 215, 0); // 金色
         rarityText = "SSR";
         glowIntensity = 3.0f;
     }
-    else if (itemId >= 304 && itemId <= 308) { // SR
+    else if (item.rarity == RARITY_SR) { // SR
         borderColor = Color3B(255, 100, 255); // 紫色
         rarityText = "SR";
         glowIntensity = 2.0f;
     }
-    else if (itemId >= 309 && itemId <= 314) { // R
+    else if (item.rarity == RARITY_R) { // R
         borderColor = Color3B(100, 200, 255); // 蓝色
         rarityText = "R";
         glowIntensity = 1.5f;
@@ -920,5 +931,34 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
             }),
         nullptr
     ));
+}
+
+void ShopPopup::startTenGacha() {
+    if (isTenGachaRunning_) return; // 防止重复点击
+
+    isTenGachaRunning_ = true;
+    currentTenIndex_ = 0;
+    tenResults_.clear();
+
+    runNextTenGacha();
+}
+void ShopPopup::runNextTenGacha() {
+    // 十次完成
+    if (currentTenIndex_ >= 10) {
+        isTenGachaRunning_ = false;
+        CCLOG("十连抽完成");
+        return;
+    }
+
+    // 执行一次普通抽卡
+    performSingleGacha([this](ShopItem result) {
+        tenResults_.push_back(result);
+        currentTenIndex_++;
+
+        // 下一抽（给一点间隔）
+        this->scheduleOnce([this](float) {
+            runNextTenGacha();
+            }, 0.5f, "next_ten_gacha");
+        });
 }
 

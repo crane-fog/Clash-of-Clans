@@ -20,7 +20,8 @@ bool UIBars::init()
     unsigned long long gold = 100;
     unsigned long long elixir = 0;
     bool success = DataHelper::readSourceData("data/SourceData.dat", gold, elixir);
-
+    GameManager::getInstance()->setGold(gold);
+    GameManager::getInstance()->setElixir(elixir);
     if (success) {
         CCLOG("金币储量: %llu", gold);
         CCLOG("圣水储量: %llu", elixir);
@@ -42,24 +43,14 @@ bool UIBars::init()
         });
     this->addChild(backButton);
 
-    auto button = Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
+    // 注册金币更新事件监听
+    goldUpdateListener = cocos2d::EventListenerCustom::create("update_gold_event", CC_CALLBACK_1(UIBars::onGoldUpdated, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(goldUpdateListener, this);
 
-    button->setTitleText("SHOP");
-    button->setScale(0.5f);
-    button->setPosition(Vec2(visibleSize.width-100, 100)); 
-    button->addTouchEventListener([&](Ref* sender, Widget::TouchEventType type) {
-        switch (type)
-        {
-            case ui::Widget::TouchEventType::BEGAN:
-                break;
-            case ui::Widget::TouchEventType::ENDED:
-                break;
-            default:
-                break;
-        }
-        });
+    // 注册圣水更新事件监听
+    elixirUpdateListener = cocos2d::EventListenerCustom::create("update_elixir_event", CC_CALLBACK_1(UIBars::onElixirUpdated, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixirUpdateListener, this);
 
-    this->addChild(button);
     return true;
 }
 void UIBars::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, unsigned long long nowAmount, float x, float y, unsigned long long UpperLimit)
@@ -123,6 +114,16 @@ void UIBars::updateProgressBar(const std::string& title, unsigned long long nowA
     }
 }
 
+
+
+void UIBars::onGoldUpdated(cocos2d::EventCustom* event) {
+    unsigned long long gold = *static_cast<unsigned long long*>(event->getUserData());
+    updateProgressBar("金币", gold);
+}
+void UIBars::onElixirUpdated(cocos2d::EventCustom* event) {
+    unsigned long long  elixir = *static_cast<unsigned long long*>(event->getUserData());
+    updateProgressBar("圣水", elixir);
+}
 
 //倒计时类相关
 void CountdownTimer::start(unsigned int seconds,

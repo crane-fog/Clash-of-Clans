@@ -77,6 +77,9 @@ bool MainVillage::init()
     // UI层直接添加到场景，不受base_map变换影响
     this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
 
+
+
+
     // 获取屏幕尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -87,7 +90,7 @@ bool MainVillage::init()
     shopButton->setTitleFontSize(50);
 
     //商店图标
-    shopButton->setPosition(Vec2(visibleSize.width - 100, 200));
+    shopButton->setPosition(Vec2(visibleSize.width - 100, 100));
     shopButton->setScale(0.5f);
     shopButton->setContentSize(Size(300, 300));  // 设置足够的触摸区域
     shopButton->setTouchEnabled(true);
@@ -102,7 +105,7 @@ bool MainVillage::init()
 
     auto attackButton = cocos2d::ui::Button::create("attack.png");
     //进攻图标
-    attackButton->setPosition(Vec2(100, 200));
+    attackButton->setPosition(Vec2(100, 100));
     attackButton->setScale(0.9f);
     attackButton->setContentSize(Size(300, 300));  // 设置足够的触摸区域
     attackButton->setTouchEnabled(true);
@@ -114,6 +117,7 @@ bool MainVillage::init()
         }
         });
     this->addChild(attackButton, 200);
+
     return true;
 }
 
