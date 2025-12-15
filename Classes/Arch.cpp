@@ -627,36 +627,29 @@ void Arch::updateBuildingDisplay()
 {
     const auto& info = kArchInfo.at(no_)[level_ - 1];
 
-    // 如果容量大于0，显示资源转移图标
-    if (current_capacity_ > 0 && !this->getChildByName("resource_icon")) {
-        auto icon = cocos2d::ui::Button::create("Gold.png");
+    // 如果容量大于一定值，显示资源转移图标
+    if (current_capacity_ >info.max_capacity_/100 && !this->getChildByName("resource_icon")) {
+        auto icon = cocos2d::ui::Button::create("GoldPop.png");
         if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR) {
-            icon->loadTextureNormal("Elixir.png");
+            icon->loadTextureNormal("ElixirPop.png");
         }
-        icon->setPosition(Vec2(x_+20, y_ + 170));  // 显示在建筑上方
+        icon->setPosition(Vec2(x_+50, y_ + 180));  // 显示在建筑上方
         icon->setName("resource_icon");
-        icon->setScale(1.2f);  // 调整图标大小
         this->addChild(icon);
 
 
         // 添加金币动画效果
-        auto scaleUp = ScaleTo::create(0.2f, 1.5f);  // 放大到1.5倍
-        auto scaleDown = ScaleTo::create(0.2f, 1.2f);  // 缩小到1.2倍
+        auto scaleUp = ScaleTo::create(0.2f, 1.0f);  // 放大到1.5倍
+        auto scaleDown = ScaleTo::create(0.2f, 0.7f);  // 缩小到1.2倍
         auto bounce = Sequence::create(scaleUp, scaleDown, nullptr);  // 往复动画
         auto repeatBounce = RepeatForever::create(bounce);  // 无限重复
 
-        // 上下移动的动画
-        auto moveUp = MoveBy::create(0.5f, Vec2(0, 20));  // 向上移动30px
-        auto moveDown = MoveBy::create(0.5f, Vec2(0, -20));  // 向下移动30px
-        auto bounceMove = Sequence::create(moveUp, moveDown, nullptr);  // 上下运动
-        auto repeatMove = RepeatForever::create(bounceMove);  // 无限重复
 
         // 淡入效果
         auto fadeIn = FadeIn::create(0.3f);  // 透明度渐变为不透明
 
         // 执行动画
         icon->runAction(repeatBounce);
-        icon->runAction(repeatMove);
         icon->runAction(fadeIn);  // 渐显动画
 
         // 给图标添加点击事件

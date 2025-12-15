@@ -134,7 +134,9 @@ public:
     UI gety() const {
         return this->y_;
     }
-
+    UI getNo() const {
+        return this->no_;
+    }
 
     friend class ShopPopup;
 

@@ -8,7 +8,7 @@
 inline void draw_border(cocos2d::LayerColor * bg, float borderWidth = 3.0f, cocos2d::Color4F colorBorder = cocos2d::Color4F(1.0f, 0.8f, 0.0f, 1.0f),int gap=0) {
     // 添加边框
     auto border = cocos2d::DrawNode::create();
-
+    border->setName("border");
     // 基于bg的实际尺寸
     cocos2d::Size bgSize = bg->getContentSize();
 
@@ -32,5 +32,13 @@ inline void draw_border(cocos2d::LayerColor * bg, float borderWidth = 3.0f, coco
 
     border->setPosition(cocos2d::Vec2::ZERO);  // 相对于bg的本地坐标系
     bg->addChild(border, 100);
+}
+
+// 去除边框
+inline void remove_border(cocos2d::LayerColor* bg) {
+    // 通过子节点移除已添加的边框
+    auto child = bg->getChildByName("border");
+    bg->removeChild(child);  // 移除边框（DrawNode）
+
 }
 #endif // __UICOMMON_H__

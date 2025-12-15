@@ -218,8 +218,8 @@ bool MainVillage::addBuildingByNO(unsigned char no,int price)
     data.level_ = level;
     data.x_ = MAP_SIZE/2;                 //默认左下角
     data.y_ = MAP_SIZE/2;
-    data.current_hp_ = info.hp_;         //如果没有max_hp_字段就给默认值
-    data.current_capacity_ = info.max_capacity_;              //资源建筑容量
+    data.current_hp_ = info.hp_;         
+    data.current_capacity_ =0;              //资源建筑容量
 
     // 创建建筑到地图
     auto arch = Arch::create(data, base_map_);
@@ -347,8 +347,16 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()),
         arch_status_
     );
+    // 延迟一定的时间后执行该函数
+    unsigned int delayTime = kArchInfo.at(pendingArch_->getNo())[0].upgrade_time_;  // 设置延迟时间为5秒（你可以根据需要更改）
 
-    
+    this->scheduleOnce([=](unsigned int) {
+        if (kArchInfo.at(pendingArch_->getNo())[0].type_ == RESOURCE) {
+            pendingArch_->Arch::startResourceProduction();  // 延时调用 startResourceProduction
+        }
+        }, delayTime, "start_resource_production");  // 延迟时间后执行
+
+
 
     CCLOG("建筑放置成功");
 
