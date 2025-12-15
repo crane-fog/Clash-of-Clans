@@ -292,7 +292,7 @@ void MainVillage::createConfirmButton(Arch* pendingArch_, int price,bool type_)
     confirmButton->setColor(Color3B::BLACK);
     confirmButton->setName("CONFIRM_BUTTON");
     unsigned long long currentGold = GameManager::getInstance()->getGold();
-    unsigned long long currentExilir = GameManager::getInstance()->getExilir();
+    unsigned long long currentExilir = GameManager::getInstance()->getElixir();
     confirmButton->addTouchEventListener([this, pendingArch_, currentGold, currentExilir, price,type_](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
             this->confirmBuildingPlacement(pendingArch_);

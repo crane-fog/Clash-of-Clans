@@ -113,10 +113,12 @@ public:
     void Arch::showRefusePopup(std::string text_);
     std::string getArchNameFromEnum(unsigned char archNo);
     void Arch::createUpgradeComparisonPanel(Arch* arch);
-
     void Arch::onUpgradeCancel(Ref* sender);
-
     void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, unsigned long long currentGold, bool type);
+    //资源生产
+    void Arch::startResourceProduction();
+    // 更新建筑资源的显示
+    void Arch::updateBuildingDisplay();
 
     UI getx() const {
         return this->x_;

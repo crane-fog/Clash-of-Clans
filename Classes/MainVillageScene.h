@@ -34,7 +34,7 @@ public:
         cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
     }
 
-    unsigned long long getExilir() const {
+    unsigned long long getElixir() const {
         return MyElixir;
     }
 
