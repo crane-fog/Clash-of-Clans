@@ -6,6 +6,7 @@
 #include "ITroopTarget.h"
 #include "UIparts.h"
 #include <string.h>
+#include "HealthBar.h"
 
 class BaseMap;
 class Arch;
@@ -61,6 +62,9 @@ protected:
 
     // 指示是否为自己的建筑（拖动）
     bool is_mine_;
+
+    // 生命条指针
+    HealthBar* health_bar_;
 public:
     // 拖动相关
     bool is_dragging_ = false;
@@ -95,7 +99,11 @@ public:
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) {}
 
     // ITroopTarget 接口实现
-    virtual void takeDamage(float damage) override { current_hp_ -= static_cast<UI>(damage); }
+    virtual void takeDamage(float damage) override { 
+        health_bar_->setHealthBarVisible(true);
+        health_bar_->takeDamage(damage);
+        current_hp_ -= static_cast<UI>(damage); 
+    }
     virtual cocos2d::Vec2 getCellPosition(float& size) const override
     { 
         size = static_cast<float>(kArchInfo.at(no_)[level_ - 1].size_);

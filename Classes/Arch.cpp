@@ -4,7 +4,8 @@
 #include "CoordAdaptor.h"
 #include "UIcommon.h"
 #include "ui/CocosGUI.h"
-#include"MainVillageScene.h"
+// todo:拆分GameManager类
+#include "MainVillageScene.h"
 USING_NS_CC;
 
 
@@ -20,10 +21,17 @@ Arch* Arch::create(const ArchData& data, BaseMap* base_map, bool is_mine)
     else {
         pRet = new(std::nothrow) Arch(data, base_map);
     }
-    if (pRet && pRet->initWithFile(kArchInfo.at(data.no_)[data.level_ - 1].image_)) {
+    if (pRet) {
         pRet->is_mine_ = is_mine;
-        pRet->autorelease();
-        return pRet;
+        if (pRet->initWithFile(kArchInfo.at(data.no_)[data.level_ - 1].image_)) {
+            pRet->autorelease();
+            return pRet;
+        }
+        else {
+            delete pRet;
+            pRet = nullptr;
+            return nullptr;
+        }
     }
     else {
         delete pRet;
@@ -46,7 +54,15 @@ bool Arch::initWithFile(const std::string& filename)
     base_map_->archs_.push_back(this);
     base_map_->addChild(this, CoordAdaptor::calcOrder(middle_pos));
 
-
+    if (!is_mine_) {
+        health_bar_ = HealthBar::create(static_cast<float>(kArchInfo.at(no_)[level_ - 1].hp_), 50.0f, false);
+        if (health_bar_ == nullptr) {
+            return false;
+        }
+        this->addChild(health_bar_);
+        // 不要管这两个诡异的数据是怎么来的，反正看起来位置差不多（
+        health_bar_->setHealthBarPosition(CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size / 1.0f - 1.25f, size / 3.0f + 1.25f)));
+    }
 
     return true;
 }
