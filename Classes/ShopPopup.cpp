@@ -281,7 +281,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         }
         // 获取并修改金币
         unsigned long long currentGold = GameManager::getInstance()->getGold();
-        unsigned long long currentElixir = GameManager::getInstance()->getExilir();
+        unsigned long long currentElixir = GameManager::getInstance()->getElixir();
         CCLOG("当前金币: %llu", currentGold);
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();

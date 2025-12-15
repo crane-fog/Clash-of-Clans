@@ -46,6 +46,8 @@ bool Arch::initWithFile(const std::string& filename)
     base_map_->archs_.push_back(this);
     base_map_->addChild(this, CoordAdaptor::calcOrder(middle_pos));
 
+
+
     return true;
 }
 
@@ -55,7 +57,10 @@ void Arch::onEnter()
     Sprite::onEnter();
 
     updateWall();
+    if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE) {
+        startResourceProduction();
 
+    }
     // 添加触摸监听
     // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
     if (is_mine_) {
@@ -266,7 +271,7 @@ void Arch::onTouchCancel(Touch* touch, Event* event)
     is_dragging_ = false;
     removeHighlight();
 }
-
+//建筑信息面板
 void Arch::showArchPanel(Arch* arch)
 {
     // 检查面板是否已经存在，如果存在就不再创建
@@ -305,6 +310,8 @@ void Arch::showArchPanel(Arch* arch)
         "Arial", 22);
     label->setPosition(Vec2(160, 150));
     panel->addChild(label);
+
+
 
     //关闭按钮
     auto closeBtn = cocos2d::ui::Button::create();
@@ -404,7 +411,7 @@ void Arch::showRefusePopup(std::string text_) {
     // 创建背景遮罩
     auto popupBg = LayerColor::create(Color4B(0, 0, 0, 180)); // 半透明背景
     popupBg->setContentSize(Size(400, 200));
-    popupBg->setPosition(Vec2(visibleSize.width / 2 - 200, visibleSize.height / 2 - 100));
+    popupBg->setPosition(Vec2(visibleSize.width /3 - 200, visibleSize.height / 3 - 100));
     this->addChild(popupBg, 1000);  // 设置层级
 
     // 创建提示标签
@@ -467,7 +474,7 @@ void Arch::createUpgradeComparisonPanel(Arch* arch) {
         current_ = GameManager::getInstance()->getGold();
     }
     else {
-        current_ = GameManager::getInstance()->getExilir();
+        current_ = GameManager::getInstance()->getElixir();
         unsigned long long current_ = 0;
     }
     // 创建取消按钮
@@ -572,6 +579,89 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, 
             }, upgradeTime, "UpdateArchPanel");
     }
 }
+
+//资源生产
+void Arch::startResourceProduction()
+{
+    // 获取建筑资源的生产速度
+    const auto& info = kArchInfo.at(no_)[level_ - 1];
+    float produceSpeedPerSecond = info.produce_speed_ / 60.0f;
+
+    // 启动资源生产定时器
+    this->schedule([=](float dt) {
+        if (current_capacity_ < info.max_capacity_) {
+            // 增加生产量，每秒按生产速度增加
+            current_capacity_ += produceSpeedPerSecond;
+
+            // 如果容量超过最大值，设置为最大容量
+            if (current_capacity_ > info.max_capacity_) {
+                current_capacity_ = info.max_capacity_;
+            }
+            // 更新建筑的显示
+            updateBuildingDisplay();
+            
+        }
+
+        }, 1.0f, "resource_production_timer");  // 每秒更新一次
+   
+}
+
+// 更新建筑资源的显示
+void Arch::updateBuildingDisplay()
+{
+    const auto& info = kArchInfo.at(no_)[level_ - 1];
+
+    // 如果容量大于0，显示资源转移图标
+    if (current_capacity_ > 0 && !this->getChildByName("resource_icon")) {
+        auto icon = cocos2d::ui::Button::create("Gold.png");
+        if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR) {
+            icon->loadTextureNormal("Elixir.png");
+        }
+        icon->setPosition(Vec2(x_+20, y_ + 170));  // 显示在建筑上方
+        icon->setName("resource_icon");
+        icon->setScale(1.2f);  // 调整图标大小
+        this->addChild(icon);
+
+
+        // 添加金币动画效果
+        auto scaleUp = ScaleTo::create(0.2f, 1.5f);  // 放大到1.5倍
+        auto scaleDown = ScaleTo::create(0.2f, 1.2f);  // 缩小到1.2倍
+        auto bounce = Sequence::create(scaleUp, scaleDown, nullptr);  // 往复动画
+        auto repeatBounce = RepeatForever::create(bounce);  // 无限重复
+
+        // 上下移动的动画
+        auto moveUp = MoveBy::create(0.5f, Vec2(0, 20));  // 向上移动30px
+        auto moveDown = MoveBy::create(0.5f, Vec2(0, -20));  // 向下移动30px
+        auto bounceMove = Sequence::create(moveUp, moveDown, nullptr);  // 上下运动
+        auto repeatMove = RepeatForever::create(bounceMove);  // 无限重复
+
+        // 淡入效果
+        auto fadeIn = FadeIn::create(0.3f);  // 透明度渐变为不透明
+
+        // 执行动画
+        icon->runAction(repeatBounce);
+        icon->runAction(repeatMove);
+        icon->runAction(fadeIn);  // 渐显动画
+
+        // 给图标添加点击事件
+        icon->setTouchEnabled(true);
+        icon->addClickEventListener([=](Ref*) {
+            // 点击后将资源转移到总资源
+            if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD) {
+                unsigned long long currentGold = GameManager::getInstance()->getGold();
+                GameManager::getInstance()->setGold(current_capacity_ + currentGold);  // 资源是金币
+            }
+            else {
+                unsigned long long currentElixir = GameManager::getInstance()->getElixir();
+                GameManager::getInstance()->setElixir(current_capacity_ + currentElixir);  // 资源是金币
+            }
+            current_capacity_ = 0;  // 清空当前建筑的容量
+            this->removeChildByName("resource_icon");  // 移除资源图标
+            updateBuildingDisplay();  // 更新建筑显示
+            });
+    }
+}
+
 void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
 {
     for (auto arch : base_map_->archs_) {
