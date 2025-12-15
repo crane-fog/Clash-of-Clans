@@ -633,7 +633,7 @@ void Arch::updateBuildingDisplay()
         if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR) {
             icon->loadTextureNormal("ElixirPop.png");
         }
-        icon->setPosition(Vec2(x_+50, y_ + 180));  // 显示在建筑上方
+        icon->setPosition(Vec2(x_ + 50.0f, y_ + 180.0f));  // 显示在建筑上方
         icon->setName("resource_icon");
         this->addChild(icon);
 
@@ -746,11 +746,11 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
                 Vec2 pixel_delta = CoordAdaptor::cellDeltaToPixelDelta(base_map_, dir);
                 Vec2 local_delta = pixel_delta / scale;
 
-                for (int k = 1; k <= 3; ++k) {
+                for (int k = 1; k <= 4; ++k) {
                     auto sprite = Sprite::create(kArchInfo.at(WALL)[level_ - 1].image_);
                     if (sprite) {
                         sprite->setScale(0.6f);
-                        sprite->setPosition(local_delta * (k / 4.0f - 0.5f));
+                        sprite->setPosition(local_delta * (k / 5.0f - 0.5f));
                         connection_node->addChild(sprite);
                     }
                 }
