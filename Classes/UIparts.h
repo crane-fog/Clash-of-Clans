@@ -88,7 +88,7 @@ struct ShopItem {
 const std::map<int, std::vector<ShopItem>> kShopItemsInfo = {
         {buildingItems, {
         {1, "兵营", kArchInfo.at(ARMY_CAMP)[0].upgrade_cost_amount_, true, "", "arch/Army_Camp1.webp",0,kArchInfo.at(ARMY_CAMP)[0].upgrade_cost_type_},
-        {2, "城墙", kArchInfo.at(WALL)[0].upgrade_cost_amount_, false, "等级不足", "arch/Wall1.webp",0,kArchInfo.at(WALL)[0].upgrade_cost_type_},
+        {2, "城墙", kArchInfo.at(WALL)[0].upgrade_cost_amount_, true, "等级不足", "arch/Wall1.webp",0,kArchInfo.at(WALL)[0].upgrade_cost_type_},
         {3, "金库", kArchInfo.at(GOLD_STORAGE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Storage1.webp",0,kArchInfo.at(GOLD_STORAGE)[0].upgrade_cost_type_},
         {4, "圣水罐", kArchInfo.at(ELIXIR_STORAGE)[0].upgrade_cost_amount_, false, "等级不足", "arch/Elixir_Storage1.webp",0,kArchInfo.at(ELIXIR_STORAGE)[0].upgrade_cost_type_},
         {5, "金矿", kArchInfo.at(GOLD_MINE)[0].upgrade_cost_amount_, true, "", "arch/Gold_Mine1.webp",0,kArchInfo.at(GOLD_MINE)[0].upgrade_cost_type_},
