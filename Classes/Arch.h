@@ -25,6 +25,9 @@ struct ArchData {
     UC x_;
     UC y_;
 
+    // 当前剩余升级时间
+    UI remaining_upgrade_time_;
+
     // 当前生命值
     UI current_hp_;
 
@@ -34,8 +37,6 @@ struct ArchData {
 
     ArchData() = default;
     explicit ArchData(Arch* a);
-    explicit ArchData(UC no, UC lv = 1) : no_(no), level_(lv), x_(1), y_(1),
-        current_hp_(kArchInfo.at(no)[lv].hp_), current_capacity_(kArchInfo.at(no)[lv].max_capacity_) {}
 };
 
 class Arch : public cocos2d::Sprite, public ITroopTarget {
@@ -51,6 +52,9 @@ protected:
     UC y_;
     // 当前生命值
     int current_hp_;
+
+    // 当前剩余升级时间
+    UI remaining_upgrade_time_;
 
     // 资源建筑
     // 当前容量

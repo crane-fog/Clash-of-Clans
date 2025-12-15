@@ -344,26 +344,7 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
     playBuildingDropEffect(pendingArch_);
     // 将建筑加入存档数据结构
     arch_status_[pendingArch_->getx()][pendingArch_->gety()] = ArchData(pendingArch_);
-
-    // 写入存档数据
-    DataHelper::writeArchData(
-        kMainVillageDataFile,
-        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()),
-        arch_status_
-    );
-    // 延迟一定的时间后执行该函数
-    unsigned int delayTime = kArchInfo.at(pendingArch_->getNo())[0].upgrade_time_;  // 设置延迟时间为5秒（你可以根据需要更改）
-
-    this->scheduleOnce([=](unsigned int) {
-        if (kArchInfo.at(pendingArch_->getNo())[0].type_ == RESOURCE) {
-            pendingArch_->Arch::startResourceProduction();  // 延时调用 startResourceProduction
-        }
-        }, delayTime, "start_resource_production");  // 延迟时间后执行
-
-
-
     CCLOG("建筑放置成功");
-
 }
 
 void MainVillage::removeCancelAndConfirmButtons(Arch* pendingArch_)

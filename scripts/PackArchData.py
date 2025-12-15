@@ -40,14 +40,23 @@ def generate_multi_arch_file(filename, arch_list):
     # 3. 打包结构体数据体
     # ==========================
     # ArchData 结构:
-    # no_(B), level_(B), x_(B), y_(B), current_hp_(I), current_capacity_(I)
-    # 总共 1+1+1+1+4+4 = 12 字节
-    struct_fmt = "<BBBBII"
+    # no_(B), level_(B), x_(B), y_(B), remaining_upgrade_time_(I), current_hp_(I), current_capacity_(I)
+    # 总共 1+1+1+1+4+4+4 = 16 字节
+    struct_fmt = "<BBBBIII"
 
     body_data = bytearray()
 
     for arch in arch_list:
-        packed_item = struct.pack(struct_fmt, arch["no"], arch["level"], arch["x"], arch["y"], arch["current_hp"], arch["current_capacity"])
+        packed_item = struct.pack(
+            struct_fmt,
+            arch["no"],
+            arch["level"],
+            arch["x"],
+            arch["y"],
+            arch["remaining_upgrade_time"],
+            arch["current_hp"],
+            arch["current_capacity"],
+        )
         body_data.extend(packed_item)
 
     # ==========================
@@ -58,7 +67,7 @@ def generate_multi_arch_file(filename, arch_list):
     with open(filename, "wb") as f:
         f.write(total_data)
 
-    print(f"写入完成，文件总大小: {len(total_data)} 字节 (预期: {10 + count * 12})")
+    print(f"写入完成，文件总大小: {len(total_data)} 字节 (预期: {10 + count * 16})")
     print("-" * 30)
 
 
@@ -76,10 +85,19 @@ def append_to_arch_file(filename, new_arch_list):
     # ==========================
     # 1. 准备新数据
     # ==========================
-    struct_fmt = "<BBBBII"
+    struct_fmt = "<BBBBIII"
     new_body_data = bytearray()
     for arch in new_arch_list:
-        packed_item = struct.pack(struct_fmt, arch["no"], arch["level"], arch["x"], arch["y"], arch["current_hp"], arch["current_capacity"])
+        packed_item = struct.pack(
+            struct_fmt,
+            arch["no"],
+            arch["level"],
+            arch["x"],
+            arch["y"],
+            arch["remaining_upgrade_time"],
+            arch["current_hp"],
+            arch["current_capacity"],
+        )
         new_body_data.extend(packed_item)
 
     with open(filename, "r+b") as f:
@@ -127,8 +145,8 @@ def modify_arch_in_file(filename, index, new_arch_data):
         print(f"文件 {filename} 不存在")
         return
 
-    struct_fmt = "<BBBBII"
-    struct_size = 12
+    struct_fmt = "<BBBBIII"
+    struct_size = 16
     header_size = 10
 
     with open(filename, "r+b") as f:
@@ -151,6 +169,7 @@ def modify_arch_in_file(filename, index, new_arch_data):
             new_arch_data["level"],
             new_arch_data["x"],
             new_arch_data["y"],
+            new_arch_data["remaining_upgrade_time"],
             new_arch_data["current_hp"],
             new_arch_data["current_capacity"],
         )
@@ -190,7 +209,7 @@ def verify_file(filename):
         print(f"[Header] Time: {timestamp}, Count: {count}")
 
         # 2. 读取结构体列表
-        struct_size = 12  # 1+1+1+1+4
+        struct_size = 16  # 1+1+1+1+4+4+4
 
         print("[Body Data]")
         for i in range(count):
@@ -200,9 +219,9 @@ def verify_file(filename):
                 break
 
             # 解析
-            # no, level, x, y, current_hp, current_capacity
-            vals = struct.unpack("<BBBBII", data)
-            print(f"  #{i+1}: No={vals[0]}, Level={vals[1]}, Pos=({vals[2]},{vals[3]}), HP={vals[4]}, Cap={vals[5]}")
+            # no, level, x, y, remaining_upgrade_time, current_hp, current_capacity
+            vals = struct.unpack("<BBBBIII", data)
+            print(f"  #{i+1}: No={vals[0]}, Level={vals[1]}, Pos=({vals[2]},{vals[3]}), Time={vals[4]}, HP={vals[5]}, Cap={vals[6]}")
 
 
 def generate_level_info_file(filename, level_list):
@@ -287,46 +306,45 @@ if __name__ == "__main__":
 
     # hp在存储的数据文件里不重要，只是一个占位填充
     data_list = [
-        {"no": 0, "level": 4, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 4, "x": 10, "y": 0, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 4, "x": 11, "y": 0, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 4, "x": 10, "y": 1, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 4, "x": 11, "y": 1, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 1, "x": 10, "y": 2, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 1, "x": 11, "y": 2, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 1, "x": 10, "y": 3, "current_hp": 0, "current_capacity": 0},
-        # {"no": 1, "level": 1, "x": 11, "y": 3, "current_hp": 0, "current_capacity": 0},
-        # {"no": 10, "level": 1, "x": 30, "y": 30, "current_hp": 0, "current_capacity": 10},
-        # {"no": 11, "level": 4, "x": 30, "y": 33, "current_hp": 0, "current_capacity": 10},
-        # {"no": 12, "level": 1, "x": 30, "y": 36, "current_hp": 0, "current_capacity": 10},
-        # {"no": 13, "level": 1, "x": 30, "y": 39, "current_hp": 0, "current_capacity": 10},
-        {"no": 20, "level": 1, "x": 30, "y": 42, "current_hp": 0, "current_capacity": 0},
-        {"no": 30, "level": 1, "x": 30, "y": 46, "current_hp": 0, "current_capacity": 0},
-        {"no": 31, "level": 1, "x": 30, "y": 50, "current_hp": 0, "current_capacity": 0},
+        {"no": 0, "level": 4, "x": 20, "y": 20, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 4, "x": 10, "y": 0, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 4, "x": 10, "y": 0, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 4, "x": 11, "y": 0, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 4, "x": 10, "y": 1, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 4, "x": 11, "y": 1, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 1, "x": 10, "y": 2, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 1, "x": 11, "y": 2, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 1, "x": 10, "y": 3, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 1, "level": 1, "x": 11, "y": 3, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 10, "level": 1, "x": 30, "y": 30, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 10},
+        {"no": 11, "level": 4, "x": 30, "y": 33, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 10},
+        {"no": 12, "level": 1, "x": 30, "y": 36, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 10},
+        {"no": 13, "level": 1, "x": 30, "y": 39, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 10},
+        {"no": 20, "level": 1, "x": 30, "y": 42, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 30, "level": 1, "x": 30, "y": 46, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
+        {"no": 31, "level": 1, "x": 30, "y": 50, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0},
     ]
 
-    for i in range(40):
-        data_list.append({"no": 1, "level": 1, "x": 0, "y": i, "current_hp": 0, "current_capacity": 0})
     # 生成
-    # generate_multi_arch_file(output_file, data_list)
+    generate_multi_arch_file(output_file, data_list)
 
     # 追加
-    # append_list = [{"no": 1, "level": 1, "x": 0, "y": _, "current_hp": 0, "current_capacity": 0} for _ in range(0, 6)]
+    # append_list = [{"no": 1, "level": 1, "x": 0, "y": _, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0} for _ in range(0, 6)]
     # append_to_arch_file("data/MainVillageData.dat", append_list)
 
     # 修改
-    # modify_data = {"no": 0, "level": 1, "x": 20, "y": 20, "current_hp": 0, "current_capacity": 0}
+    # modify_data = {"no": 0, "level": 1, "x": 20, "y": 20, "remaining_upgrade_time": 0, "current_hp": 0, "current_capacity": 0}
     # modify_arch_in_file("data/MainVillageData.dat", 22, modify_data)
 
     # 验证
-    verify_file("data/level2.dat")
+    verify_file(output_file)
 
-    # LevelInfo 示例
-    level_data = [
-        {"level": 1, "progress": 0, "gold": 0, "elixir": 0},
-        {"level": 2, "progress": 0, "gold": 2000, "elixir": 2000},
-    ]
-    generate_level_info_file("data/LevelInfo.dat", level_data)
-    verify_level_info_file("data/LevelInfo.dat")
+    # # LevelInfo 示例
+    # level_data = [
+    #     {"level": 1, "progress": 0, "gold": 0, "elixir": 0},
+    #     {"level": 2, "progress": 0, "gold": 2000, "elixir": 2000},
+    # ]
+    # generate_level_info_file("data/LevelInfo.dat", level_data)
+    # verify_level_info_file("data/LevelInfo.dat")
 
     # write_two_longlong(4000, 6000, "SourceData.dat")
