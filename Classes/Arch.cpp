@@ -75,8 +75,14 @@ void Arch::onEnter()
     updateWall();
     if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE) {
         startResourceProduction();
-
     }
+
+    if (remaining_upgrade_time_ > 0) {
+        // 恢复升级状态
+        std::string Notice_ = "升级";
+        startUpgradeAnimation(remaining_upgrade_time_, Notice_);
+    }
+
     // 添加触摸监听
     // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
     if (is_mine_) {
@@ -98,6 +104,12 @@ void Arch::onExit()
         _eventDispatcher->removeEventListener(touch_listener_);
         touch_listener_ = nullptr;
     }
+
+    // 清理升级相关的显示和定时器，防止重复添加
+    this->removeChildByName("upgrading");
+    this->removeChildByName("upgrade_timer");
+    this->stopActionByTag(999); // 停止升级动画
+
     Sprite::onExit();
 }
 
@@ -327,7 +339,7 @@ void Arch::showArchPanel(Arch* arch)
     label->setPosition(Vec2(160, 150));
     panel->addChild(label);
 
-
+    
 
     //关闭按钮
     auto closeBtn = cocos2d::ui::Button::create();
@@ -520,6 +532,52 @@ void Arch::onUpgradeCancel(Ref* sender) {
     this->removeChildByTag(1000);  // 1000是面板的tag，可以根据需要调整
 }
 
+void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice) {
+    // 添加亮暗效果的动画
+    auto fadeOut = FadeTo::create(0.5f, 50);
+    auto fadeIn = FadeTo::create(0.5f, 255);
+    auto sequence = Sequence::create(fadeOut, fadeIn, nullptr);
+    auto repeat = Repeat::create(sequence, time);
+    repeat->setTag(999);
+    this->runAction(repeat);
+
+    // 创建升级标签
+    auto upgradeLabel = Label::createWithSystemFont(
+        notice + "中...还需: " + std::to_string(time) + " 秒 ", "Arial", 22);
+    upgradeLabel->setPosition(Vec2(120, 200));
+    upgradeLabel->setTextColor(Color4B::BLACK);
+    upgradeLabel->setName("upgrading");
+    this->addChild(upgradeLabel);
+
+    auto timer = CountdownTimer::create();
+    timer->setName("upgrade_timer");
+    this->addChild(timer);
+    timer->start(time,
+        [notice, this, upgradeLabel](int remaining) {
+            upgradeLabel->setString(notice + "中...还需: " + std::to_string(remaining) + " 秒");
+            this->remaining_upgrade_time_ = remaining;
+        },
+        [notice, this, upgradeLabel]() {
+            upgradeLabel->setString(notice + "完成！");
+            this->removeChildByName("upgrading");
+            
+            // 延迟移除定时器，防止在回调中删除自身导致崩溃
+            this->scheduleOnce([this](float){
+                this->removeChildByName("upgrade_timer");
+            }, 0.0f, "remove_upgrade_timer_delayed");
+
+            this->remaining_upgrade_time_ = 0;
+
+            // 更新图片纹理
+            auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
+            this->setTexture(newImg);
+
+            // 更新UI显示
+            showArchPanel(this);
+        }
+    );
+}
+
 void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, unsigned long long currentGold,bool type) {
     if (cost > currentGold) {
         if (type == GOLD) {
@@ -549,50 +607,38 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, 
         }
 
         arch->current_hp_ = kArchInfo.at(arch->no_)[arch->level_ - 1].hp_;
-        //更新图片纹理
-        auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
+        
         // 获取升级时间（持续的总时长）
         unsigned int upgradeTime = kArchInfo.at(arch->no_)[arch->level_ - 1].upgrade_time_;
-
-        // 添加亮暗效果的动画
-        auto fadeOut = FadeTo::create(0.5f, 50);  // 1秒内从亮变暗
-        auto fadeIn = FadeTo::create(0.5f, 255);   // 1秒内从暗变亮
-        auto sequence = Sequence::create(fadeOut, fadeIn, nullptr);  // 交替执行淡入淡出
+        arch->remaining_upgrade_time_ = upgradeTime;
 
         // 关闭面板
         this->removeChildByTag(1000);
         this->removeChildByName("ARCH_PANEL");
-        // 执行动画
-        this->runAction(Repeat::create(sequence, upgradeTime));
-        if (upgradeTime) {
-            // 创建升级标签
-            auto upgradeLabel = Label::createWithSystemFont(
-                Notice_ + "中...还需: " + std::to_string(upgradeTime) + " 秒 ", "Arial", 22);
-            upgradeLabel->setPosition(Vec2(120, 200));
-            upgradeLabel->setTextColor(Color4B::BLACK);
-            upgradeLabel->setName("upgrading");
-            this->addChild(upgradeLabel);
-            auto timer = CountdownTimer::create();
-            this->addChild(timer);
-            timer->start(upgradeTime,
-                [Notice_, this, upgradeLabel](int remaining) {
-                    // 每秒回调
-                    upgradeLabel->setString(Notice_ + "中...还需: " + std::to_string(remaining) + " 秒");
-                },
-                [Notice_, this, upgradeLabel]() {
-                    // 完成回调
-                    upgradeLabel->setString(Notice_ + "完成！");
-                    this->removeChildByName("upgrading");
-                }
-            );
-        }
-        // 执行升级动画完成后的操作
-        scheduleOnce([=](float) {
-            // 更新建筑纹理
+        
+        if (upgradeTime > 0) {
+            arch->startUpgradeAnimation(upgradeTime, Notice_);
+        } else {
+            // 立即完成
+            auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
             arch->setTexture(newImg);
-            // 更新UI显示
             showArchPanel(arch);
-            }, upgradeTime, "UpdateArchPanel");
+        }
+    }
+}
+
+void Arch::updateUpgradeTime(long long elapsed) {
+    if (remaining_upgrade_time_ > 0) {
+        if (remaining_upgrade_time_ > elapsed) {
+            remaining_upgrade_time_ -= static_cast<unsigned int>(elapsed);
+        } else {
+            remaining_upgrade_time_ = 0;
+            // 升级完成，更新纹理
+            auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
+            this->setTexture(newImg);
+            // 恢复透明度
+            this->setOpacity(255);
+        }
     }
 }
 

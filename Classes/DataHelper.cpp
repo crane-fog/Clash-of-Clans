@@ -26,6 +26,7 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
             temp.x_ = static_cast<unsigned char>(x);
             temp.y_ = static_cast<unsigned char>(y);
             temp.current_hp_ = 0; // 存储时不保存当前生命值，读取时根据等级自动填充满血
+            temp.remaining_upgrade_time_ = current.remaining_upgrade_time_;
             temp.current_capacity_ = current.current_capacity_;
             target.push_back(temp);
 
@@ -59,6 +60,7 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[
         target[x][y].x_ = source[i].x_; // 此处填充的x统一为min(x)
         target[x][y].y_ = source[i].y_; // min(y)
         target[x][y].current_hp_ = kArchInfo.at(source[i].no_)[source[i].level_ - 1].hp_;
+        target[x][y].remaining_upgrade_time_ = source[i].remaining_upgrade_time_;
         target[x][y].current_capacity_ = source[i].current_capacity_;
         // 填充建筑占地
         for (unsigned char dx = 0; dx < kArchInfo.at(source[i].no_)[source[i].level_ - 1].size_; dx++) {

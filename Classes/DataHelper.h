@@ -26,6 +26,7 @@ struct LevelInfo {
     unsigned int elixir_;
 };
 
+// todo: 想把纯静态类改为使用命名空间
 // 数据文件操作
 class DataHelper {
 public:

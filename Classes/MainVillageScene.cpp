@@ -36,7 +36,19 @@ bool MainVillage::init()
     std::vector<ArchData> arch_list;
     DataHelper::mapToList(arch_status_, arch_list);
 
+    time_t time_diff = current_time - data_time;
+    last_exit_time_ = 0;
+
     for (auto& arch : arch_list) {
+        // 更新剩余升级时间
+        if (arch.remaining_upgrade_time_ > 0) {
+            if (arch.remaining_upgrade_time_ > time_diff) {
+                arch.remaining_upgrade_time_ -= static_cast<unsigned int>(time_diff);
+            }
+            else {
+                arch.remaining_upgrade_time_ = 0;
+            }
+        }
         Arch::create(arch, base_map_);
     }
 
@@ -76,8 +88,6 @@ bool MainVillage::init()
     }
     // UI层直接添加到场景，不受base_map变换影响
     this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
-
-
 
 
     // 获取屏幕尺寸
@@ -123,6 +133,18 @@ bool MainVillage::init()
 
 void MainVillage::onEnter()
 {
+    if (last_exit_time_ > 0) {
+        time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        time_t time_diff = current_time - last_exit_time_;
+
+        if (time_diff > 0) {
+            for (auto arch : base_map_->archs_) {
+                arch->updateUpgradeTime(time_diff);
+            }
+        }
+        last_exit_time_ = 0;
+    }
+
     Village::onEnter();
 
     //// 让角色动
@@ -222,8 +244,9 @@ bool MainVillage::addBuildingByNO(unsigned char no,int price)
     data.level_ = level;
     data.x_ = MAP_SIZE/2;                 //默认左下角
     data.y_ = MAP_SIZE/2;
-    data.current_hp_ = info.hp_;         
-    data.current_capacity_ =0;              //资源建筑容量
+    data.remaining_upgrade_time_ = 0;
+    data.current_hp_ = info.hp_;
+    data.current_capacity_ = info.max_capacity_; //资源建筑容量
 
     // 创建建筑到地图
     auto arch = Arch::create(data, base_map_);
@@ -491,6 +514,7 @@ void MainVillage::showShopPopupWithDelay(float sec)
     }
 
 }
+
 // 选项点击事件处理
 void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button* confirmButton) {
     // 如果点击的是同一个按钮，保持选中状态
@@ -513,4 +537,10 @@ void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button
         confirmButton->setEnabled(true);
     }
 
+}
+
+void MainVillage::onExit()
+{
+    last_exit_time_ = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    Village::onExit();
 }

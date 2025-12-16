@@ -54,13 +54,17 @@ private:
     unsigned long long gold_;
     // 圣水储量
     unsigned long long elixir_ ;
-
+    
+    // 上次退出场景的时间
+    time_t last_exit_time_ = 0;
 
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
     // 当对象被渲染时被自动调用
     virtual void onEnter() override;
+    // 当对象退出渲染时被自动调用
+    virtual void onExit() override;
     // 当对象被销毁时被自动调用
     virtual void cleanup() override;
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池

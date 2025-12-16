@@ -92,7 +92,7 @@ public:
     void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
 
     Arch(const ArchData& data, BaseMap* base_map) : no_(data.no_), level_(data.level_), x_(data.x_), y_(data.y_),
-        current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
+        current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), remaining_upgrade_time_(data.remaining_upgrade_time_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
     static Arch* create(const ArchData& data, BaseMap* base_map, bool is_mine = true);
     virtual bool initWithFile(const std::string& filename) override;
     virtual void onEnter() override;
@@ -129,8 +129,14 @@ public:
     void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, unsigned long long currentGold, bool type);
     //资源生产
     void Arch::startResourceProduction();
-    // 更新建筑资源的显示
+    // 更新建筑的显示
     void Arch::updateBuildingDisplay();
+
+    // 开始升级动画
+    void startUpgradeAnimation(unsigned int time, const std::string& notice);
+    
+    // 更新剩余升级时间
+    void updateUpgradeTime(long long elapsed);
 
     UI getx() const {
         return this->x_;
@@ -138,9 +144,13 @@ public:
     UI gety() const {
         return this->y_;
     }
-    UI getNo() const {
-        return this->no_;
+    UC getNo() const { 
+        return no_; 
     }
+    UC getLevel() const {
+        return level_;
+    }
+
 
     friend class ShopPopup;
 
