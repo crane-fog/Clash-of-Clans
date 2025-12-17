@@ -57,46 +57,49 @@ endif()
 # add cross-platforms source files and header files 
 list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
-     Classes/CocController.cpp
-     Classes/BaseMap.cpp
-     Classes/VillageScene.cpp
-     Classes/MainVillageScene.cpp
-     Classes/UIparts.cpp
      Classes/Arch.cpp
+     Classes/Archer.cpp
+     Classes/Barbarian.cpp
+     Classes/BaseMap.cpp
+     Classes/CocController.cpp
      Classes/DataHelper.cpp
+     Classes/EnemyVillageScene.cpp
+     Classes/Giant.cpp
+     Classes/HealthBar.cpp
+     Classes/MainVillageScene.cpp
+     Classes/ShopPopup.cpp
      Classes/Troop.cpp
      Classes/TroopAttackManager.cpp
      Classes/TroopTargetManager.cpp
-     Classes/Barbarian.cpp
-     Classes/Archer.cpp
-     Classes/Giant.cpp
-     Classes/ShopPopup.cpp
-     Classes/HealthBar.cpp
-     Classes/EnemyVillageScene.cpp
+     Classes/UIparts.cpp
+     Classes/VillageScene.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
+     Classes/Arch.h
+     Classes/Archer.h
+     Classes/ArchInfo.h
+     Classes/ArchTargetManager.h
+     Classes/AttackSceneUI.h
+     Classes/Barbarian.h
+     Classes/BaseMap.h
+     Classes/CalculateHelper.h
      Classes/CocController.h
      Classes/CoordAdaptor.h
-     Classes/BaseMap.h
-     Classes/VillageScene.h
-     Classes/MainVillageScene.h
-     Classes/UIparts.h
-     Classes/ArchInfo.h
-     Classes/Arch.h
      Classes/DataHelper.h
-     Classes/Troop.h
-     Classes/UIcommon.h
+     Classes/EnemyVillageScene.h
+     Classes/Giant.h
      Classes/HealthBar.h
-     Classes/CalculateHelper.h
+     Classes/IArchTarget.h
+     Classes/ITroopTarget.h
+     Classes/MainVillageScene.h
+     Classes/ShopPopup.h
+     Classes/Troop.h
      Classes/TroopAttackManager.h
      Classes/TroopTargetManager.h
-     Classes/ITroopTarget.h
-     Classes/Barbarian.h
-     Classes/Archer.h
-     Classes/Giant.h
-     Classes/IArchTarget.h
-     Classes/EnemyVillageScene.h
+     Classes/UIcommon.h
+     Classes/UIparts.h
+     Classes/VillageScene.h
      )
 
 if(ANDROID)
