@@ -70,18 +70,8 @@ bool UIBars::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    unsigned long long gold = 100;
-    unsigned long long elixir = 0;
-    bool success = DataHelper::readSourceData("data/SourceData.dat", gold, elixir);
-    GameManager::getInstance()->setGold(gold);
-    GameManager::getInstance()->setElixir(elixir);
-    if (success) {
-        CCLOG("金币储量: %llu", gold);
-        CCLOG("圣水储量: %llu", elixir);
-    }
-    else {
-        CCLOG("读取文件失败！");
-    }
+    unsigned long long gold = GameManager::getInstance()->getGold();
+    unsigned long long elixir = GameManager::getInstance()->getElixir();
 
     // 创建多个进度条:金币和圣水
     createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visibleSize.width - 500, visibleSize.height - 50, GoldLimit);

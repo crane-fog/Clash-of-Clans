@@ -39,8 +39,8 @@ public:
     }
 
 private:
-    unsigned long long MyGold = 1000;
-    unsigned long long MyElixir = 1000;
+    unsigned long long MyGold;
+    unsigned long long MyElixir;
 };
 
 
@@ -50,10 +50,6 @@ class MainVillage : public Village {
 private:
     // 村庄中的建筑状态数据
     ArchData arch_status_[MAP_SIZE][MAP_SIZE];
-    // 金币储量
-    unsigned long long gold_;
-    // 圣水储量
-    unsigned long long elixir_;
 
     // 上次退出场景的时间
     time_t last_exit_time_ = 0;
@@ -87,28 +83,6 @@ public:
     void showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_);
     void onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button* confirmButton);
 
-    //获取金币数量
-    unsigned long long getGold()
-    {
-        return gold_;
-    }
-    //获取圣水数量
-    unsigned long long getElixir()
-    {
-        return elixir_;
-    }
-
-
-    //更新金币数量
-    void renewGold(unsigned long long num)
-    {
-        gold_ = num;
-    }
-    //更新圣水数量
-    void renewElixir(unsigned long long num)
-    {
-        elixir_ = num;
-    }
 
     // 获取大本营等级
     unsigned char getTownHallLevel();

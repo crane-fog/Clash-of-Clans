@@ -21,10 +21,13 @@ bool MainVillage::init()
         return false;
     }
 
+    unsigned long long gold = 0, elixir = 0;
     // 从数据文件中读取资源数据
-    if (!DataHelper::readSourceData(kSourceDataFile, gold_, elixir_)) {
+    if (!DataHelper::readSourceData(kSourceDataFile, gold, elixir)) {
         return false;
     }
+    GameManager::getInstance()->setGold(gold);
+    GameManager::getInstance()->setElixir(elixir);
 
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
