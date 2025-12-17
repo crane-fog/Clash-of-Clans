@@ -41,4 +41,8 @@ inline void remove_border(cocos2d::LayerColor* bg) {
     bg->removeChild(child);  // 移除边框（DrawNode）
 
 }
+
+
+
+
 #endif // __UICOMMON_H__

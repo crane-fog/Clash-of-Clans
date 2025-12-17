@@ -22,6 +22,7 @@ public:
     void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor * bg);
     void EnemyVillage::spawnSelectedTroop(const std::string& troopName);
     void onButtonClick(cocos2d::LayerColor* itemBg, int index);
+
 };
 
 #endif // __ENEMY_VILLAGE_SCENE_H__

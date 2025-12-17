@@ -174,7 +174,11 @@ void MainVillage::cleanup()
 
 void MainVillage::onAttackButtonClick(Ref* sender)
 {
-    CocController::getInstance()->changeScene(1, gold_, elixir_);
+    //CocController::getInstance()->changeScene(1, gold_, elixir_);
+    // 创建并显示挑战场景选择面板
+   UICommonHelper attack_panel;
+   bool selected_bg[4] = {0};
+    showChallengeSelectionPanel(this, gold_, elixir_);
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)
@@ -413,3 +417,122 @@ void MainVillage::showShopPopupWithDelay(float sec)
         }, sec, "show_shop_popup_key");  // 延迟 2 秒调用
 }
 
+// 显示挑战场景选择面板
+ void MainVillage::showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_) {
+    // 创建一个覆盖全屏的面板
+    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));  // 黑色背景
+    parent->addChild(panel, 99999);
+    bool selectedOptions[4] = { false,false,false,false };
+    // 面板标题
+    auto titleLabel = cocos2d::Label::createWithSystemFont("选择挑战场景", "Arial", 56);
+    titleLabel->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
+        cocos2d::Director::getInstance()->getVisibleSize().height - 50));
+    panel->addChild(titleLabel, 1);
+
+    // 创建四个选项
+    std::vector<std::string> sceneNames = { "场景1", "场景2", "场景3", "场景4" };
+    std::vector<std::string> sceneImages = { "attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp", "attack_scene/Scenery3.webp", "attack_scene/Scenery4.webp" };
+    std::vector<std::string> difficultyLevels = { "简单", "中等", "困难", "极难" };
+
+
+    // 确认按钮
+    auto confirmButton = cocos2d::ui::Button::create("attack_scene/yes.png");
+    confirmButton->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width - 200, 100));
+    confirmButton->setTitleText("确定");
+    confirmButton->setTitleColor(cocos2d::Color3B::BLACK);
+    confirmButton->setScale(0.8f);
+    confirmButton->setEnabled(false);  // 默认不可点击
+    confirmButton->setName("confirm_attack");
+    panel->addChild(confirmButton);
+
+    confirmButton->addClickEventListener([parent, &selectedOptions, gold_, elixir_, panel](cocos2d::Ref* sender) {
+        // 确认后更换场景
+        if (selectedOptions[0] != -1) { // 确保已经选择了一个选项
+            CocController::getInstance()->changeScene(1, gold_, elixir_);
+            // 点击确认按钮后关闭面板
+            panel->removeFromParent();
+        }
+        });
+
+    // 退出按钮
+    auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exitButton->setPosition(cocos2d::Vec2(200, 100));
+    exitButton->setTitleText("退出");
+    exitButton->setScale(0.8f);
+    exitButton->addClickEventListener([panel,this](cocos2d::Ref* sender) {
+        // 退出面板
+        panel->removeFromParent();
+        selectedItemBg = nullptr;
+        });
+    panel->addChild(exitButton);
+
+    float buttonWidth = 350;
+    float buttonHeight = 400;
+    float padding = 130;
+    int canConfirm[1] = { -1 };
+    for (size_t i = 0; i < sceneNames.size(); i++) {
+        // 选项背景
+        auto itemBg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 255), buttonWidth, buttonHeight);
+        itemBg->setPosition(cocos2d::Vec2((buttonWidth + padding) * i + 50, 350));
+        itemBg->setTag(i);
+        // 选项图片
+        auto itemPic = cocos2d::Sprite::create(sceneImages[i]);
+        float scale = std::min(buttonWidth / itemPic->getContentSize().width, buttonHeight / itemPic->getContentSize().height);
+        itemPic->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight / 2 + 20));
+        itemPic->setScale(scale);
+
+        // 显示场景名称
+        auto nameLabel = cocos2d::Label::createWithSystemFont(sceneNames[i], "Arial", 34);
+        nameLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, 25));  // 名字位置
+        nameLabel->setColor(cocos2d::Color3B::BLACK);
+        itemBg->addChild(nameLabel, 150);
+
+        // 显示难度级别
+        auto difficultyLabel = cocos2d::Label::createWithSystemFont(difficultyLevels[i], "Arial", 25);
+        difficultyLabel->setColor(cocos2d::Color3B::BLACK);
+        difficultyLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight + 20));  // 难度位置
+        itemBg->addChild(difficultyLabel, 150);
+
+        // 将按钮添加到背景层
+        itemBg->addChild(itemPic);
+        panel->addChild(itemBg);
+
+        // 添加触摸事件监听器
+        auto touchListener = cocos2d::EventListenerTouchOneByOne::create();
+        touchListener->onTouchBegan = [parent, itemBg, i, &selectedOptions, panel, confirmButton, &canConfirm,this](cocos2d::Touch* touch, cocos2d::Event* event) {
+            // 获取触摸点并判断是否点击了按钮
+            cocos2d::Rect buttonRect = itemBg->getBoundingBox();
+            if (buttonRect.containsPoint(touch->getLocation())) {
+                onOptionClick(itemBg, i, selectedOptions, confirmButton, panel);
+                return true;  // 阻止事件继续传播
+            }
+            return false;
+            };
+        parent->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, itemBg);  // 为按钮添加触摸事件
+    }
+
+}
+// 选项点击事件处理
+void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, int index, bool selectedOptions[], cocos2d::ui::Button* confirmButton, cocos2d::LayerColor* panel) {
+    // 如果点击的是同一个按钮，保持选中状态
+    if (selectedItemBg == itemBg) {
+        return;  // 已经是选中的按钮，不做任何改变
+    }
+    // 如果已有按钮被选中，取消选中状态并恢复原始颜色
+    if (selectedItemBg) {
+        selectedItemBg->setColor(cocos2d::Color3B::WHITE);  // 恢复原始颜色
+        remove_border(selectedItemBg);
+    }
+
+    // 更新当前选中的按钮
+    selectedItemBg = itemBg;
+
+    // 更改选中按钮的颜色
+    selectedItemBg->setColor(cocos2d::Color3B::BLUE);  // 变暗的颜色
+    draw_border(selectedItemBg);
+
+
+    confirmButton->setEnabled(true);
+
+
+}
