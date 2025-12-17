@@ -544,3 +544,26 @@ void MainVillage::onExit()
     last_exit_time_ = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Village::onExit();
 }
+
+unsigned char MainVillage::getTownHallLevel()
+{
+    for (auto arch : base_map_->archs_) {
+        if (arch->getNo() == TOWN_HALL) {
+            return arch->getLevel();
+        }
+    }
+    assert(false && "主村庄中无大本营");
+    return 1; // 这里不应该被触发
+}
+
+int MainVillage::getBuildingCount(unsigned char archNo)
+{
+    int count = 0;
+    for (auto arch : base_map_->archs_) {
+        if (arch->getNo() == archNo) {
+            count++;
+        }
+    }
+    return count;
+}
+

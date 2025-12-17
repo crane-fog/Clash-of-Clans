@@ -10,7 +10,7 @@
 USING_NS_CC;
 using namespace ui;
 
-
+// todo: 拆分类头文件
 void ShopPopup::setupBackground() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -294,6 +294,13 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());  
 
             if (rect.containsPoint(locationInNode)) {
+                // 检查建筑数量限制
+                unsigned char townHallLevel = scene->getTownHallLevel();
+                if (scene->getBuildingCount(archNo) >= kArchCount.at(archNo)[townHallLevel - 1]) {
+                    this->showUnavailableBubble(item, itemBg, scrollView, "建筑数量已达上限");
+                    return true;
+                }
+
                 if (item.p_type == GOLD) {
                     if (item.isAvailable && currentGold > item.price) {//
                         itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
@@ -354,8 +361,17 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
 
         _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, itemBg);
 
+        // 检查建筑数量限制
+        bool isLimitReached = false;
+        auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());
+        unsigned char townHallLevel = scene->getTownHallLevel();
+
+        if (scene->getBuildingCount(archNo) >= kArchCount.at(archNo)[townHallLevel - 1]) {
+            isLimitReached = true;
+        }
+
         // 如果商品不可用，添加灰色遮罩
-        if (!item.isAvailable|| (item.p_type==GOLD&&(currentGold < item.price))|| (item.p_type == ELIXIR && (currentElixir < item.price))) {
+        if (!item.isAvailable|| (item.p_type==GOLD&&(currentGold < item.price))|| (item.p_type == ELIXIR && (currentElixir < item.price)) || isLimitReached) {
             Size bgSize = itemBg->getContentSize();
             auto grayMask = LayerColor::create(Color4B(128, 128, 128, 150), bgSize.width, bgSize.height);
             grayMask->setPosition(Vec2::ZERO);
