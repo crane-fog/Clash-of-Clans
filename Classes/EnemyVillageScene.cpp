@@ -166,6 +166,8 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
     return true; // 返回true表示已处理触摸事件
 }
 
+
+
 void EnemyVillage::spawnBarbarian(cocos2d::Vec2 position)
 {
     // 在触摸位置生成士兵
