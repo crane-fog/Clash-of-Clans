@@ -115,9 +115,7 @@ bool EnemyVillage::myInit(int level)
     // touchListener->onTouchCancelled = CC_CALLBACK_2(EnemyVillage::onTouchCancelled, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
-    // 获取单例实例
-    UIBars* uiBars = UIBars::getInstance();
-
+    ui_layer_ = UIBars::create();
     if (!ui_layer_) {
         return false;
     }

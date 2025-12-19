@@ -22,30 +22,13 @@ struct ProgressBarData {
 // UI部分基类
 class UIBars : public cocos2d::Node {
 private:
-    static UIBars* s_instance;  // 单例实例指针
-
     std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
     cocos2d::EventListenerCustom* goldUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* elixirUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* maxGoldUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* maxElixirUpdateListener;  // 存储监听器
 
-    // 私有构造函数，防止外部创建实例
-    UIBars();
-
-    // 私有析构函数
-    virtual ~UIBars();
-    // 禁止拷贝构造和赋值操作
-    UIBars(const UIBars&) = delete;
-    UIBars& operator=(const UIBars&) = delete;
 public:
-    // 获取单例实例
-    static UIBars* getInstance();
-
-    // 销毁单例实例
-    static void destroyInstance();
-
-
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
 
@@ -65,9 +48,6 @@ public:
     void onMaxElixirUpdated(cocos2d::EventCustom* event);
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(UIBars);
-
-
-
 };
 
 enum ShopType :int {
