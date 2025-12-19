@@ -492,29 +492,26 @@ void Arch::createUpgradeComparisonPanel() {
     titleLabel->setTextColor(Color4B::BLACK);
     popupBg->addChild(titleLabel);
 
-    //数据
-    unsigned char no_ = no_;
-    unsigned char currentLevel = level_;
-
     // 创建升级前后的数据对比标签
     auto infoLabel = Label::createWithSystemFont(
         "当前等级: " + std::to_string(level_) + " -> "  +std::to_string(level_ +1)+ "\n" +
-        "生命值  : " + std::to_string(kArchInfo.at(no_)[currentLevel-1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel ].hp_) + "\n" + "\n" +
-        "金币需求: " + std::to_string(kArchInfo.at(no_)[currentLevel ].upgrade_cost_amount_)+ "\n" +
-        "升级用时: " + std::to_string(kArchInfo.at(no_)[currentLevel].upgrade_time_), "Arial", 24);
-    if (kArchInfo.at(no_)[currentLevel].upgrade_cost_type_ == ELIXIR) {
+        "生命值: " + std::to_string(kArchInfo.at(no_)[level_-1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[level_ ].hp_) + "\n" + "\n" +
+        "金币需求: " + std::to_string(kArchInfo.at(no_)[level_ ].upgrade_cost_amount_)+ "\n" +
+        "升级用时: " + std::to_string(kArchInfo.at(no_)[level_].upgrade_time_), "Arial", 24);
+    if (kArchInfo.at(no_)[level_].upgrade_cost_type_ == ELIXIR) {
         infoLabel->setString("当前等级: " + std::to_string(level_) + " -> " + std::to_string(level_ + 1) + "\n" +
-            "生命值  : " + std::to_string(kArchInfo.at(no_)[currentLevel - 1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel].hp_) + "\n" + "\n" +
-            "圣水需求: " + std::to_string(kArchInfo.at(no_)[currentLevel].upgrade_cost_amount_) + "\n" +
-            "升级用时: " + std::to_string(kArchInfo.at(no_)[currentLevel].upgrade_time_));
+            "生命值: " + std::to_string(kArchInfo.at(no_)[level_ - 1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].hp_) + "\n" + "\n" +
+            "圣水需求: " + std::to_string(kArchInfo.at(no_)[level_].upgrade_cost_amount_) + "\n" +
+            "升级用时: " + std::to_string(kArchInfo.at(no_)[level_].upgrade_time_));
     }
     infoLabel->setPosition(Vec2(popupBg->getContentSize().width / 2, popupBg->getContentSize().height / 2));
     infoLabel->setTextColor(Color4B::BLACK);
+    infoLabel->setName("INFO_LABEL");
     popupBg->addChild(infoLabel);
 
-    unsigned int cost_ = kArchInfo.at(no_)[currentLevel].upgrade_cost_amount_;
+    unsigned int cost_ = kArchInfo.at(no_)[level_].upgrade_cost_amount_;
     unsigned long long current_=0;
-    if (kArchInfo.at(no_)[currentLevel].upgrade_cost_type_==GOLD) {
+    if (kArchInfo.at(no_)[level_].upgrade_cost_type_==GOLD) {
         current_ = GameManager::getInstance()->getGold();
     }
     else {
@@ -534,7 +531,7 @@ void Arch::createUpgradeComparisonPanel() {
     confirmLabel->setTextColor(Color4B::GREEN);  // 设置字体颜色为红色
     auto confirmButton = MenuItemLabel::create(
         confirmLabel,
-        CC_CALLBACK_1(Arch::Buiding_Upgrading, this, this, UPGRADING, cost_, current_, kArchInfo.at(no_)[currentLevel].upgrade_cost_type_));
+        CC_CALLBACK_1(Arch::Buiding_Upgrading, this, this, UPGRADING, cost_, current_, kArchInfo.at(no_)[level_].upgrade_cost_type_));
     confirmButton->setPosition(Vec2(popupBg->getContentSize().width * 2 / 3, 30));
 
     // 将按钮添加到菜单中
@@ -838,7 +835,15 @@ void GoldStorge::showArchPanel()
 
 void GoldStorge::createUpgradeComparisonPanel()
 {
-
+    Arch::createUpgradeComparisonPanel();
+    auto popupBg = getChildByTag(1000);
+    auto label = dynamic_cast<Label*>(popupBg->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    std::string split = "\n\n";
+    size_t pos = str.find(split);
+    std::string add = "最大储量: " + std::to_string(kArchInfo.at(no_)[level_ - 1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].max_capacity_) + "\n";
+    str.insert(pos + 1, add);
+    label->setString(str);
 }
 
 void ElixirStorge::showArchPanel()
@@ -856,7 +861,15 @@ void ElixirStorge::showArchPanel()
 
 void ElixirStorge::createUpgradeComparisonPanel()
 {
-
+    Arch::createUpgradeComparisonPanel();
+    auto popupBg = getChildByTag(1000);
+    auto label = dynamic_cast<Label*>(popupBg->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    std::string split = "\n\n";
+    size_t pos = str.find(split);
+    std::string add = "最大储量: " + std::to_string(kArchInfo.at(no_)[level_ - 1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].max_capacity_) + "\n";
+    str.insert(pos + 1, add);
+    label->setString(str);
 }
 
 void GoldMine::showArchPanel()
@@ -875,7 +888,16 @@ void GoldMine::showArchPanel()
 
 void GoldMine::createUpgradeComparisonPanel()
 {
-
+    Arch::createUpgradeComparisonPanel();
+    auto popupBg = getChildByTag(1000);
+    auto label = dynamic_cast<Label*>(popupBg->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    std::string split = "\n\n";
+    size_t pos = str.find(split);
+    std::string add = "生产速度: " + std::to_string(kArchInfo.at(no_)[level_ - 1].produce_speed_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].produce_speed_) + "\n";
+    add += "最大容量: " + std::to_string(kArchInfo.at(no_)[level_ - 1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].max_capacity_) + "\n";
+    str.insert(pos + 1, add);
+    label->setString(str);
 }
 
 void ElixirCollector::showArchPanel()
@@ -894,7 +916,16 @@ void ElixirCollector::showArchPanel()
 
 void ElixirCollector::createUpgradeComparisonPanel()
 {
-
+    Arch::createUpgradeComparisonPanel();
+    auto popupBg = getChildByTag(1000);
+    auto label = dynamic_cast<Label*>(popupBg->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    std::string split = "\n\n";
+    size_t pos = str.find(split);
+    std::string add = "生产速度: " + std::to_string(kArchInfo.at(no_)[level_ - 1].produce_speed_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].produce_speed_) + "\n";
+    add += "最大容量: " + std::to_string(kArchInfo.at(no_)[level_ - 1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].max_capacity_) + "\n";
+    str.insert(pos + 1, add);
+    label->setString(str);
 }
 
 void Barracks::showArchPanel()
@@ -941,7 +972,21 @@ void Barracks::showArchPanel()
 
 void Barracks::createUpgradeComparisonPanel()
 {
-
+    Arch::createUpgradeComparisonPanel();
+    auto popupBg = getChildByTag(1000);
+    auto label = dynamic_cast<Label*>(popupBg->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    std::string split = "\n\n";
+    size_t pos = str.find(split);
+    std::string add = "解锁兵种: ";
+    for (const auto& troop : kBarracksTroopUnlock) {
+        if (troop.first == level_ + 1) {
+            add += Troop::getTroopNameFromEnum(troop.second) + " ";
+        }
+    }
+    add += "\n";
+    str.insert(pos + 1, add);
+    label->setString(str);
 }
 
 void ArmyCamp::showArchPanel()
@@ -959,5 +1004,13 @@ void ArmyCamp::showArchPanel()
 
 void ArmyCamp::createUpgradeComparisonPanel()
 {
-
+    Arch::createUpgradeComparisonPanel();
+    auto popupBg = getChildByTag(1000);
+    auto label = dynamic_cast<Label*>(popupBg->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    std::string split = "\n\n";
+    size_t pos = str.find(split);
+    std::string add = "兵营容量: " + std::to_string(kArmyCampCapacity[level_ - 1]) + " -> " + std::to_string(kArmyCampCapacity[level_]) + "\n";
+    str.insert(pos + 1, add);
+    label->setString(str);
 }
