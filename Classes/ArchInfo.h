@@ -157,4 +157,6 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
         {"arch/Archer_Tower4.webp", 4, 3, DEFENSE, GOLD, 20000, 3600, 500, 0, 0, NOTRESOURCE, 12, 500, 100, 2}}}
 };
 
+const std::vector<unsigned char> kArmyCampCapacity = { 20, 30, 35, 40 };
+
 #endif // __ARCH_INFO_H__

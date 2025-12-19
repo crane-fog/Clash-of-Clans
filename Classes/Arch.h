@@ -117,7 +117,7 @@ public:
     virtual UC getTargetType() const override { return kArchInfo.at(no_)[level_ - 1].type_; }
 
     // 建筑面板UI相关
-    void showArchPanel(Arch* arch);
+    virtual void showArchPanel();
     void closeArchPanel();
     //升级按钮
     void Arch::archUpgrade(Arch* arch);
@@ -158,11 +158,18 @@ public:
 };
 
 class Wall : public Arch {
+private:
     std::vector<cocos2d::Node*> connection_nodes_;
 public:
     Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
+};
+
+class ArmyCamp : public Arch {
+public:
+    ArmyCamp(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
 };
 
 #endif // __ARCH_H__

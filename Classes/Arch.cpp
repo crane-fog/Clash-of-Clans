@@ -18,6 +18,9 @@ Arch* Arch::create(const ArchData& data, BaseMap* base_map, bool is_mine)
     if (data.no_ == WALL) {
         pRet = new(std::nothrow) Wall(data, base_map);
     }
+    else if (data.no_ == ARMY_CAMP) {
+        pRet = new(std::nothrow) ArmyCamp(data, base_map);
+    }
     else {
         pRet = new(std::nothrow) Arch(data, base_map);
     }
@@ -217,7 +220,7 @@ void Arch::onTouchUp(Touch* touch, Event* event)
     base_map_->setInputEnabled(true); // 恢复地图拖动
     removeHighlight();
     if (!is_dragging_) {
-        showArchPanel(this);
+        showArchPanel();
     }
     else {
         // 检查碰撞
@@ -300,7 +303,7 @@ void Arch::onTouchCancel(Touch* touch, Event* event)
     removeHighlight();
 }
 //建筑信息面板
-void Arch::showArchPanel(Arch* arch)
+void Arch::showArchPanel()
 {
     // 检查面板是否已经存在，如果存在就不再创建
     if (this->getChildByName("ARCH_PANEL")) {
@@ -325,19 +328,19 @@ void Arch::showArchPanel(Arch* arch)
     panel->setPosition(Vec2(30, 10));
     panel->setScale(0.8f); // 初始缩小
     panel->setOpacity(0);  // 初始透明
-    bg->addChild(panel,100);
+    bg->addChild(panel, 100, "CONTENT_PANEL");
 
-    const auto& info = kArchInfo.at(arch->no_)[arch->level_-1];
+    const auto& info = kArchInfo.at(no_)[level_-1];
     
     auto label = Label::createWithSystemFont(
-        getArchNameFromEnum(arch->no_)+"\n------------------\n" + 
-        ("等级: " + std::to_string(arch->level_) + "\n") +
-        ("当前生命值: " + std::to_string(arch->current_hp_) + "/" + std::to_string(info.hp_)+ "\n") +
+        getArchNameFromEnum(no_)+"\n------------------\n" + 
+        ("等级: " + std::to_string(level_) + "\n") +
+        ("生命值: " + std::to_string(current_hp_) + "/" + std::to_string(info.hp_)+ "\n") +
         (info.type_ == RESOURCE ?
-        ("当前容量: " + std::to_string(arch->current_capacity_) + "/" + std::to_string(info.max_capacity_)) : "\n") ,
+        ("容量: " + std::to_string(current_capacity_) + "/" + std::to_string(info.max_capacity_)) : "") ,
         "Arial", 22);
     label->setPosition(Vec2(160, 150));
-    panel->addChild(label);
+    panel->addChild(label, 0, "INFO_LABEL");
 
     
 
@@ -361,7 +364,7 @@ void Arch::showArchPanel(Arch* arch)
     upgradeBtn->addClickEventListener([=](Ref*) {
         // 处理升级操作
         CCLOG("升级按钮点击");
-        archUpgrade(arch);
+        archUpgrade(this);
         });
     panel->addChild(upgradeBtn);
 
@@ -573,7 +576,7 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice) {
             this->setTexture(newImg);
 
             // 更新UI显示
-            showArchPanel(this);
+            showArchPanel();
         }
     );
 }
@@ -622,7 +625,7 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, 
             // 立即完成
             auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
             arch->setTexture(newImg);
-            showArchPanel(arch);
+            arch->showArchPanel();
         }
     }
 }
@@ -803,4 +806,19 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
             }
         }
     }
+}
+
+void ArmyCamp::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+
+    Arch::showArchPanel();
+
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "兵营容量: " + std::to_string(kArmyCampCapacity[level_ - 1]) + "\n";
+    label->setString(str);
 }
