@@ -21,7 +21,10 @@ TroopTargetManager* TroopTargetManager::getInstance() {
     }
     // 初始化墙代价地图（x是行，y是列）
     if (instance.wall_cost_map_.empty()) {
-        instance.wall_cost_map_ = std::vector<std::vector<float>>(MAP_WIDTH, std::vector<float>(MAP_HEIGHT, 1.0f));
+        instance.wall_cost_map_ = std::vector<std::vector<float>>(MAP_WIDTH, std::vector<float>(MAP_HEIGHT));
+    }
+    if (instance.target_map_.empty()) {
+        instance.target_map_= std::vector<std::vector<ITroopTarget*>>(MAP_WIDTH, std::vector<ITroopTarget*>(MAP_HEIGHT));
     }
     return &instance;
 }
@@ -30,6 +33,7 @@ void TroopTargetManager::clear() {
 	targets_.clear();
 	distance_fields_.clear();
     wall_cost_map_.clear();
+	target_map_.clear();
 }
 
 void TroopTargetManager::registerTroopTarget(ITroopTarget* target) {
@@ -49,6 +53,23 @@ void TroopTargetManager::registerTroopTarget(ITroopTarget* target) {
     if (std::find(container.begin(), container.end(), target) == container.end()) {
         container.push_back(target);
     }
+
+    // 获取建筑位置和大小
+    float building_size;
+    cocos2d::Vec2 building_pos = target->getCellPosition(building_size);
+
+    // 计算建筑占据的格子范围
+    int left = static_cast<int>(building_pos.x - building_size / 2.0f);
+    int right = static_cast<int>(building_pos.x + building_size / 2.0f);
+    int bottom = static_cast<int>(building_pos.y - building_size / 2.0f);
+    int top = static_cast<int>(building_pos.y + building_size / 2.0f);
+
+    // 将建筑指针填入target_map_中覆盖的所有格子
+    for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
+        for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+            target_map_[x][y] = target;
+        }
+    }
 }
 
 void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
@@ -67,6 +88,24 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
     auto it = std::find(container.begin(), container.end(), target);
     if (it != container.end()) {
         container.erase(it);
+
+        // 清理target_map_中对应的格子
+        float building_size;
+        cocos2d::Vec2 building_pos = target->getCellPosition(building_size);
+
+        // 计算建筑占据的格子范围
+        int left = static_cast<int>(building_pos.x - building_size / 2.0f);
+        int right = static_cast<int>(building_pos.x + building_size / 2.0f);
+        int bottom = static_cast<int>(building_pos.y - building_size / 2.0f);
+        int top = static_cast<int>(building_pos.y + building_size / 2.0f);
+
+        // 将target_map_中对应的格子设为nullptr
+        for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
+            for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+                target_map_[x][y] = nullptr;
+            }
+        }
+
         // 当建筑从目标列表移除时，清理其距离场数据
         onTargetDestroyed(target);
     }
@@ -128,45 +167,80 @@ ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& pos
     return nearest_target;
 }
 
+/**
+ * @brief 按坐标位置查找对应的建筑目标
+ * @param position 要查找的坐标位置（浮点数）
+ * @return 包含该坐标的建筑指针，如果没有找到则返回nullptr
+ */
+ITroopTarget* TroopTargetManager::getTroopTargetByCellPos(const cocos2d::Vec2& position) {
+    // 将坐标转换为网格索引
+    int x = static_cast<int>(position.x);
+    int y = static_cast<int>(position.y);
+
+    // 检查坐标是否在有效范围内
+    if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+        ITroopTarget* target = target_map_[x][y];
+        // 检查建筑是否还活着
+        if (target && target->isAlive()) {
+            return target;
+        }
+    }
+
+    return nullptr; // 没有找到包含该坐标的建筑
+}
+
+/**
+ * @brief 判断指定坐标格子是否为墙
+ * @param position 要检查的坐标位置
+ * @return 如果该坐标处是活着的墙则返回true，否则返回false
+ */
+bool TroopTargetManager::isCellWall(const cocos2d::Vec2& position) {
+    // 将坐标转换为网格索引
+    int x = static_cast<int>(position.x);
+    int y = static_cast<int>(position.y);
+
+    // 检查坐标是否在有效范围内
+    if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+        ITroopTarget* target = target_map_[x][y];
+        // 检查是否存在墙且墙还活着
+        if (target && target->isAlive() && target->getTargetType() == Troop::WALLT) {
+            return true;
+        }
+    }
+
+    return false; // 不是墙
+}
+
 void TroopTargetManager::onTargetDestroyed(ITroopTarget* target) {
     if (!target) return;
 
-    // 获取建筑位置
+    // 获取建筑位置和大小
     float target_size;
     cocos2d::Vec2 target_pos = target->getCellPosition(target_size);
 
-    if (target->getTargetType() == Troop::WALLT) {
-        // 墙被摧毁：将wall_cost_map_中对应位置设为普通地面
-        // 墙是1x1的，只需要把其格子设置为地面
-        int x = static_cast<int>(target_pos.x);
-        int y = static_cast<int>(target_pos.y);
-        if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+    // 计算建筑占据的格子范围（墙也当作1x1的建筑处理）
+    int left = static_cast<int>(target_pos.x - target_size / 2.0f);
+    int right = static_cast<int>(target_pos.x + target_size / 2.0f);
+    int bottom = static_cast<int>(target_pos.y - target_size / 2.0f);
+    int top = static_cast<int>(target_pos.y + target_size / 2.0f);
+
+    // 将wall_cost_map_中对应位置设为普通地面
+    for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
+        for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
             wall_cost_map_[x][y] = 0.0f; // 设为普通地面
         }
-
-        // 墙的摧毁会影响所有地面兵种的路径，但这里暂时不重新计算
-        // 因为重新计算所有距离场开销太大，应该在需要时延迟计算
-        // TODO: 延迟计算
     }
-    else {
-        // 其他建筑被摧毁：清除对应的距离场数据
+
+    // 如果不是墙，清除对应的距离场数据
+    if (target->getTargetType() != Troop::WALLT) {
         for (auto& troop_distance_fields : distance_fields_) {
             troop_distance_fields.erase(target);
         }
-        // 计算建筑占据的格子范围
-        int left = static_cast<int>(target_pos.x - target_size / 2.0f);
-        int right = static_cast<int>(target_pos.x + target_size / 2.0f);
-        int bottom = static_cast<int>(target_pos.y - target_size / 2.0f);
-        int top = static_cast<int>(target_pos.y + target_size / 2.0f);
-
-        // 将wall_cost_map_中对应位置设为普通地面
-        for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
-            for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
-                wall_cost_map_[x][y] = 0.0f; // 设为普通地面
-            }
-        }
-
         // 其他建筑的摧毁会影响现有路径
+        // TODO: 延迟计算
+    } else {
+        // 墙的摧毁会影响所有地面兵种的路径，但这里暂时不重新计算
+        // 因为重新计算所有距离场开销太大，应该在需要时延迟计算
         // TODO: 延迟计算
     }
 }
@@ -175,45 +249,20 @@ void TroopTargetManager::precomputeWallCostMap() {
     // 初始化为0.0（普通地面无额外代价）
     wall_cost_map_ = std::vector<std::vector<float>>(MAP_WIDTH, std::vector<float>(MAP_HEIGHT, 0.0f));
 
-    // 第一遍：将所有建筑设为阻挡代价（基本不可通行）
-    for (size_t target_type = 0; target_type < targets_.size(); ++target_type) {
-        if (target_type == static_cast<size_t>(Troop::WALLT)) continue; // 跳过墙，墙在第二遍处理
-        for (ITroopTarget* building : targets_[target_type]) {
-            if (!building->isAlive()) continue;
-
-            float building_size;
-            cocos2d::Vec2 building_pos = building->getCellPosition(building_size);
-
-            // 计算建筑占据的格子范围
-            int left = static_cast<int>(building_pos.x - building_size / 2.0f);
-            int right = static_cast<int>(building_pos.x + building_size / 2.0f);
-            int bottom = static_cast<int>(building_pos.y - building_size / 2.0f);
-            int top = static_cast<int>(building_pos.y + building_size / 2.0f);
-
-            // 标记建筑占据的区域为阻挡代价（额外代价）
-            for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
-                for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
-                    wall_cost_map_[x][y] = BUILDING_BLOCK_COST; // 999.0f - 基本不可通行
+    // 直接遍历target_map_的所有格子，根据建筑类型设置不同的代价
+    for (int y = 0; y < MAP_HEIGHT; ++y) {
+        for (int x = 0; x < MAP_WIDTH; ++x) {
+            ITroopTarget* target = target_map_[x][y];
+            if (target && target->isAlive()) {
+                if (target->getTargetType() == Troop::WALLT) {
+                    // 墙：可通行但代价很高
+                    wall_cost_map_[x][y] = WALL_COST; // 10.0f
+                } else {
+                    // 其他建筑：基本不可通行
+                    wall_cost_map_[x][y] = BUILDING_BLOCK_COST; // 999.0f
                 }
             }
-        }
-    }
-
-    // 第二遍：将墙的代价设置为可通行但很高代价（额外代价）
-    if (!targets_[static_cast<size_t>(Troop::WALLT)].empty()) {
-        for (ITroopTarget* wall : targets_[static_cast<size_t>(Troop::WALLT)]) {
-            if (!wall->isAlive()) continue;
-
-            float wall_size;
-            cocos2d::Vec2 wall_pos = wall->getCellPosition(wall_size);
-
-            // 墙大小固定为1x1，设置墙额外代价
-            int wx = static_cast<int>(wall_pos.x);
-            int wy = static_cast<int>(wall_pos.y);
-
-            if (wx >= 0 && wx < MAP_WIDTH && wy >= 0 && wy < MAP_HEIGHT) {
-                wall_cost_map_[wx][wy] = WALL_COST; // 10.0f - 可通行但代价很高
-            }
+            // 如果没有建筑，保持为0.0f（普通地面）
         }
     }
 }

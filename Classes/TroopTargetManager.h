@@ -14,6 +14,8 @@ class TroopTargetManager {
             WALLT = 3, // 城墙 */
         std::vector<std::vector<ITroopTarget*>> targets_;
 
+        std::vector<std::vector<ITroopTarget*>> target_map_;//按坐标位置存储建筑目标
+
         // 距离场数据：为每个目标建筑和每种兵种类型存储距离场图
         // 第一维：兵种类型(0-5)，第二维：建筑，第三维：距离场数据(44x44的float数组) 墙应该没有距离场数据!
         std::vector<std::unordered_map<ITroopTarget*, std::vector<std::vector<float>>>> distance_fields_;
@@ -51,6 +53,12 @@ class TroopTargetManager {
         ITroopTarget* getNearestTroopTarget(const cocos2d::Vec2& position, float& min_distance, bool is_wall_included=false,
             Troop::PreferredTarget preferred_target = Troop::NONE);
 
+        // 按坐标位置查找对应的建筑目标
+        ITroopTarget* getTroopTargetByCellPos(const cocos2d::Vec2& position);
+
+        // 判断指定坐标格子是否为墙
+        bool isCellWall(const cocos2d::Vec2& position);
+
         // 预计算墙代价地图（只计算一次）
         void precomputeWallCostMap();
 
@@ -65,6 +73,12 @@ class TroopTargetManager {
 
         // 检查当前位置是否在攻击范围内
         bool isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, Troop* troop) const;
+
+        // 判断指定坐标格子是否为墙
+        bool isCellWall(const cocos2d::Vec2& position);
+
+        // 获取指定矩形区域内的所有建筑目标
+        std::vector<ITroopTarget*> getTargetsInRect(float rect_left, float rect_bottom, float rect_right, float rect_top, bool include_walls = true);
 
     private:
         struct Compare {
