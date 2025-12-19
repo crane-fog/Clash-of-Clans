@@ -169,9 +169,9 @@ public:
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
 };
 
-class GoldStorge : public Arch {
+class GoldStorage : public Arch {
 public:
-    GoldStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    GoldStorage(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
     {
         GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
     }
@@ -180,9 +180,9 @@ public:
     virtual void onUpgradeFinished() override;
 };
 
-class ElixirStorge : public Arch {
+class ElixirStorage : public Arch {
 public:
-    ElixirStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    ElixirStorage(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
     {
         GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
     }

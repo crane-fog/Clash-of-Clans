@@ -18,10 +18,10 @@ Arch* Arch::create(const ArchData& data, BaseMap* base_map, bool is_mine)
             pRet = new(std::nothrow) Wall(data, base_map);
             break;
         case GOLD_STORAGE:
-            pRet = new(std::nothrow) GoldStorge(data, base_map);
+            pRet = new(std::nothrow) GoldStorage(data, base_map);
             break;
         case ELIXIR_STORAGE:
-            pRet = new(std::nothrow) ElixirStorge(data, base_map);
+            pRet = new(std::nothrow) ElixirStorage(data, base_map);
             break;
         case GOLD_MINE:
             pRet = new(std::nothrow) GoldMine(data, base_map);
@@ -821,7 +821,7 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
     }
 }
 
-void GoldStorge::showArchPanel()
+void GoldStorage::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
         return;
@@ -834,7 +834,7 @@ void GoldStorge::showArchPanel()
     label->setString(str);
 }
 
-void GoldStorge::createUpgradeComparisonPanel()
+void GoldStorage::createUpgradeComparisonPanel()
 {
     Arch::createUpgradeComparisonPanel();
     auto popupBg = getChildByTag(1000);
@@ -847,12 +847,12 @@ void GoldStorge::createUpgradeComparisonPanel()
     label->setString(str);
 }
 
-void GoldStorge::onUpgradeFinished()
+void GoldStorage::onUpgradeFinished()
 {
     GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
 }
 
-void ElixirStorge::showArchPanel()
+void ElixirStorage::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
         return;
@@ -865,7 +865,7 @@ void ElixirStorge::showArchPanel()
     label->setString(str);
 }
 
-void ElixirStorge::createUpgradeComparisonPanel()
+void ElixirStorage::createUpgradeComparisonPanel()
 {
     Arch::createUpgradeComparisonPanel();
     auto popupBg = getChildByTag(1000);
@@ -878,7 +878,7 @@ void ElixirStorge::createUpgradeComparisonPanel()
     label->setString(str);
 }
 
-void ElixirStorge::onUpgradeFinished()
+void ElixirStorage::onUpgradeFinished()
 {
     GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
 }
