@@ -51,7 +51,7 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
     if (!barbarian)return false;
 	troop_list_.push_back(barbarian);
     // 预计算所有建筑的距离场
-    TroopTargetManager::getInstance()->precomputeDistanceFields(troop_list_);
+    TroopTargetManager::getInstance()->precomputeDistanceFields();
 
 
     

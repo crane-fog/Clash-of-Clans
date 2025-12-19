@@ -16,9 +16,9 @@ class TroopTargetManager {
 
         std::vector<std::vector<ITroopTarget*>> target_map_;//按坐标位置存储建筑目标
 
-        // 距离场数据：为每个目标建筑和每种兵种类型存储距离场图
-        // 第一维：兵种类型(0-5)，第二维：建筑，第三维：距离场数据(44x44的float数组) 墙应该没有距离场数据!
-        std::vector<std::unordered_map<ITroopTarget*, std::vector<std::vector<float>>>> distance_fields_;
+        // 距离场数据：为每个目标建筑存储距离场图
+        // 建筑到各个格子的距离（44x44的float数组） 墙没有距离场数据!
+        std::unordered_map<ITroopTarget*, std::vector<std::vector<float>>> distance_fields_;
 
         // 墙代价地图：预计算的墙障碍地图
         std::vector<std::vector<float>> wall_cost_map_;
@@ -63,22 +63,16 @@ class TroopTargetManager {
         void precomputeWallCostMap();
 
         // 预计算所有目标的距离场
-        void precomputeDistanceFields(std::vector<Troop*>& troop_vec);
+        void precomputeDistanceFields();
 
-        // 获取指定目标和攻击类型的距离场
-        const std::vector<std::vector<float>>& getDistanceField(ITroopTarget* target, Troop* troop) const;
+        // 获取指定目标的距离场
+        const std::vector<std::vector<float>>& getDistanceField(ITroopTarget* target) const;
 
         // 根据距离场获取下一步移动方向 (返回相对于当前位置的偏移)
-        cocos2d::Vec2 getNextMoveDirection(const cocos2d::Vec2& current_pos, ITroopTarget* target, Troop* troop);
+        cocos2d::Vec2 getNextMoveDirection(const cocos2d::Vec2& current_pos, ITroopTarget* target, float attack_range, bool is_air=false);
 
         // 检查当前位置是否在攻击范围内
-        bool isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, Troop* troop) const;
-
-        // 判断指定坐标格子是否为墙
-        bool isCellWall(const cocos2d::Vec2& position);
-
-        // 获取指定矩形区域内的所有建筑目标
-        std::vector<ITroopTarget*> getTargetsInRect(float rect_left, float rect_bottom, float rect_right, float rect_top, bool include_walls = true);
+        bool isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, float attack_range) const;
 
     private:
         struct Compare {
@@ -90,16 +84,10 @@ class TroopTargetManager {
         using DistancePQ = std::priority_queue<std::tuple<cocos2d::Vec2, float>, std::vector<std::tuple<cocos2d::Vec2, float>>,Compare>;
 
 		// 初始化优先队列距离场
-		void pqInit(DistancePQ& pq, std::vector<std::vector<float>>& distance_field, ITroopTarget* target, Troop* troop);
-        // 检查兵种是否需要考虑墙障碍
-        bool doesTroopConsiderWalls(Troop::TroopType troop_type) const {
-            return troop_type == Troop::BARBARIAN ||
-                   troop_type == Troop::ARCHER ||
-                   troop_type == Troop::GIANT;
-        }
+		void pqInit(DistancePQ& pq, std::vector<std::vector<float>>& distance_field, ITroopTarget* target);
 
         // 为单个目标计算距离场
-        void computeDistanceField(ITroopTarget* target, Troop* troop);
+        void computeDistanceField(ITroopTarget* target);
 
         // 将网格坐标转换为距离场数组索引
         int posToIndex(const cocos2d::Vec2& pos) const { return static_cast<int>(pos.y) * MAP_WIDTH + static_cast<int>(pos.x); }
