@@ -36,6 +36,7 @@ Troop::Troop(BaseMap* base_map,
     , status_(IDLE)
     , current_target_(nullptr)
     , current_path_direction_(cocos2d::Vec2::ZERO)
+    , attack_timer_(0.0f)
 {
     if (level_ < 1 || level_ > MAX_TROOP_LEVEL) {
         level_ = 1; // 默认等级为1，防止越界
@@ -223,8 +224,16 @@ void Troop::updateAttackingState(float dt) {
         return;
     }
 
-    // 执行攻击（由TroopAttackManager处理定时）
-	// TODO: 考虑直接在这里定时攻击
+	// 攻击定时逻辑
+    attack_timer_ += dt;
+    if (attack_timer_ >= attack_speed_) {
+        performAttack();
+        attack_timer_ = 0.0f;
+    }
+    // 如果目标被摧毁，标记为目标丢失
+    if (!current_target_->isAlive()) {
+        changeStatus(TARGET_LOST);
+    }
 }
 
 void Troop::updateTargetLostState(float dt) {
