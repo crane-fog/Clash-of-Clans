@@ -34,6 +34,8 @@ protected:
     ITroopTarget* current_target_;
     // 当前移动方向
     cocos2d::Vec2 current_path_direction_;
+    // 攻击计时器
+    float attack_timer_;
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     //每次伤害
     const std::array<float, MAX_TROOP_LEVEL + 1> damage_per_attacks_;

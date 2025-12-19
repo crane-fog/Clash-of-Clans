@@ -2,6 +2,7 @@
 #include "TroopAttackManager.h"
 #include "TroopTargetManager.h"
 #include "BaseMap.h"
+#include "CalculateHelper.h"
 Troop::Troop(BaseMap* base_map,
              int level,
              cocos2d::Vec2 position,
@@ -36,6 +37,7 @@ Troop::Troop(BaseMap* base_map,
     , status_(IDLE)
     , current_target_(nullptr)
     , current_path_direction_(cocos2d::Vec2::ZERO)
+    , attack_timer_(0.0f)
 {
     if (level_ < 1 || level_ > MAX_TROOP_LEVEL) {
         level_ = 1; // 默认等级为1，防止越界
@@ -191,20 +193,38 @@ void Troop::updateMovingState(float dt) {
     }
 
     // 检查是否已经在攻击范围内
-    if (TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, this)) {
+    if (TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, range_)) {
         changeStatus(ATTACKING);
         return;
     }
 
-    // 获取移动方向
-    current_path_direction_ = TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, this);
+    // 获取移动方向（地面兵种考虑阻挡，空中兵种忽略）
+    bool is_air = (getTroopTypeIndex() == Troop::BALLOON ||getTroopTypeIndex() == Troop::DRAGON);
+    current_path_direction_ = TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, is_air);
 
     // 执行移动
     if (current_path_direction_ != cocos2d::Vec2::ZERO) {
         // 归一化方向向量，确保所有方向的移动速度一致
         // 斜向向量（如{1,1}）的模长为sqrt(2)，需要归一化为单位向量
         current_path_direction_.normalize();
-        cocos2d::Vec2 new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
+        cocos2d::Vec2 new_position;
+        if ((is_air || current_target_->getTargetType() == WALLT)&&(movement_speed_ * dt>range_)) {
+            new_position = getCellPosition() + current_path_direction_ * range_ * dt;
+            changeStatus(ATTACKING);
+        }
+        else {
+            new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
+            //撞到墙上了
+            //TODO:感觉路径上的墙这一块还要改
+            /*if (TroopTargetManager::getInstance()->isCellWall(new_position)) {
+                ITroopTarget* wall = TroopTargetManager::getInstance()->getTroopTargetByCellPos(new_position);
+                float size;
+                new_position = getCellPosition() + current_path_direction_ *(-range_+
+                    CalculateHelper::calculateDistanceToSquare(getCellPosition(),wall->getCellPosition(size), 1.0f));
+                current_target_ = wall;
+                changeStatus(ATTACKING);
+            }*/
+        }
         setCellPosition(new_position);
         setPosition(getPixelPosition());
     }
@@ -218,13 +238,21 @@ void Troop::updateAttackingState(float dt) {
     }
 
     // 检查是否还在攻击范围内
-    if (!TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, this)) {
+    /*if (!TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, range_)) {
         changeStatus(MOVING);
         return;
-    }
+    }*/
 
-    // 执行攻击（由TroopAttackManager处理定时）
-	// TODO: 考虑直接在这里定时攻击
+	// 攻击定时逻辑
+    attack_timer_ += dt;
+    if (attack_timer_ >= attack_speed_) {
+        performAttack();
+        attack_timer_ = 0.0f;
+    }
+    // 如果目标被摧毁，标记为目标丢失
+    if (!current_target_->isAlive()) {
+        changeStatus(TARGET_LOST);
+    }
 }
 
 void Troop::updateTargetLostState(float dt) {

@@ -6,22 +6,14 @@
 #include "CalculateHelper.h"
 
 
-// 用于优先队列的节点结构 (使用tuple避免模板问题)
-//using DistanceNode = std::tuple<cocos2d::Vec2, float>; // position, distance
-
 TroopTargetManager* TroopTargetManager::getInstance() {
     static TroopTargetManager instance;
     // 初始化4个类型容器 (OTHER, RESOURCE, DEFENSE, WALLT)
     if (instance.targets_.empty()) {
         instance.targets_.resize(4);
     }
-    // 初始化6个兵种类型的距离场容器
-    if (instance.distance_fields_.empty()) {
-        instance.distance_fields_.resize(6); // 6种兵种类型
-    }
-    // 初始化墙代价地图（x是行，y是列）
-    if (instance.wall_cost_map_.empty()) {
-        instance.wall_cost_map_ = std::vector<std::vector<float>>(MAP_WIDTH, std::vector<float>(MAP_HEIGHT, 1.0f));
+    if (instance.target_map_.empty()) {
+        instance.target_map_= std::vector<std::vector<ITroopTarget*>>(MAP_WIDTH, std::vector<ITroopTarget*>(MAP_HEIGHT));
     }
     return &instance;
 }
@@ -30,6 +22,7 @@ void TroopTargetManager::clear() {
 	targets_.clear();
 	distance_fields_.clear();
     wall_cost_map_.clear();
+	target_map_.clear();
 }
 
 void TroopTargetManager::registerTroopTarget(ITroopTarget* target) {
@@ -49,6 +42,23 @@ void TroopTargetManager::registerTroopTarget(ITroopTarget* target) {
     if (std::find(container.begin(), container.end(), target) == container.end()) {
         container.push_back(target);
     }
+
+    // 获取建筑位置和大小
+    float building_size;
+    cocos2d::Vec2 building_pos = target->getCellPosition(building_size);
+
+    // 计算建筑占据的格子范围
+    int left = static_cast<int>(building_pos.x - building_size / 2.0f);
+    int right = static_cast<int>(building_pos.x + building_size / 2.0f);
+    int bottom = static_cast<int>(building_pos.y - building_size / 2.0f);
+    int top = static_cast<int>(building_pos.y + building_size / 2.0f);
+
+    // 将建筑指针填入target_map_中覆盖的所有格子
+    for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
+        for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+            target_map_[x][y] = target;
+        }
+    }
 }
 
 void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
@@ -67,6 +77,24 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
     auto it = std::find(container.begin(), container.end(), target);
     if (it != container.end()) {
         container.erase(it);
+
+        // 清理target_map_中对应的格子
+        float building_size;
+        cocos2d::Vec2 building_pos = target->getCellPosition(building_size);
+
+        // 计算建筑占据的格子范围
+        int left = static_cast<int>(building_pos.x - building_size / 2.0f);
+        int right = static_cast<int>(building_pos.x + building_size / 2.0f);
+        int bottom = static_cast<int>(building_pos.y - building_size / 2.0f);
+        int top = static_cast<int>(building_pos.y + building_size / 2.0f);
+
+        // 将target_map_中对应的格子设为nullptr
+        for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
+            for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+                target_map_[x][y] = nullptr;
+            }
+        }
+
         // 当建筑从目标列表移除时，清理其距离场数据
         onTargetDestroyed(target);
     }
@@ -128,131 +156,123 @@ ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& pos
     return nearest_target;
 }
 
+/**
+ * @brief 按坐标位置查找对应的建筑目标
+ * @param position 要查找的坐标位置（浮点数）
+ * @return 包含该坐标的建筑指针，如果没有找到则返回nullptr
+ */
+ITroopTarget* TroopTargetManager::getTroopTargetByCellPos(const cocos2d::Vec2& position) {
+    // 将坐标转换为网格索引
+    int x = static_cast<int>(position.x);
+    int y = static_cast<int>(position.y);
+
+    // 检查坐标是否在有效范围内
+    if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+        ITroopTarget* target = target_map_[x][y];
+        // 检查建筑是否还活着
+        if (target && target->isAlive()) {
+            return target;
+        }
+    }
+
+    return nullptr; // 没有找到包含该坐标的建筑
+}
+
+/**
+ * @brief 判断指定坐标格子是否为墙
+ * @param position 要检查的坐标位置
+ * @return 如果该坐标处是活着的墙则返回true，否则返回false
+ */
+bool TroopTargetManager::isCellWall(const cocos2d::Vec2& position) {
+    // 将坐标转换为网格索引
+    int x = static_cast<int>(position.x);
+    int y = static_cast<int>(position.y);
+
+    // 检查坐标是否在有效范围内
+    if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+        ITroopTarget* target = target_map_[x][y];
+        // 检查是否存在墙且墙还活着
+        if (target && target->isAlive() && target->getTargetType() == Troop::WALLT) {
+            return true;
+        }
+    }
+
+    return false; // 不是墙
+}
+
 void TroopTargetManager::onTargetDestroyed(ITroopTarget* target) {
     if (!target) return;
 
-    // 获取建筑位置
+    // 获取建筑位置和大小
     float target_size;
     cocos2d::Vec2 target_pos = target->getCellPosition(target_size);
 
-    if (target->getTargetType() == Troop::WALLT) {
-        // 墙被摧毁：将wall_cost_map_中对应位置设为普通地面
-        // 墙是1x1的，只需要把其格子设置为地面
-        int x = static_cast<int>(target_pos.x);
-        int y = static_cast<int>(target_pos.y);
-        if (x >= 0 && x < MAP_WIDTH && y >= 0 && y < MAP_HEIGHT) {
+    // 计算建筑占据的格子范围（墙也当作1x1的建筑处理）
+    int left = static_cast<int>(target_pos.x - target_size / 2.0f);
+    int right = static_cast<int>(target_pos.x + target_size / 2.0f);
+    int bottom = static_cast<int>(target_pos.y - target_size / 2.0f);
+    int top = static_cast<int>(target_pos.y + target_size / 2.0f);
+
+    // 将wall_cost_map_中对应位置设为普通地面
+    for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
+        for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
             wall_cost_map_[x][y] = 0.0f; // 设为普通地面
         }
-
-        // 墙的摧毁会影响所有地面兵种的路径，但这里暂时不重新计算
-        // 因为重新计算所有距离场开销太大，应该在需要时延迟计算
-        // TODO: 延迟计算
     }
-    else {
-        // 其他建筑被摧毁：清除对应的距离场数据
-        for (auto& troop_distance_fields : distance_fields_) {
-            troop_distance_fields.erase(target);
-        }
-        // 计算建筑占据的格子范围
-        int left = static_cast<int>(target_pos.x - target_size / 2.0f);
-        int right = static_cast<int>(target_pos.x + target_size / 2.0f);
-        int bottom = static_cast<int>(target_pos.y - target_size / 2.0f);
-        int top = static_cast<int>(target_pos.y + target_size / 2.0f);
 
-        // 将wall_cost_map_中对应位置设为普通地面
-        for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
-            for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
-                wall_cost_map_[x][y] = 0.0f; // 设为普通地面
-            }
-        }
-
+    // 如果不是墙，清除对应的距离场数据
+    if (target->getTargetType() != Troop::WALLT) {
+        distance_fields_.erase(target);
         // 其他建筑的摧毁会影响现有路径
-        // TODO: 延迟计算
-    }
+    } 
+    // TODO:重新计算所有场数据
 }
 
 void TroopTargetManager::precomputeWallCostMap() {
     // 初始化为0.0（普通地面无额外代价）
     wall_cost_map_ = std::vector<std::vector<float>>(MAP_WIDTH, std::vector<float>(MAP_HEIGHT, 0.0f));
 
-    // 第一遍：将所有建筑设为阻挡代价（基本不可通行）
-    for (size_t target_type = 0; target_type < targets_.size(); ++target_type) {
-        if (target_type == static_cast<size_t>(Troop::WALLT)) continue; // 跳过墙，墙在第二遍处理
-        for (ITroopTarget* building : targets_[target_type]) {
-            if (!building->isAlive()) continue;
-
-            float building_size;
-            cocos2d::Vec2 building_pos = building->getCellPosition(building_size);
-
-            // 计算建筑占据的格子范围
-            int left = static_cast<int>(building_pos.x - building_size / 2.0f);
-            int right = static_cast<int>(building_pos.x + building_size / 2.0f);
-            int bottom = static_cast<int>(building_pos.y - building_size / 2.0f);
-            int top = static_cast<int>(building_pos.y + building_size / 2.0f);
-
-            // 标记建筑占据的区域为阻挡代价（额外代价）
-            for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
-                for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
-                    wall_cost_map_[x][y] = BUILDING_BLOCK_COST; // 999.0f - 基本不可通行
+    // 直接遍历target_map_的所有格子，根据建筑类型设置不同的代价
+    for (int y = 0; y < MAP_HEIGHT; ++y) {
+        for (int x = 0; x < MAP_WIDTH; ++x) {
+            ITroopTarget* target = target_map_[x][y];
+            if (target && target->isAlive()) {
+                if (target->getTargetType() == Troop::WALLT) {
+                    // 墙：可通行但代价很高
+                    wall_cost_map_[x][y] = WALL_COST; // 10.0f
+                } else {
+                    // 其他建筑：基本不可通行
+                    wall_cost_map_[x][y] = BUILDING_BLOCK_COST; // 999.0f
                 }
             }
-        }
-    }
-
-    // 第二遍：将墙的代价设置为可通行但很高代价（额外代价）
-    if (!targets_[static_cast<size_t>(Troop::WALLT)].empty()) {
-        for (ITroopTarget* wall : targets_[static_cast<size_t>(Troop::WALLT)]) {
-            if (!wall->isAlive()) continue;
-
-            float wall_size;
-            cocos2d::Vec2 wall_pos = wall->getCellPosition(wall_size);
-
-            // 墙大小固定为1x1，设置墙额外代价
-            int wx = static_cast<int>(wall_pos.x);
-            int wy = static_cast<int>(wall_pos.y);
-
-            if (wx >= 0 && wx < MAP_WIDTH && wy >= 0 && wy < MAP_HEIGHT) {
-                wall_cost_map_[wx][wy] = WALL_COST; // 10.0f - 可通行但代价很高
-            }
+            // 如果没有建筑，保持为0.0f（普通地面）
         }
     }
 }
 
-void TroopTargetManager::precomputeDistanceFields(std::vector<Troop*>& troop_vec) {
-    // 首先预计算墙代价地图
-    precomputeWallCostMap();
+void TroopTargetManager::precomputeDistanceFields() {
+    if (wall_cost_map_.empty()) {
+        // 首先预计算墙代价地图
+        precomputeWallCostMap();
+    }
 
     // 清除所有距离场数据
-    for (auto& troop_distance_fields : distance_fields_) {
-        troop_distance_fields.clear();
-    }
+    distance_fields_.clear();
 
-    // 只为需要考虑墙的兵种计算距离场 (Archer, Barbarian, Giant)
-    // Balloon和Dragon是空中兵种，无视墙
-    // WallBreaker有特殊机制，暂时跳过
-	bool needs_wall_consideration[6] = { true, true, true, false, false, false };
+    // 为所有非墙建筑计算距离场
+    for (size_t target_type_idx = 0; target_type_idx < targets_.size(); ++target_type_idx) {
+        if (target_type_idx == static_cast<size_t>(Troop::WALLT)) continue; // 跳过墙
 
-    for (Troop* troop : troop_vec) {
-        size_t troop_type_idx = static_cast<size_t>(troop->getTroopTypeIndex());
-		if (!needs_wall_consideration[troop_type_idx])continue; // 跳过不考虑墙的兵种
-		needs_wall_consideration[troop_type_idx] = false; // 每种兵种只计算一次
-        // 遍历除墙以外的所有建筑类型
-        for (size_t target_type_idx = 0; target_type_idx < targets_.size(); ++target_type_idx) {
-            if (target_type_idx == static_cast<size_t>(Troop::WALLT)) continue; // 跳过墙
-
-            for (ITroopTarget* target : targets_[target_type_idx]) {
-                if (target->isAlive()) {
-                    computeDistanceField(target, troop);
-                }
+        for (ITroopTarget* target : targets_[target_type_idx]) {
+            if (target->isAlive()) {
+                computeDistanceField(target);
             }
         }
     }
 }
 
-void TroopTargetManager::pqInit(DistancePQ& pq, std::vector<std::vector<float>>&distance_field,ITroopTarget* target,Troop* troop) {
-    Troop::TroopType troop_type = troop->getTroopTypeIndex();
-	float attack_range = troop->range_;
-    // 获取目标位置和大小
+void TroopTargetManager::pqInit(DistancePQ& pq, std::vector<std::vector<float>>&distance_field,ITroopTarget* target) {
+    // 获取建筑大小作为默认攻击范围
     float target_size;
     cocos2d::Vec2 target_pos = target->getCellPosition(target_size);
     // 将目标建筑周围在攻击范围内的格子设为0
@@ -269,135 +289,10 @@ void TroopTargetManager::pqInit(DistancePQ& pq, std::vector<std::vector<float>>&
             pq.push(std::make_tuple(grid_pos, 0.0f));
         }
     }
-
-    // 2. 处理建筑周围更大范围内的格子，按照长方形和扇形区域分别处理
-    int range_left = static_cast<int>(std::floor(target_pos.x - target_size / 2.0f - attack_range));
-    int range_right = static_cast<int>(std::ceil(target_pos.x + target_size / 2.0f + attack_range));
-    int range_bottom = static_cast<int>(std::floor(target_pos.y - target_size / 2.0f - attack_range));
-    int range_top = static_cast<int>(std::ceil(target_pos.y + target_size / 2.0f + attack_range));
-
-    // 辅助函数：检查格子是否可通行
-    auto is_grid_passable = [&](int x, int y) -> bool {
-        if (troop_type == Troop::WALL_BREAKER) {
-            // 炸弹人可以穿过一切（暂时）
-            return true;
-        }
-        else if (doesTroopConsiderWalls(troop_type)) {
-            // 地面兵种：不能穿过建筑阻挡，但可以穿过墙，需要实时检测是否遇到墙！！！
-            return wall_cost_map_[x][y] < BUILDING_BLOCK_COST;
-        }
-        else {
-            // 空中兵种：可以穿过一切
-            return true;
-        }
-    };
-
-    // 2.1 处理长方形范围（上下左右十字形区域）
-    // 左边长方形
-    for (int y = std::max(0, target_bottom); y <= std::min(MAP_HEIGHT - 1, target_top); ++y) {
-        for (int x = std::max(0, range_left); x < std::min(MAP_WIDTH, target_left); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x), static_cast<float>(y));
-                distance_field[x][y] = 0.0f;
-                pq.push(std::make_tuple(grid_pos, 0.0f));
-            }
-        }
-    }
-    // 右边长方形
-    for (int y = std::max(0, target_bottom); y <= std::min(MAP_HEIGHT - 1, target_top); ++y) {
-        for (int x = std::max(0, target_right + 1); x <= std::min(MAP_WIDTH - 1, range_right); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x), static_cast<float>(y));
-                distance_field[x][y] = 0.0f;
-                pq.push(std::make_tuple(grid_pos, 0.0f));
-            }
-        }
-    }
-    // 上边长方形
-    for (int y = std::max(0, target_top + 1); y <= std::min(MAP_HEIGHT - 1, range_top); ++y) {
-        for (int x = std::max(0, target_left); x <= std::min(MAP_WIDTH - 1, target_right); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x), static_cast<float>(y));
-                distance_field[x][y] = 0.0f;
-                pq.push(std::make_tuple(grid_pos, 0.0f));
-            }
-        }
-    }
-    // 下边长方形
-    for (int y = std::max(0, range_bottom); y < std::min(MAP_HEIGHT, target_bottom); ++y) {
-        for (int x = std::max(0, target_left); x <= std::min(MAP_WIDTH - 1, target_right); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x), static_cast<float>(y));
-                distance_field[x][y] = 0.0f;
-                pq.push(std::make_tuple(grid_pos, 0.0f));
-            }
-        }
-    }
-
-    // 2.2 处理扇形范围（四个角）
-    // 左上角扇形：以target左上角为原点
-    cocos2d::Vec2 top_left_corner(target_pos.x - target_size / 2.0f, target_pos.y + target_size / 2.0f);
-    for (int y = std::max(0, target_top + 1); y <= std::min(MAP_HEIGHT - 1, range_top); ++y) {
-        for (int x = std::max(0, range_left); x < std::min(MAP_WIDTH, target_left); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
-                float distance = CalculateHelper::calculateDistanceToSquare(top_left_corner, grid_pos, 1.0f);
-                if (distance <= attack_range) {
-                    distance_field[x][y] = 0.0f;
-                    pq.push(std::make_tuple(grid_pos, 0.0f));
-                }
-            }
-        }
-    }
-    // 右上角扇形：以target右上角为原点
-    cocos2d::Vec2 top_right_corner(target_pos.x + target_size / 2.0f, target_pos.y + target_size / 2.0f);
-    for (int y = std::max(0, target_top + 1); y <= std::min(MAP_HEIGHT - 1, range_top); ++y) {
-        for (int x = std::max(0, target_right + 1); x <= std::min(MAP_WIDTH - 1, range_right); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
-                float distance = CalculateHelper::calculateDistanceToSquare(top_right_corner, grid_pos, 1.0f);
-                if (distance <= attack_range) {
-                    distance_field[x][y] = 0.0f;
-                    pq.push(std::make_tuple(grid_pos, 0.0f));
-                }
-            }
-        }
-    }
-    // 左下角扇形：以target左下角为原点
-    cocos2d::Vec2 bottom_left_corner(target_pos.x - target_size / 2.0f, target_pos.y - target_size / 2.0f);
-    for (int y = std::max(0, range_bottom); y < std::min(MAP_HEIGHT, target_bottom); ++y) {
-        for (int x = std::max(0, range_left); x < std::min(MAP_WIDTH, target_left); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
-                float distance = CalculateHelper::calculateDistanceToSquare(bottom_left_corner, grid_pos, 1.0f);
-                if (distance <= attack_range) {
-                    distance_field[x][y] = 0.0f;
-                    pq.push(std::make_tuple(grid_pos, 0.0f));
-                }
-            }
-        }
-    }
-    // 右下角扇形：以target右下角为原点
-    cocos2d::Vec2 bottom_right_corner(target_pos.x + target_size / 2.0f, target_pos.y - target_size / 2.0f);
-    for (int y = std::max(0, range_bottom); y < std::min(MAP_HEIGHT, target_bottom); ++y) {
-        for (int x = std::max(0, target_right + 1); x <= std::min(MAP_WIDTH - 1, range_right); ++x) {
-            if (is_grid_passable(x, y)) {
-                cocos2d::Vec2 grid_pos(static_cast<float>(x) + 0.5f, static_cast<float>(y) + 0.5f);
-                float distance = CalculateHelper::calculateDistanceToSquare(bottom_right_corner, grid_pos, 1.0f);
-                if (distance <= attack_range) {
-                    distance_field[x][y] = 0.0f;
-                    pq.push(std::make_tuple(grid_pos, 0.0f));
-                }
-            }
-        }
-    }
-
 }
 
-void TroopTargetManager::computeDistanceField(ITroopTarget* target, Troop* troop) {
+void TroopTargetManager::computeDistanceField(ITroopTarget* target) {
     if (!target||target->getTargetType()==Troop::WALLT) return; // 墙没有距离场数据
-
-    Troop::TroopType troop_type = troop->getTroopTypeIndex();
 
     // 初始化距离场为无限大（所有位置都不可达）
     std::vector<std::vector<float>> distance_field(MAP_WIDTH,
@@ -406,10 +301,8 @@ void TroopTargetManager::computeDistanceField(ITroopTarget* target, Troop* troop
     // 使用Dijkstra算法从目标建筑向外扩散
     DistancePQ pq;
 
-    // 获取该兵种类型的攻击范围
-    float attack_range = troop->range_;
 	/////////////// 初始化 ///////////////
-	pqInit(pq, distance_field, target, troop);
+	pqInit(pq, distance_field, target);
     
     // 8个方向的偏移
     const std::vector<cocos2d::Vec2> directions = {
@@ -440,19 +333,8 @@ void TroopTargetManager::computeDistanceField(ITroopTarget* target, Troop* troop
             int ny = static_cast<int>(neighbor.y);
 
             // 检查邻居格子是否可通行
-            bool is_neighbor_passable = true;
-            if (troop_type == Troop::WALL_BREAKER) {
-                // 炸弹人可以穿过一切（暂时）
-                is_neighbor_passable = true;
-            }
-            else if (doesTroopConsiderWalls(troop_type)) {
-                // 地面兵种：不能穿过建筑阻挡，但可以穿过墙
-                is_neighbor_passable = wall_cost_map_[nx][ny] < BUILDING_BLOCK_COST;
-            }
-            else {
-                // 空中兵种：可以穿过一切
-                is_neighbor_passable = true;
-            }
+            // 距离场计算中，假设所有单位都可以穿过墙，但不能穿过其他建筑
+            bool is_neighbor_passable = wall_cost_map_[nx][ny] < BUILDING_BLOCK_COST;
 
             if (!is_neighbor_passable) continue;
 
@@ -471,38 +353,41 @@ void TroopTargetManager::computeDistanceField(ITroopTarget* target, Troop* troop
     }
 
     // 保存距离场
-    size_t troop_type_idx = static_cast<size_t>(troop->getTroopTypeIndex());
-    distance_fields_[troop_type_idx][target] = std::move(distance_field);
+    distance_fields_[target] = std::move(distance_field);
 }
 
-const std::vector<std::vector<float>>& TroopTargetManager::getDistanceField(ITroopTarget* target, Troop* troop) const {
+const std::vector<std::vector<float>>& TroopTargetManager::getDistanceField(ITroopTarget* target) const {
     static const std::vector<std::vector<float>> empty_field;
-    size_t troop_type_idx = static_cast<size_t>(troop->getTroopTypeIndex());
-    if (troop_type_idx >= distance_fields_.size()) return empty_field;
 
-    auto it = distance_fields_[troop_type_idx].find(target);
-    return (it != distance_fields_[troop_type_idx].end()) ? it->second : empty_field;
+    auto it = distance_fields_.find(target);
+    return (it != distance_fields_.end()) ? it->second : empty_field;
 }
 
-cocos2d::Vec2 TroopTargetManager::getNextMoveDirection(const cocos2d::Vec2& current_pos, ITroopTarget* target, Troop* troop) {
-	Troop::TroopType troop_type = troop->getTroopTypeIndex();
-    const auto& distance_field = getDistanceField(target, troop);
-    if (distance_field.empty()) return cocos2d::Vec2::ZERO;
-
-    // 检查当前位置是否在攻击范围内
-    if (isInAttackRange(current_pos, target,troop )) {
-        return cocos2d::Vec2::ZERO; // 不需要移动，已经在攻击范围内
-    }
-
+cocos2d::Vec2 TroopTargetManager::getNextMoveDirection(const cocos2d::Vec2& current_pos, ITroopTarget* target,float attack_range, bool is_air) {
     // 获取当前位置的距离值
     if (!isValidPosition(current_pos)) return cocos2d::Vec2::ZERO;
+    
+    // 检查当前位置是否在攻击范围内
+    if (isInAttackRange(current_pos, target, attack_range)) {
+        return cocos2d::Vec2::ZERO; // 不需要移动，已经在攻击范围内
+    }
+    float size;
+    if (target->getTargetType() == Troop::WALLT|| is_air) {
+        return (target->getCellPosition(size) - current_pos);// 空中单位和目标为墙时都视为无需绕路
+    }
 
+    
+    const auto& distance_field = getDistanceField(target);
+    if (distance_field.empty()) return cocos2d::Vec2::ZERO;
+
+    
+    //TODO: 炸弹人单独的逻辑
     int x = static_cast<int>(current_pos.x);
     int y = static_cast<int>(current_pos.y);
     float current_distance = distance_field[x][y];
 
     // 如果当前位置是墙或其他不可达区域，返回零向量
-    if (current_distance >= std::numeric_limits<float>::max() / 2) return cocos2d::Vec2::ZERO;
+    if (wall_cost_map_[x][y] >= WALL_COST) return cocos2d::Vec2::ZERO;
 
     // 查找周围8个方向中距离值最小的方向
     cocos2d::Vec2 best_direction = cocos2d::Vec2::ZERO;
@@ -522,7 +407,7 @@ cocos2d::Vec2 TroopTargetManager::getNextMoveDirection(const cocos2d::Vec2& curr
         float neighbor_distance = distance_field[nx][ny];
 
         // 跳过不可达区域
-        if (neighbor_distance >= std::numeric_limits<float>::max() / 2) continue;
+        if (neighbor_distance >= BUILDING_BLOCK_COST) continue;
 
         if (neighbor_distance < min_distance) {
             min_distance = neighbor_distance;
@@ -533,16 +418,16 @@ cocos2d::Vec2 TroopTargetManager::getNextMoveDirection(const cocos2d::Vec2& curr
     return best_direction;
 }
 
-bool TroopTargetManager::isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, Troop* troop) const {
-    const auto& distance_field = getDistanceField(target, troop);
-    if (distance_field.empty()) return false;
+bool TroopTargetManager::isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, float attack_range) const {
+    /*const auto& distance_field = getDistanceField(target);
+    if (distance_field.empty()) return false;*/
 
     if (!isValidPosition(position)) return false;
-
-    int x = static_cast<int>(position.x);
+    float size;
+    cocos2d::Vec2 center = target->getCellPosition(size);
+    /*int x = static_cast<int>(position.x);
     int y = static_cast<int>(position.y);
-    float distance = distance_field[x][y];
-
-    // 如果距离为0，说明在攻击范围内
-    return distance == 0.0f;
+    float distance = distance_field[x][y];*/
+    // TODO:重构，这里不对
+    return CalculateHelper::calculateDistanceToSquare(position,center,size) <= attack_range;
 }
