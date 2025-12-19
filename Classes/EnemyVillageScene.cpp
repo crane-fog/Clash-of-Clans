@@ -153,16 +153,21 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
     float scale = base_map_->getScale();
 
     // 计算调整后的位置：考虑缩放因子
-    touchLocation.x /= scale;
-    touchLocation.y /= scale;
-    touchLocation.x += 10;
-    touchLocation.y += 20;
+    //touchLocation.x /= scale;
+    //touchLocation.y /= scale;
+   
     bool isValidLocation = true;
 
 
 
     // 将像素坐标转换为格子坐标
     touchLocation = CoordAdaptor::pixelToCell(base_map_, touchLocation);
+    touchLocation.x = (touchLocation.x-10)*2;
+    touchLocation.y =(touchLocation.y+20)*2;
+    if (touchLocation.x < 0)touchLocation.x = 0;
+    if (touchLocation.x > 44)touchLocation.x = 43.9;
+    if (touchLocation.y < 0)touchLocation.y = 0;
+    if (touchLocation.y > 44)touchLocation.y = 43.9;
     // 检查触摸位置是否在红色区域之外
     for (const auto& cell : occupied_cells) {
         // 将格子坐标转为像素坐标
@@ -185,6 +190,9 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
         else if (selectedTroopType == 5)spawnArcher(touchLocation);
         else if (selectedTroopType == 6)spawnArcher(touchLocation);
         else showInvalidSpawnMessage("请选择兵种");
+        // 使用 std::to_string() 转换 x 和 y 为字符串
+        std::string positionStr = "Position: (" + std::to_string(touchLocation.x) + ", " + std::to_string(touchLocation.y) + ")";
+        showInvalidSpawnMessage(positionStr);
     }
     else {
         // 位置无效，显示相应的提示
@@ -204,9 +212,7 @@ void EnemyVillage::spawnBarbarian(cocos2d::Vec2 position)
     if (barbarian) {
         troop_list_.push_back(barbarian);
         base_map_->sprites_.push_back(barbarian);
-        // 使用 std::to_string() 转换 x 和 y 为字符串
-        std::string positionStr = "Position: (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")";
-        showInvalidSpawnMessage(positionStr);
+        
     }
     
 }
@@ -217,9 +223,7 @@ void EnemyVillage::spawnArcher(cocos2d::Vec2 position)
     if (archer) {
         troop_list_.push_back(archer);
         base_map_->sprites_.push_back(archer);
-        // 使用 std::to_string() 转换 x 和 y 为字符串
-        std::string positionStr = "Position: (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")";
-        showInvalidSpawnMessage(positionStr);
+
     }
 
 }
@@ -230,9 +234,6 @@ void EnemyVillage::spawnGiant(cocos2d::Vec2 position)
     if (Giant) {
         troop_list_.push_back(Giant);
         base_map_->sprites_.push_back(Giant);
-        // 使用 std::to_string() 转换 x 和 y 为字符串
-        std::string positionStr = "Position: (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")";
-        showInvalidSpawnMessage(positionStr);
     }
 
 }
@@ -243,9 +244,6 @@ void EnemyVillage::spawnDragon(cocos2d::Vec2 position)
     if (Giant) {
         troop_list_.push_back(Giant);
         base_map_->sprites_.push_back(Giant);
-        // 使用 std::to_string() 转换 x 和 y 为字符串
-        std::string positionStr = "Position: (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")";
-        showInvalidSpawnMessage(positionStr);
     }
 
 }
@@ -256,9 +254,6 @@ void EnemyVillage::spawnBomb(cocos2d::Vec2 position)
     if (Giant) {
         troop_list_.push_back(Giant);
         base_map_->sprites_.push_back(Giant);
-        // 使用 std::to_string() 转换 x 和 y 为字符串
-        std::string positionStr = "Position: (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")";
-        showInvalidSpawnMessage(positionStr);
     }
 
 }
@@ -269,9 +264,6 @@ void EnemyVillage::spawnBalloon(cocos2d::Vec2 position)
     if (Giant) {
         troop_list_.push_back(Giant);
         base_map_->sprites_.push_back(Giant);
-        // 使用 std::to_string() 转换 x 和 y 为字符串
-        std::string positionStr = "Position: (" + std::to_string(position.x) + ", " + std::to_string(position.y) + ")";
-        showInvalidSpawnMessage(positionStr);
     }
 
 }
@@ -363,54 +355,7 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
     // 更改选中按钮的颜色
     selectedItemBg->setColor(cocos2d::Color3B(100, 100, 150));  // 变暗的颜色
     draw_border(selectedItemBg);
-    // 触发兵种选择操作，可以根据选中的index进行相应的操作
-    spawnSelectedTroop(index);
-    // 在场景中添加鼠标监听器
-    addMouseListener(this);  // 将监听器添加到当前场景（或节点）中
+
 }
 
 
-void EnemyVillage::spawnSelectedTroop(int index)
-{
-    cocos2d::Vec2 spawnPosition = cocos2d::Vec2(0,0) ;  // 获取玩家点击的位置getSpawnPosition()
-
-    if (index==0) {
-        spawnBarbarian(spawnPosition);  // 创建并投放 Barbarian
-    }
-    else if (index == 1) {
-        //spawnArcher(spawnPosition);  // 创建并投放 Archer（需要实现这个函数）
-    }
-    else if (index == 3) {
-        //spawnWizard(spawnPosition);  // 创建并投放 Wizard（需要实现这个函数）
-    }
-}
-// 鼠标点击事件回调函数
-void EnemyVillage::onMouseClick(cocos2d::Event* event) {
-    // 获取触摸事件对象
-    cocos2d::EventMouse* mouseEvent = dynamic_cast<cocos2d::EventMouse*>(event);
-
-    // 获取鼠标点击的世界坐标位置
-    cocos2d::Vec2 mousePos = mouseEvent->getLocation();
-
-    // 将世界坐标转换为视图坐标（可选）
-    cocos2d::Vec2 viewPos = cocos2d::Director::getInstance()->convertToUI(mousePos);
-
-    // 输出点击位置
-    CCLOG("Mouse clicked at: (%.2f, %.2f)", mousePos.x, mousePos.y);
-
-    // 这里可以调用你想执行的函数，比如根据点击位置生成Barbarian
-    spawnBarbarian(mousePos);  // 根据鼠标点击的位置生成Barbarian
-}
-
-// 添加鼠标事件监听器
-void EnemyVillage::addMouseListener(cocos2d::Node* parentNode) {
-    auto mouseListener = cocos2d::EventListenerMouse::create();
-
-    // 设置鼠标点击事件的回调函数
-    mouseListener->onMouseDown = CC_CALLBACK_1(EnemyVillage::onMouseClick, this);
-
-    // 将监听器添加到事件派发器中
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, parentNode);
-}
-
-// 为其他兵种创建类似的函数 spawnArcher 和 spawnWizard...

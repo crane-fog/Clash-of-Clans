@@ -25,13 +25,10 @@ public:
     void EnemyVillage::showInvalidSpawnMessage(std::string text= "不可以把士兵放在这里");
 
     void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor * bg);
-    void EnemyVillage::spawnSelectedTroop(int index);
+
     void onButtonClick(cocos2d::LayerColor* itemBg, int index);
 
 
-    void onMouseClick(cocos2d::Event* event);
-    // 添加鼠标事件监听器
-    void addMouseListener(cocos2d::Node* parentNode);
 };
 
 #endif // __ENEMY_VILLAGE_SCENE_H__
