@@ -7,6 +7,7 @@
 #include "UIparts.h"
 #include <string.h>
 #include "HealthBar.h"
+#include "MainVillageScene.h"
 
 class BaseMap;
 class Arch;
@@ -101,6 +102,8 @@ public:
     // 为城墙状态更新预留的接口
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) {}
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) {}
+    // 升级完成回调
+    virtual void onUpgradeFinished() {}
 
     // ITroopTarget 接口实现
     virtual void takeDamage(float damage) override { 
@@ -168,16 +171,24 @@ public:
 
 class GoldStorge : public Arch {
 public:
-    GoldStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    GoldStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
 };
 
 class ElixirStorge : public Arch {
 public:
-    ElixirStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    ElixirStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
 };
 
 class GoldMine : public Arch {

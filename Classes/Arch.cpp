@@ -4,8 +4,6 @@
 #include "CoordAdaptor.h"
 #include "UIcommon.h"
 #include "ui/CocosGUI.h"
-// todo:拆分GameManager类
-#include "MainVillageScene.h"
 USING_NS_CC;
 
 
@@ -587,6 +585,8 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice) {
 
             // 更新UI显示
             showArchPanel();
+
+            onUpgradeFinished();
         }
     );
 }
@@ -636,6 +636,7 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, 
             auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
             arch->setTexture(newImg);
             arch->showArchPanel();
+            arch->onUpgradeFinished();
         }
     }
 }
@@ -846,6 +847,11 @@ void GoldStorge::createUpgradeComparisonPanel()
     label->setString(str);
 }
 
+void GoldStorge::onUpgradeFinished()
+{
+    GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+}
+
 void ElixirStorge::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
@@ -870,6 +876,11 @@ void ElixirStorge::createUpgradeComparisonPanel()
     std::string add = "最大储量: " + std::to_string(kArchInfo.at(no_)[level_ - 1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].max_capacity_) + "\n";
     str.insert(pos + 1, add);
     label->setString(str);
+}
+
+void ElixirStorge::onUpgradeFinished()
+{
+    GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
 }
 
 void GoldMine::showArchPanel()

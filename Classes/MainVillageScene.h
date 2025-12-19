@@ -9,38 +9,72 @@
 // unsigned long long currentGold = GameManager::getInstance()->getGold();
 //GameManager::getInstance()->setGold(currentGold - item.price);
 class GameManager {
+    typedef unsigned long long ULL;
+private:
+    ULL my_gold_;
+    ULL my_elixir_;
+    ULL max_gold_;
+    ULL max_elixir_;
+
 public:
     static GameManager* getInstance() {
         static GameManager instance;
         return &instance;
     }
 
-    void setGold(unsigned long long gold) {
-        this->MyGold = gold;
+    void setGold(ULL gold)
+    {
+        this->my_gold_ = gold;
         // 发布金币更新事件
         cocos2d::EventCustom event("update_gold_event");
-        event.setUserData(&this->MyGold);
+        event.setUserData(&my_gold_);
         cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
     }
 
-    unsigned long long getGold() const {
-        return MyGold;
+    void setMaxGold(ULL max_gold)
+    {
+        max_gold_ = max_gold;
+        cocos2d::EventCustom event("update_max_gold_event");
+        event.setUserData(&max_gold_);
+        cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
     }
-    void setElixir(unsigned long long Elixir) {
-        this->MyElixir = Elixir;
+
+    ULL getGold() const
+    {
+        return my_gold_;
+    }
+
+    ULL getMaxGold() const
+    {
+        return max_gold_;
+    }
+
+    void setElixir(ULL Elixir)
+    {
+        this->my_elixir_ = Elixir;
         // 发布圣水更新事件
         cocos2d::EventCustom event("update_elixir_event");
-        event.setUserData(&this->MyElixir);
+        event.setUserData(&my_elixir_);
         cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
     }
 
-    unsigned long long getElixir() const {
-        return MyElixir;
+    void setMaxElixir(ULL max_elixir)
+    {
+        max_elixir_ = max_elixir;
+        cocos2d::EventCustom event("update_max_elixir_event");
+        event.setUserData(&max_elixir_);
+        cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
     }
 
-private:
-    unsigned long long MyGold;
-    unsigned long long MyElixir;
+    ULL getElixir() const
+    {
+        return my_elixir_;
+    }
+
+    ULL getMaxElixir() const
+    {
+        return max_elixir_;
+    }
 };
 
 
