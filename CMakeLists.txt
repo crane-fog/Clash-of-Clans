@@ -64,6 +64,7 @@ list(APPEND GAME_SOURCE
      Classes/CocController.cpp
      Classes/DataHelper.cpp
      Classes/EnemyVillageScene.cpp
+     Classes/GameManager.cpp
      Classes/Giant.cpp
      Classes/HealthBar.cpp
      Classes/MainVillageScene.cpp
@@ -88,6 +89,7 @@ list(APPEND GAME_HEADER
      Classes/CoordAdaptor.h
      Classes/DataHelper.h
      Classes/EnemyVillageScene.h
+     Classes/GameManager.h
      Classes/Giant.h
      Classes/HealthBar.h
      Classes/IArchTarget.h

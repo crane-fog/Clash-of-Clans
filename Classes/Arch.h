@@ -7,7 +7,7 @@
 #include "UIparts.h"
 #include <string.h>
 #include "HealthBar.h"
-#include "MainVillageScene.h"
+#include "GameManager.h"
 
 class BaseMap;
 class Arch;
