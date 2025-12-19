@@ -33,23 +33,10 @@ bool Giant::initWithFile(const std::string& filename) {
 }
 
 void Giant::performAttack() {
-    // 查找最近的目标建筑（优先防御建筑）
-    float distance;
-    ITroopTarget* target = TroopTargetManager::getInstance()
-        ->getNearestTroopTarget(getCellPosition(), distance, true, DEFENSE);
-
-    if (!target || !target->isAlive()) {
-        return;  // 没有有效目标
-    }
-
-    // 检查是否在攻击范围内（近战攻击需要非常近的距离）
-    if (distance > range_) {
-        return;  // 距离太远，无法攻击
-    }
 
     // 执行近战攻击
     float damage = getCurrentDamage();
-    target->takeDamage(damage);
+    current_target_->takeDamage(damage);
 
     // 播放攻击动画
 

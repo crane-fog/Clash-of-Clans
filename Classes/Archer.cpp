@@ -33,25 +33,11 @@ bool Archer::initWithFile(const std::string& filename) {
 }
 
 void Archer::performAttack() {
-    if (!current_target_ || !current_target_->isAlive()) {
-        changeStatus(TARGET_LOST);
-        return;
-    }
-
-    // 检查是否在攻击范围内
-    if (!TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, this)) {
-        changeStatus(MOVING);
-        return;
-    }
 
     // 执行远程攻击
     float damage = getCurrentDamage();
     current_target_->takeDamage(damage);
 
-    // 如果目标被摧毁，标记为目标丢失
-    if (!current_target_->isAlive()) {
-        changeStatus(TARGET_LOST);
-    }
 
     // 播放攻击动画
     // 播放攻击音效
