@@ -57,7 +57,7 @@ protected:
     UI remaining_upgrade_time_;
 
     // 资源建筑
-    // 当前容量
+    // 当前容量（仅适用于生产建筑，储存建筑的容量在游戏中由GameManager类管理）
     UI current_capacity_;
 
     // 所在的地图指针
@@ -120,11 +120,11 @@ public:
     virtual void showArchPanel();
     void closeArchPanel();
     //升级按钮
-    void Arch::archUpgrade(Arch* arch);
+    void Arch::archUpgrade();
     // 创建显示的弹窗
     void Arch::showRefusePopup(std::string text_);
-    std::string getArchNameFromEnum(unsigned char archNo);
-    void Arch::createUpgradeComparisonPanel(Arch* arch);
+    static std::string getArchNameFromEnum(unsigned char archNo);
+    virtual void Arch::createUpgradeComparisonPanel();
     void Arch::onUpgradeCancel(Ref* sender);
     void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, unsigned long long currentGold, bool type);
     //资源生产
@@ -166,10 +166,46 @@ public:
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
 };
 
+class GoldStorge : public Arch {
+public:
+    GoldStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+};
+
+class ElixirStorge : public Arch {
+public:
+    ElixirStorge(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+};
+
+class GoldMine : public Arch {
+public:
+    GoldMine(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+};
+
+class ElixirCollector : public Arch {
+public:
+    ElixirCollector(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+};
+
+class Barracks : public Arch {
+public:
+    Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+};
+
 class ArmyCamp : public Arch {
 public:
     ArmyCamp(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
 };
 
 #endif // __ARCH_H__

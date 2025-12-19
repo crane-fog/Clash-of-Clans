@@ -204,6 +204,8 @@ public:
     }
 	// 每帧更新
     void update(float dt);
+    // 获取兵种字符串名
+    static std::string getTroopNameFromEnum(uchar troop_no);
 };
 
 #endif // __TROOP_H__

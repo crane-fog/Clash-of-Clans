@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
-
+#include "troop.h"
 
 // 示例用法：取3级箭塔的最大生命值
 // level使用要-1
@@ -93,12 +93,12 @@ struct ArchInfo {
 const std::map<unsigned char, std::vector<unsigned char>> kArchCount = {
     {TOWN_HALL, {1, 1, 1, 1}},
     {WALL, {0, 25, 50, 75}},
-    {GOLD_STORAGE, {1, 1, 2, 2}},
-    {ELIXIR_STORAGE, {1, 1, 2, 2}},
+    {GOLD_STORAGE, {1, 1, 1, 1}},
+    {ELIXIR_STORAGE, {1, 1, 1, 1}},
     {GOLD_MINE, {1, 2, 3, 4}},
     {ELIXIR_COLLECTOR, {1, 2, 3, 4}},
     {BARRACKS, {1, 1, 1, 1}},
-    {ARMY_CAMP, {1, 1, 2, 2}},
+    {ARMY_CAMP, {1, 1, 1, 1}},
     {CANNON, {1, 2, 2, 2}},
     {ARCHER_TOWER, {0, 1, 1, 2}}
 };
@@ -158,5 +158,14 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
 };
 
 const std::vector<unsigned char> kArmyCampCapacity = { 20, 30, 35, 40 };
+
+const std::pair<unsigned char, unsigned char> kBarracksTroopUnlock[] = {
+    {1, Troop::BARBARIAN},
+    {1, Troop::ARCHER},
+    {2, Troop::GIANT},
+    {2, Troop::WALL_BREAKER},
+    {3, Troop::BALLOON},
+    {4, Troop::DRAGON}
+};
 
 #endif // __ARCH_INFO_H__

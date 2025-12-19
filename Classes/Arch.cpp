@@ -15,14 +15,31 @@ remaining_upgrade_time_(a->remaining_upgrade_time_), current_hp_(a->current_hp_)
 Arch* Arch::create(const ArchData& data, BaseMap* base_map, bool is_mine)
 {
     Arch* pRet;
-    if (data.no_ == WALL) {
-        pRet = new(std::nothrow) Wall(data, base_map);
-    }
-    else if (data.no_ == ARMY_CAMP) {
-        pRet = new(std::nothrow) ArmyCamp(data, base_map);
-    }
-    else {
-        pRet = new(std::nothrow) Arch(data, base_map);
+    switch (data.no_) {
+        case WALL:
+            pRet = new(std::nothrow) Wall(data, base_map);
+            break;
+        case GOLD_STORAGE:
+            pRet = new(std::nothrow) GoldStorge(data, base_map);
+            break;
+        case ELIXIR_STORAGE:
+            pRet = new(std::nothrow) ElixirStorge(data, base_map);
+            break;
+        case GOLD_MINE:
+            pRet = new(std::nothrow) GoldMine(data, base_map);
+            break;
+        case ELIXIR_COLLECTOR:
+            pRet = new(std::nothrow) ElixirCollector(data, base_map);
+            break;
+        case BARRACKS:
+            pRet = new(std::nothrow) Barracks(data, base_map);
+            break;
+        case ARMY_CAMP:
+            pRet = new(std::nothrow) ArmyCamp(data, base_map);
+            break;
+        default:
+            pRet = new(std::nothrow) Arch(data, base_map);
+            break;
     }
     if (pRet) {
         pRet->is_mine_ = is_mine;
@@ -311,7 +328,7 @@ void Arch::showArchPanel()
         return; // 面板已经存在，直接返回
     }
     auto bg = LayerColor::create(Color4B(220, 220, 200, 180));
-    bg->setContentSize(Size(400, 300));
+    bg->setContentSize(Size(400, 270));
     bg->setPosition(Vec2(150, 170));
     
     this->addChild(bg, 100, "ARCH_PANEL");
@@ -324,7 +341,7 @@ void Arch::showArchPanel()
     panel->setBackGroundColorType(cocos2d::ui::Layout::BackGroundColorType::SOLID);
     panel->setBackGroundColor(Color3B(50, 50, 50));
     panel->setBackGroundColorOpacity(200);
-    panel->setContentSize(Size(340, 250));
+    panel->setContentSize(Size(340, 220));
     panel->setPosition(Vec2(30, 10));
     panel->setScale(0.8f); // 初始缩小
     panel->setOpacity(0);  // 初始透明
@@ -335,11 +352,9 @@ void Arch::showArchPanel()
     auto label = Label::createWithSystemFont(
         getArchNameFromEnum(no_)+"\n------------------\n" + 
         ("等级: " + std::to_string(level_) + "\n") +
-        ("生命值: " + std::to_string(current_hp_) + "/" + std::to_string(info.hp_)+ "\n") +
-        (info.type_ == RESOURCE ?
-        ("容量: " + std::to_string(current_capacity_) + "/" + std::to_string(info.max_capacity_)) : "") ,
+        ("生命值: " + std::to_string(current_hp_) + "/" + std::to_string(info.hp_)+ "\n"),
         "Arial", 22);
-    label->setPosition(Vec2(160, 150));
+    label->setPosition(Vec2(160, 120));
     panel->addChild(label, 0, "INFO_LABEL");
 
     
@@ -364,7 +379,7 @@ void Arch::showArchPanel()
     upgradeBtn->addClickEventListener([=](Ref*) {
         // 处理升级操作
         CCLOG("升级按钮点击");
-        archUpgrade(this);
+        archUpgrade();
         });
     panel->addChild(upgradeBtn);
 
@@ -423,12 +438,12 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
     }
 }
 
-void Arch::archUpgrade(Arch* arch) {
+void Arch::archUpgrade() {
     
     unsigned char max_ = 4;
-    if (arch->level_ < max_) {
+    if (level_ < max_) {
         // 创建一个新的面板显示升级前后的数据和金币提示
-        createUpgradeComparisonPanel(arch);
+        createUpgradeComparisonPanel();
     }
     else {
         // 弹出提示窗显示“当前已是最高等级”
@@ -461,7 +476,7 @@ void Arch::showRefusePopup(std::string text_) {
     
 }
 
-void Arch::createUpgradeComparisonPanel(Arch* arch) {
+void Arch::createUpgradeComparisonPanel() {
 
     // 创建背景遮罩
     auto popupBg = LayerColor::create(Color4B(255, 255, 255,255)); // 半透明背景
@@ -478,20 +493,18 @@ void Arch::createUpgradeComparisonPanel(Arch* arch) {
     popupBg->addChild(titleLabel);
 
     //数据
-    unsigned char no_ = arch->no_;
-    unsigned char currentLevel = arch->level_;
+    unsigned char no_ = no_;
+    unsigned char currentLevel = level_;
 
     // 创建升级前后的数据对比标签
     auto infoLabel = Label::createWithSystemFont(
-        "当前等级: " + std::to_string(arch->level_) + " -> "  +std::to_string(arch->level_ +1)+ "\n" +
-        "生命值  : " + std::to_string(kArchInfo.at(no_)[currentLevel-1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel ].hp_) + "\n" +
-        "容量    : " + std::to_string(kArchInfo.at(no_)[currentLevel -1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel].max_capacity_) + "\n" + "\n" + "\n" +
+        "当前等级: " + std::to_string(level_) + " -> "  +std::to_string(level_ +1)+ "\n" +
+        "生命值  : " + std::to_string(kArchInfo.at(no_)[currentLevel-1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel ].hp_) + "\n" + "\n" +
         "金币需求: " + std::to_string(kArchInfo.at(no_)[currentLevel ].upgrade_cost_amount_)+ "\n" +
         "升级用时: " + std::to_string(kArchInfo.at(no_)[currentLevel].upgrade_time_), "Arial", 24);
     if (kArchInfo.at(no_)[currentLevel].upgrade_cost_type_ == ELIXIR) {
-        infoLabel->setString("当前等级: " + std::to_string(arch->level_) + " -> " + std::to_string(arch->level_ + 1) + "\n" +
-            "生命值  : " + std::to_string(kArchInfo.at(no_)[currentLevel - 1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel].hp_) + "\n" +
-            "容量    : " + std::to_string(kArchInfo.at(no_)[currentLevel - 1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel].max_capacity_) + "\n" + "\n" + "\n" +
+        infoLabel->setString("当前等级: " + std::to_string(level_) + " -> " + std::to_string(level_ + 1) + "\n" +
+            "生命值  : " + std::to_string(kArchInfo.at(no_)[currentLevel - 1].hp_) + " -> " + std::to_string(kArchInfo.at(no_)[currentLevel].hp_) + "\n" + "\n" +
             "圣水需求: " + std::to_string(kArchInfo.at(no_)[currentLevel].upgrade_cost_amount_) + "\n" +
             "升级用时: " + std::to_string(kArchInfo.at(no_)[currentLevel].upgrade_time_));
     }
@@ -521,7 +534,7 @@ void Arch::createUpgradeComparisonPanel(Arch* arch) {
     confirmLabel->setTextColor(Color4B::GREEN);  // 设置字体颜色为红色
     auto confirmButton = MenuItemLabel::create(
         confirmLabel,
-        CC_CALLBACK_1(Arch::Buiding_Upgrading, this, arch, UPGRADING, cost_, current_, kArchInfo.at(no_)[currentLevel].upgrade_cost_type_));
+        CC_CALLBACK_1(Arch::Buiding_Upgrading, this, this, UPGRADING, cost_, current_, kArchInfo.at(no_)[currentLevel].upgrade_cost_type_));
     confirmButton->setPosition(Vec2(popupBg->getContentSize().width * 2 / 3, 30));
 
     // 将按钮添加到菜单中
@@ -720,6 +733,8 @@ void Arch::updateBuildingDisplay()
     }
 }
 
+
+/* 具体建筑的虚函数重写 */
 void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
 {
     for (auto arch : base_map_->archs_) {
@@ -808,17 +823,141 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
     }
 }
 
+void GoldStorge::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "储量: " + std::to_string(GameManager::getInstance()->getGold()) + "/" + std::to_string(kArchInfo.at(GOLD_STORAGE)[level_-1].max_capacity_) + "\n";
+    label->setString(str);
+}
+
+void GoldStorge::createUpgradeComparisonPanel()
+{
+
+}
+
+void ElixirStorge::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "储量: " + std::to_string(GameManager::getInstance()->getElixir()) + "/" + std::to_string(kArchInfo.at(ELIXIR_STORAGE)[level_ - 1].max_capacity_) + "\n";
+    label->setString(str);
+}
+
+void ElixirStorge::createUpgradeComparisonPanel()
+{
+
+}
+
+void GoldMine::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "生产速度: " + std::to_string(kArchInfo.at(GOLD_MINE)[level_ - 1].produce_speed_) + " 金币/分钟\n";
+    str += "当前容量: " + std::to_string(current_capacity_) + "/" + std::to_string(kArchInfo.at(GOLD_MINE)[level_ - 1].max_capacity_) + "\n";
+    label->setString(str);
+}
+
+void GoldMine::createUpgradeComparisonPanel()
+{
+
+}
+
+void ElixirCollector::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "生产速度: " + std::to_string(kArchInfo.at(ELIXIR_COLLECTOR)[level_ - 1].produce_speed_) + " 圣水/分钟\n";
+    str += "当前容量: " + std::to_string(current_capacity_) + "/" + std::to_string(kArchInfo.at(ELIXIR_COLLECTOR)[level_ - 1].max_capacity_) + "\n";
+    label->setString(str);
+}
+
+void ElixirCollector::createUpgradeComparisonPanel()
+{
+
+}
+
+void Barracks::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto bg = dynamic_cast<LayerColor*>(getChildByName("ARCH_PANEL"));
+    auto panel = bg->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "当前可用的兵种：\n";
+    int extraLines = 0;
+    for (const auto& troop : kBarracksTroopUnlock) {
+        if (troop.first <= level_) {
+            str += Troop::getTroopNameFromEnum(troop.second) + "\n";
+            extraLines++;
+        }
+    }
+    label->setString(str);
+
+    // 动态调整面板大小
+    if (extraLines > 0) {
+        float lineHeight = 28.0f; // 每行大约的高度
+        float addedHeight = extraLines * lineHeight;
+
+        // 调整背景大小
+        Size bgSize = bg->getContentSize();
+        bg->setContentSize(Size(bgSize.width, bgSize.height + addedHeight));
+
+        // 调整内容面板大小
+        Size panelSize = panel->getContentSize();
+        panel->setContentSize(Size(panelSize.width, panelSize.height + addedHeight));
+
+        // 调整标签位置
+        label->setPosition(label->getPosition() + Vec2(0, addedHeight / 2));
+
+        // 重绘边框
+        bg->removeChildByName("border");
+        draw_border(bg);
+    }
+}
+
+void Barracks::createUpgradeComparisonPanel()
+{
+
+}
+
 void ArmyCamp::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
         return;
     }
-
     Arch::showArchPanel();
-
     auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
     auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
     std::string str = label->getString();
     str += "兵营容量: " + std::to_string(kArmyCampCapacity[level_ - 1]) + "\n";
     label->setString(str);
+}
+
+void ArmyCamp::createUpgradeComparisonPanel()
+{
+
 }
