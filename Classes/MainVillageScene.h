@@ -81,7 +81,7 @@ public:
 
     cocos2d::LayerColor* selectedItemBg = nullptr;  // 当前选中的按钮背景
     void showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_);
-    void onOptionClick(cocos2d::LayerColor* itemBg, int index, bool selectedOptions[], cocos2d::ui::Button* confirmButton, cocos2d::LayerColor* panel);
+    void onOptionClick(cocos2d::LayerColor* itemBg,  cocos2d::ui::Button* confirmButton);
 //获取金币数量
 unsigned long long getGold() {
     return gold_;

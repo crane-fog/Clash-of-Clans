@@ -17,12 +17,21 @@ public:
 
     bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, std::set<std::pair<int, int>> occupied_cells);
     void EnemyVillage::spawnBarbarian(cocos2d::Vec2 position);
-    void EnemyVillage::showInvalidSpawnMessage();
+    void EnemyVillage::spawnArcher(cocos2d::Vec2 position);
+    void EnemyVillage::spawnGiant(cocos2d::Vec2 position);
+    void EnemyVillage::spawnDragon(cocos2d::Vec2 position);
+    void EnemyVillage::spawnBalloon(cocos2d::Vec2 position);
+    void EnemyVillage::spawnBomb(cocos2d::Vec2 position);
+    void EnemyVillage::showInvalidSpawnMessage(std::string text= "不可以把士兵放在这里");
 
     void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor * bg);
-    void EnemyVillage::spawnSelectedTroop(const std::string& troopName);
+    void EnemyVillage::spawnSelectedTroop(int index);
     void onButtonClick(cocos2d::LayerColor* itemBg, int index);
 
+
+    void onMouseClick(cocos2d::Event* event);
+    // 添加鼠标事件监听器
+    void addMouseListener(cocos2d::Node* parentNode);
 };
 
 #endif // __ENEMY_VILLAGE_SCENE_H__
