@@ -5,6 +5,59 @@
 USING_NS_CC;
 using namespace ui;
 
+// 初始化静态成员变量
+UIBars* UIBars::s_instance = nullptr;
+
+UIBars::UIBars()
+    : goldUpdateListener(nullptr)
+    , elixirUpdateListener(nullptr)
+{
+    // 构造函数中不进行复杂的初始化
+    // 复杂的初始化放在init()函数中
+}
+UIBars::~UIBars()
+{
+    // 移除事件监听器
+    if (goldUpdateListener) {
+        _eventDispatcher->removeEventListener(goldUpdateListener);
+        goldUpdateListener = nullptr;
+    }
+
+    if (elixirUpdateListener) {
+        _eventDispatcher->removeEventListener(elixirUpdateListener);
+        elixirUpdateListener = nullptr;
+    }
+
+    // 清空进度条数据
+    progressBars_.clear();
+
+    // 重置单例指针
+    s_instance = nullptr;
+}
+
+UIBars* UIBars::getInstance()
+{
+    if (!s_instance) {
+        s_instance = new (std::nothrow) UIBars();
+        if (s_instance && s_instance->init()) {
+            s_instance->autorelease(); // 加入自动释放池
+        }
+        else {
+            delete s_instance;
+            s_instance = nullptr;
+        }
+    }
+    return s_instance;
+}
+
+void UIBars::destroyInstance()
+{
+    if (s_instance) {
+        s_instance->removeFromParent(); // 从父节点移除
+        s_instance->release();          // 释放内存
+        // 注意：不要在这里delete，因为autorelease会处理
+    }
+}
 bool UIBars::init()
 {
 
