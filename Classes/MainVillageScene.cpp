@@ -68,8 +68,8 @@ bool MainVillage::init()
     //base_map_->sprites_.push_back(barbarian_sprite);
     //base_map_->addChild(barbarian_sprite, 2);
 
-    // 创建UI层（固定UI层）
-    ui_layer_ = UIBars::create();
+    //  获取单例实例
+    UIBars* uiBars = UIBars::getInstance();
 
     if (!ui_layer_) {
         return false;

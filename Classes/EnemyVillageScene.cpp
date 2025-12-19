@@ -117,6 +117,18 @@ bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long
     // touchListener->onTouchCancelled = CC_CALLBACK_2(EnemyVillage::onTouchCancelled, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
+    // 获取单例实例
+    UIBars* uiBars = UIBars::getInstance();
+
+    if (!ui_layer_) {
+        return false;
+    }
+    // UI层直接添加到场景，不受base_map变换影响
+    this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
+    // 获取并修改金币
+    unsigned long long currentGold = GameManager::getInstance()->getGold();
+    unsigned long long currentElixir = GameManager::getInstance()->getElixir();
+    GameManager::getInstance()->setGold(currentGold );
 
     // 设置面板的背景
     auto bgSprite = cocos2d::LayerColor::create(cocos2d::Color4B(0, 0, 0, 150), visibleSize.width, visibleSize.height/4);
