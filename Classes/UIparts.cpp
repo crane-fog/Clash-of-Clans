@@ -110,7 +110,10 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
 {
     ProgressBarData data;
     data.title = title;
-    float percent = nowAmount*100/UpperLimit;
+    float percent = 0;
+    if (UpperLimit > 0) {
+        percent = (float)nowAmount * 100.0f / UpperLimit;
+    }
     // 创建图像图标 
     data.icon = Sprite::create(iconPath); // 图标图片
     if (data.icon) {
