@@ -12,10 +12,11 @@
 #include"Giant.h"
 #include"UIcommon.h"
 USING_NS_CC;
-int selectedTroopType =0;  // -1表示未选择任何兵种
-EnemyVillage* EnemyVillage::create(int level, unsigned long long gold, unsigned long long elixir)
+int selectedTroopType = 0;  // -1表示未选择任何兵种 todo: 最好不要全局变量
+
+EnemyVillage* EnemyVillage::create(int level)
 {
-    EnemyVillage* pRet = new(std::nothrow) EnemyVillage(); if (pRet && pRet->myInit(level, gold, elixir)) {
+    EnemyVillage* pRet = new(std::nothrow) EnemyVillage(); if (pRet && pRet->myInit(level)) {
         pRet->autorelease(); return pRet;
     }
     else {
@@ -23,14 +24,11 @@ EnemyVillage* EnemyVillage::create(int level, unsigned long long gold, unsigned 
     }
 };
 
-bool EnemyVillage::myInit(int level, unsigned long long gold, unsigned long long elixir)
+bool EnemyVillage::myInit(int level)
 {
     if (!Village::init()) {
         return false;
     }
-    // 转移主村庄资源存储数据
-    Village::gold_ = gold;
-    Village::elixir_ = elixir;
 
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();

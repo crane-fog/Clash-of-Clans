@@ -192,7 +192,7 @@ void MainVillage::cleanup()
         arch_list.push_back(ArchData(a));
     }
     DataHelper::listToMap(arch_list, arch_status_);
-    DataHelper::writeSourceData(kSourceDataFile, gold_, elixir_);
+    DataHelper::writeSourceData(kSourceDataFile, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
     DataHelper::writeArchData(kMainVillageDataFile, std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(), arch_status_);
     Village::cleanup();
 }
@@ -203,7 +203,7 @@ void MainVillage::onAttackButtonClick(Ref* sender)
     // 创建并显示挑战场景选择面板
    UICommonHelper attack_panel;
    bool selected_bg[4] = {0};
-    showChallengeSelectionPanel(this, gold_, elixir_);
+    showChallengeSelectionPanel(this, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)

@@ -11,8 +11,8 @@ private:
 
     cocos2d::LayerColor* selectedItemBg = nullptr;  // 当前选中的按钮背景
 public:
-    virtual bool myInit(int level, unsigned long long gold, unsigned long long elixir);
-    static EnemyVillage* create(int level, unsigned long long gold, unsigned long long elixir);
+    virtual bool myInit(int level);
+    static EnemyVillage* create(int level);
     void onExitButtonClick(cocos2d::Ref* sender);
 
     bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, std::set<std::pair<int, int>> occupied_cells);
