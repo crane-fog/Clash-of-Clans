@@ -38,6 +38,7 @@ public:
     void MainVillage::showShopPopupWithDelay(float sec);
 
     void onAttackButtonClick(Ref* sender);
+    void onTroopButtonClick(Ref* sender);
 
     cocos2d::LayerColor* selectedItemBg = nullptr;  // 当前选中的按钮背景
     void showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_);

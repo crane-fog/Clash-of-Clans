@@ -130,6 +130,21 @@ bool MainVillage::init()
         });
     this->addChild(attackButton, 200);
 
+    // 兵种配置图标
+    auto troop_config_button = cocos2d::ui::Button::create("TroopConfig.png");
+    troop_config_button->setPosition(Vec2(80, 230));
+    troop_config_button->setScale(0.9f);
+    troop_config_button->setContentSize(Size(300, 300));
+    troop_config_button->setTouchEnabled(true);
+    troop_config_button->setEnabled(true);
+
+    troop_config_button->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+            this->onTroopButtonClick(sender);
+        }
+    });
+    this->addChild(troop_config_button, 200);
+
     return true;
 }
 
@@ -203,6 +218,29 @@ void MainVillage::onAttackButtonClick(Ref* sender)
    UICommonHelper attack_panel;
    bool selected_bg[4] = {0};
     showChallengeSelectionPanel(this, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
+}
+
+void MainVillage::onTroopButtonClick(Ref* sender)
+{
+    
+    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));
+    addChild(panel, 99999);
+
+    // 面板标题
+    auto titleLabel = cocos2d::Label::createWithSystemFont("还没写好\n这里配置的内容会被保存到单例类TroopConfig", "Arial", 56);
+    titleLabel->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
+        cocos2d::Director::getInstance()->getVisibleSize().height / 2));
+    panel->addChild(titleLabel, 1);
+
+    // 退出按钮
+    auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exitButton->setPosition(cocos2d::Vec2(200, 100));
+    exitButton->setScale(0.8f);
+    exitButton->addClickEventListener([panel, this](cocos2d::Ref* sender) {
+        // 退出面板
+        panel->removeFromParent();
+        });
+    panel->addChild(exitButton);
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)
