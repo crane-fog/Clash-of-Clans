@@ -22,6 +22,8 @@ struct ProgressBarData {
 // UI部分基类
 class UIBars : public cocos2d::Node {
 private:
+
+
     std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
     cocos2d::EventListenerCustom* goldUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* elixirUpdateListener;  // 存储监听器
@@ -29,6 +31,9 @@ private:
     cocos2d::EventListenerCustom* maxElixirUpdateListener;  // 存储监听器
 
 public:
+
+
+
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
 
