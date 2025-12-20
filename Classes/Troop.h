@@ -8,6 +8,7 @@
 #include "BaseMap.h"
 #include <array>
 #define MAX_TROOP_LEVEL 5//目前做到5级
+#define TROOP_TYPE_NUM 6//兵种种类数量
 class Troop :public cocos2d::Sprite, public IArchTarget{
 protected:
     typedef unsigned char uchar;
@@ -204,6 +205,8 @@ public:
     }
 	// 每帧更新
     void update(float dt);
+    // 获取兵种字符串名
+    static std::string getTroopNameFromEnum(uchar troop_no);
 };
 
 #endif // __TROOP_H__

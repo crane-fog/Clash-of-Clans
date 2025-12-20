@@ -5,59 +5,6 @@
 USING_NS_CC;
 using namespace ui;
 
-// 初始化静态成员变量
-UIBars* UIBars::s_instance = nullptr;
-
-UIBars::UIBars()
-    : goldUpdateListener(nullptr)
-    , elixirUpdateListener(nullptr)
-{
-    // 构造函数中不进行复杂的初始化
-    // 复杂的初始化放在init()函数中
-}
-UIBars::~UIBars()
-{
-    // 移除事件监听器
-    if (goldUpdateListener) {
-        _eventDispatcher->removeEventListener(goldUpdateListener);
-        goldUpdateListener = nullptr;
-    }
-
-    if (elixirUpdateListener) {
-        _eventDispatcher->removeEventListener(elixirUpdateListener);
-        elixirUpdateListener = nullptr;
-    }
-
-    // 清空进度条数据
-    progressBars_.clear();
-
-    // 重置单例指针
-    s_instance = nullptr;
-}
-
-UIBars* UIBars::getInstance()
-{
-    if (!s_instance) {
-        s_instance = new (std::nothrow) UIBars();
-        if (s_instance && s_instance->init()) {
-            s_instance->autorelease(); // 加入自动释放池
-        }
-        else {
-            delete s_instance;
-            s_instance = nullptr;
-        }
-    }
-    return s_instance;
-}
-
-void UIBars::destroyInstance()
-{
-    if (s_instance) {
-        s_instance->removeFromParent(); // 从父节点移除
-        s_instance->release();          // 释放内存
-        // 注意：不要在这里delete，因为autorelease会处理
-    }
-}
 bool UIBars::init()
 {
 
@@ -70,22 +17,14 @@ bool UIBars::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    unsigned long long gold = 100;
-    unsigned long long elixir = 0;
-    bool success = DataHelper::readSourceData("data/SourceData.dat", gold, elixir);
-    GameManager::getInstance()->setGold(gold);
-    GameManager::getInstance()->setElixir(elixir);
-    if (success) {
-        CCLOG("金币储量: %llu", gold);
-        CCLOG("圣水储量: %llu", elixir);
-    }
-    else {
-        CCLOG("读取文件失败！");
-    }
+    unsigned long long gold = GameManager::getInstance()->getGold();
+    unsigned long long elixir = GameManager::getInstance()->getElixir();
+    unsigned long long maxGold = GameManager::getInstance()->getMaxGold();
+    unsigned long long maxElixir = GameManager::getInstance()->getMaxElixir();
 
     // 创建多个进度条:金币和圣水
-    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visibleSize.width - 500, visibleSize.height - 50, GoldLimit);
-    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", elixir, visibleSize.width - 500, visibleSize.height - 150, ElixirLimit);
+    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visibleSize.width - 500, visibleSize.height - 50, maxGold);
+    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", elixir, visibleSize.width - 500, visibleSize.height - 150, maxElixir);
 
 
     // 创建返回按钮 - 固定在左上角
@@ -104,13 +43,24 @@ bool UIBars::init()
     elixirUpdateListener = cocos2d::EventListenerCustom::create("update_elixir_event", CC_CALLBACK_1(UIBars::onElixirUpdated, this));
     cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixirUpdateListener, this);
 
+    // 注册最大金币更新事件监听
+    maxGoldUpdateListener = cocos2d::EventListenerCustom::create("update_max_gold_event", CC_CALLBACK_1(UIBars::onMaxGoldUpdated, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(maxGoldUpdateListener, this);
+
+    // 注册最大圣水更新事件监听
+    maxElixirUpdateListener = cocos2d::EventListenerCustom::create("update_max_elixir_event", CC_CALLBACK_1(UIBars::onMaxElixirUpdated, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(maxElixirUpdateListener, this);
+
     return true;
 }
 void UIBars::createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, unsigned long long nowAmount, float x, float y, unsigned long long UpperLimit)
 {
     ProgressBarData data;
     data.title = title;
-    float percent = nowAmount*100/UpperLimit;
+    float percent = 0;
+    if (UpperLimit > 0) {
+        percent = (float)nowAmount * 100.0f / UpperLimit;
+    }
     // 创建图像图标 
     data.icon = Sprite::create(iconPath); // 图标图片
     if (data.icon) {
@@ -144,7 +94,7 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
     }
 
     // 创建数量标签
-    data.percentLabel = Label::createWithSystemFont(StringUtils::format(" %llu %", nowAmount), "Arial", 30);
+    data.percentLabel = Label::createWithSystemFont(StringUtils::format("%llu / %llu", nowAmount, UpperLimit), "Arial", 30);
     data.percentLabel->setPosition(Vec2(x + 150, y - 5));
     data.percentLabel->setTextColor(Color4B::BLACK);
     this->addChild(data.percentLabel, 2);
@@ -154,13 +104,18 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
 }
 
 
-void UIBars::updateProgressBar(const std::string& title, unsigned long long nowAmount)
+void UIBars::updateProgressBar(const std::string& title, unsigned long long nowAmount, unsigned long long maxAmount)
 {
     for (auto& data : progressBars_) {
         if (data.title == title) {
             if (data.loadingBar && data.percentLabel) {
-                data.loadingBar->setPercent(nowAmount*100/GoldLimit);
-                data.percentLabel->setString(StringUtils::format("%llu %", nowAmount));
+                float percent = 0;
+                if (maxAmount > 0) {
+                    percent = (float)nowAmount * 100.0f / maxAmount;
+                }
+                if (percent > 100.0f) percent = 100.0f;
+                data.loadingBar->setPercent(percent);
+                data.percentLabel->setString(StringUtils::format("%llu / %llu", nowAmount, maxAmount));
             }
             break;
         }
@@ -171,11 +126,25 @@ void UIBars::updateProgressBar(const std::string& title, unsigned long long nowA
 
 void UIBars::onGoldUpdated(cocos2d::EventCustom* event) {
     unsigned long long gold = *static_cast<unsigned long long*>(event->getUserData());
-    updateProgressBar("金币", gold);
+    unsigned long long maxGold = GameManager::getInstance()->getMaxGold();
+    updateProgressBar("金币", gold, maxGold);
 }
 void UIBars::onElixirUpdated(cocos2d::EventCustom* event) {
     unsigned long long  elixir = *static_cast<unsigned long long*>(event->getUserData());
-    updateProgressBar("圣水", elixir);
+    unsigned long long maxElixir = GameManager::getInstance()->getMaxElixir();
+    updateProgressBar("圣水", elixir, maxElixir);
+}
+
+void UIBars::onMaxGoldUpdated(cocos2d::EventCustom* event) {
+    unsigned long long maxGold = *static_cast<unsigned long long*>(event->getUserData());
+    unsigned long long gold = GameManager::getInstance()->getGold();
+    updateProgressBar("金币", gold, maxGold);
+}
+
+void UIBars::onMaxElixirUpdated(cocos2d::EventCustom* event) {
+    unsigned long long maxElixir = *static_cast<unsigned long long*>(event->getUserData());
+    unsigned long long elixir = GameManager::getInstance()->getElixir();
+    updateProgressBar("圣水", elixir, maxElixir);
 }
 
 //倒计时类相关

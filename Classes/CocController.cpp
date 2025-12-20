@@ -28,7 +28,7 @@ void CocController::changeScene(int level_no, unsigned long long gold, unsigned 
     // 在自己的村庄时
     if (current_scene_ == 0) {
         current_scene_ = 1;
-        Director::getInstance()->pushScene(EnemyVillage::create(level_no, gold, elixir));
+        Director::getInstance()->pushScene(EnemyVillage::create(level_no));
     }
     // 在敌人村庄时
     else if (current_scene_ == 1) {

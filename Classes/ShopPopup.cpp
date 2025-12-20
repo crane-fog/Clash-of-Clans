@@ -10,7 +10,7 @@
 USING_NS_CC;
 using namespace ui;
 
-
+// todo: 拆分类头文件
 void ShopPopup::setupBackground() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -248,45 +248,38 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         scrollView->addChild(itemBg);
         // 根据商品ID确定建筑类型
         unsigned char archNo = INVALID_ARCH_NO;
-        switch (item.id) {
-            case 1: // 兵营
-                archNo = ARMY_CAMP;
-                break;
-            case 2: // 城墙
-                archNo = WALL;
-                break;
-            case 3: // 金库
-                archNo = GOLD_STORAGE;
-                break;
-            case 4: // 圣水罐
-                archNo = ELIXIR_STORAGE;
-                break;
-            case 5: // 金矿
-                archNo = GOLD_MINE;
-                break;
-            case 6: // 圣水收集器
-                archNo = ELIXIR_COLLECTOR;
-                break;
-            case 7: // 箭塔
-                archNo = ARCHER_TOWER;
-                break;
-            case 8: // 加农炮
-                archNo = CANNON;
-                break;
-            case 9: // 训练营
-                archNo = BARRACKS;
-                break;
-
-                return;
+        if (tabIndex == 1) {
+            switch (item.id) {
+                case 1: archNo = ARMY_CAMP; break;
+                case 2: archNo = WALL; break;
+                case 3: archNo = GOLD_STORAGE; break;
+                case 4: archNo = ELIXIR_STORAGE; break;
+                case 5: archNo = GOLD_MINE; break;
+                case 6: archNo = ELIXIR_COLLECTOR; break;
+                case 7: archNo = ARCHER_TOWER; break;
+                case 8: archNo = CANNON; break;
+                case 9: archNo = BARRACKS; break;
+            }
         }
+
         // 获取并修改金币
         unsigned long long currentGold = GameManager::getInstance()->getGold();
         unsigned long long currentElixir = GameManager::getInstance()->getElixir();
-        CCLOG("当前金币: %llu", currentGold);
+        
+        // 检查建筑数量限制
+        bool isLimitReached = false;
+        if (tabIndex == 1) {
+            auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());
+            unsigned char townHallLevel = scene->getTownHallLevel();
+            if (scene->getBuildingCount(archNo) >= kArchCount.at(archNo)[townHallLevel - 1]) {
+                isLimitReached = true;
+            }
+        }
+
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
-        listener->onTouchBegan = [this, itemBg, item,scrollView,archNo, currentGold, currentElixir](Touch* touch, Event* event) -> bool {
+        listener->onTouchBegan = [this, itemBg, item, scrollView, archNo, currentGold, currentElixir, isLimitReached, tabIndex](Touch* touch, Event* event) -> bool {
 
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
@@ -294,40 +287,59 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());  
 
             if (rect.containsPoint(locationInNode)) {
-                if (item.p_type == GOLD) {
-                    if (item.isAvailable && currentGold > item.price) {//
-                        itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
-                        // 按下即购买
-                        scene->addBuildingByNO(archNo, item.price);
-
-                        this->close();
-                        // 添加购买反馈效果
-                        auto scaleDown = ScaleTo::create(0.1f, 0.95f);
-                        itemBg->runAction(scaleDown);
+                if (tabIndex == 1) {
+                    // 建筑：只检查数量限制和资源
+                    if (isLimitReached) {
+                        this->showUnavailableBubble(item, itemBg, scrollView, "建筑数量已达上限");
+                        return true;
+                    }
+                    
+                    bool canAfford = false;
+                    if (item.p_type == GOLD) {
+                        canAfford = currentGold >= item.price;
+                        if (!canAfford) this->showUnavailableBubble(item, itemBg, scrollView, "金币不足");
                     }
                     else {
-                        if (currentGold < item.price) {
-                            this->showUnavailableBubble(item, itemBg, scrollView, "金币不足");
-                        }
-                        else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                        canAfford = currentElixir >= item.price;
+                        if (!canAfford) this->showUnavailableBubble(item, itemBg, scrollView, "圣水不足");
+                    }
+
+                    if (canAfford) {
+                        itemBg->setColor(Color3B(120, 140, 180));
+                        scene->addBuildingByNO(archNo, item.price);
+                        this->close();
+                        itemBg->runAction(ScaleTo::create(0.1f, 0.95f));
                     }
                 }
                 else {
-                    if (item.isAvailable && currentElixir > item.price) {//
-                        itemBg->setColor(Color3B(120, 140, 180)); // 按下变暗
-                        // 按下即购买
-                        scene->addBuildingByNO(archNo, item.price);
-
-                        this->close();
-                        // 添加购买反馈效果
-                        auto scaleDown = ScaleTo::create(0.1f, 0.95f);
-                        itemBg->runAction(scaleDown);
+                    // 其他物品
+                    if (item.p_type == GOLD) {
+                        if (item.isAvailable && currentGold >= item.price) {
+                            itemBg->setColor(Color3B(120, 140, 180)); 
+                            scene->addBuildingByNO(archNo, item.price);
+                            this->close();
+                            itemBg->runAction(ScaleTo::create(0.1f, 0.95f));
+                        }
+                        else {
+                            if (currentGold < item.price) {
+                                this->showUnavailableBubble(item, itemBg, scrollView, "金币不足");
+                            }
+                            else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                        }
                     }
                     else {
-                        if (currentElixir < item.price) {
-                            this->showUnavailableBubble(item, itemBg, scrollView, "圣水不足");
+                        if (item.isAvailable && currentElixir >= item.price) {
+                            itemBg->setColor(Color3B(120, 140, 180)); 
+                            scene->addBuildingByNO(archNo, item.price);
+                            this->close();
+                            itemBg->runAction(ScaleTo::create(0.1f, 0.95f));
                         }
-                        else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                        else {
+                            if (currentElixir < item.price) {
+                                this->showUnavailableBubble(item, itemBg, scrollView, "圣水不足");
+                            }
+                            else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                        }
                     }
                 }
                 return true;
@@ -354,8 +366,21 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
 
         _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, itemBg);
 
-        // 如果商品不可用，添加灰色遮罩
-        if (!item.isAvailable|| (item.p_type==GOLD&&(currentGold < item.price))|| (item.p_type == ELIXIR && (currentElixir < item.price))) {
+        // 灰色遮罩
+        bool showMask = false;
+        if (tabIndex == 1) {
+            // 建筑
+            bool resourceInsufficient = (item.p_type == GOLD && currentGold < item.price) || 
+                                      (item.p_type == ELIXIR && currentElixir < item.price);
+            showMask = isLimitReached || resourceInsufficient;
+        } else {
+            // 其他
+            bool resourceInsufficient = (item.p_type == GOLD && currentGold < item.price) || 
+                                      (item.p_type == ELIXIR && currentElixir < item.price);
+            showMask = !item.isAvailable || resourceInsufficient;
+        }
+
+        if (showMask) {
             Size bgSize = itemBg->getContentSize();
             auto grayMask = LayerColor::create(Color4B(128, 128, 128, 150), bgSize.width, bgSize.height);
             grayMask->setPosition(Vec2::ZERO);
@@ -390,7 +415,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             itemBg->getContentSize().height - 30));
         itemLabel->setColor(Color3B::BLACK);
         itemBg->addChild(itemLabel);
-        if (tabIndex == 3||kArchInfo.at(archNo)[0].upgrade_cost_type_) {
+        if (item.p_type == ELIXIR) {
             // 商品价格图标
             auto goldIcon = Sprite::create("Elixir.png");
             goldIcon->setPosition(Vec2(itemBg->getContentSize().width / 3, 30));

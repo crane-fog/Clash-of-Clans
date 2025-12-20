@@ -7,6 +7,8 @@
 #include "UIparts.h"
 #include <string.h>
 #include "HealthBar.h"
+#include "GameManager.h"
+#include "TroopConfig.h"
 
 class BaseMap;
 class Arch;
@@ -25,6 +27,9 @@ struct ArchData {
     UC x_;
     UC y_;
 
+    // 当前剩余升级时间
+    UI remaining_upgrade_time_;
+
     // 当前生命值
     UI current_hp_;
 
@@ -34,8 +39,6 @@ struct ArchData {
 
     ArchData() = default;
     explicit ArchData(Arch* a);
-    explicit ArchData(UC no, UC lv = 1) : no_(no), level_(lv), x_(1), y_(1),
-        current_hp_(kArchInfo.at(no)[lv].hp_), current_capacity_(kArchInfo.at(no)[lv].max_capacity_) {}
 };
 
 class Arch : public cocos2d::Sprite, public ITroopTarget {
@@ -52,8 +55,11 @@ protected:
     // 当前生命值
     int current_hp_;
 
+    // 当前剩余升级时间
+    UI remaining_upgrade_time_;
+
     // 资源建筑
-    // 当前容量
+    // 当前容量（仅适用于生产建筑，储存建筑的容量在游戏中由GameManager类管理）
     UI current_capacity_;
 
     // 所在的地图指针
@@ -88,7 +94,7 @@ public:
     void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
 
     Arch(const ArchData& data, BaseMap* base_map) : no_(data.no_), level_(data.level_), x_(data.x_), y_(data.y_),
-        current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
+        current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), remaining_upgrade_time_(data.remaining_upgrade_time_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
     static Arch* create(const ArchData& data, BaseMap* base_map, bool is_mine = true);
     virtual bool initWithFile(const std::string& filename) override;
     virtual void onEnter() override;
@@ -97,6 +103,8 @@ public:
     // 为城墙状态更新预留的接口
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) {}
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) {}
+    // 升级完成回调
+    virtual void onUpgradeFinished() {}
 
     // ITroopTarget 接口实现
     virtual void takeDamage(float damage) override { 
@@ -113,20 +121,26 @@ public:
     virtual UC getTargetType() const override { return kArchInfo.at(no_)[level_ - 1].type_; }
 
     // 建筑面板UI相关
-    void showArchPanel(Arch* arch);
+    virtual void showArchPanel();
     void closeArchPanel();
     //升级按钮
-    void Arch::archUpgrade(Arch* arch);
+    void Arch::archUpgrade();
     // 创建显示的弹窗
     void Arch::showRefusePopup(std::string text_);
-    std::string getArchNameFromEnum(unsigned char archNo);
-    void Arch::createUpgradeComparisonPanel(Arch* arch);
+    static std::string getArchNameFromEnum(unsigned char archNo);
+    virtual void Arch::createUpgradeComparisonPanel();
     void Arch::onUpgradeCancel(Ref* sender);
     void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, unsigned long long currentGold, bool type);
     //资源生产
     void Arch::startResourceProduction();
-    // 更新建筑资源的显示
+    // 更新建筑的显示
     void Arch::updateBuildingDisplay();
+
+    // 开始升级动画
+    void startUpgradeAnimation(unsigned int time, const std::string& notice);
+    
+    // 更新剩余升级时间
+    void updateUpgradeTime(long long elapsed);
 
     UI getx() const {
         return this->x_;
@@ -134,9 +148,13 @@ public:
     UI gety() const {
         return this->y_;
     }
-    UI getNo() const {
-        return this->no_;
+    UC getNo() const { 
+        return no_; 
     }
+    UC getLevel() const {
+        return level_;
+    }
+
 
     friend class ShopPopup;
 
@@ -144,11 +162,70 @@ public:
 };
 
 class Wall : public Arch {
+private:
     std::vector<cocos2d::Node*> connection_nodes_;
 public:
     Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
+};
+
+class GoldStorage : public Arch {
+public:
+    GoldStorage(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
+};
+
+class ElixirStorage : public Arch {
+public:
+    ElixirStorage(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
+};
+
+class GoldMine : public Arch {
+public:
+    GoldMine(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+};
+
+class ElixirCollector : public Arch {
+public:
+    ElixirCollector(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+};
+
+class Barracks : public Arch {
+public:
+    Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        TroopConfig::getInstance()->setBarrackLevel(level_);
+    }
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
+};
+
+class ArmyCamp : public Arch {
+public:
+    ArmyCamp(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        TroopConfig::getInstance()->setArmyCampCapacity(kArmyCampCapacity[level_ - 1]);
+    }
+    virtual void showArchPanel() override;
+    virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
 };
 
 #endif // __ARCH_H__

@@ -21,10 +21,13 @@ bool MainVillage::init()
         return false;
     }
 
+    unsigned long long gold = 0, elixir = 0;
     // 从数据文件中读取资源数据
-    if (!DataHelper::readSourceData(kSourceDataFile, gold_, elixir_)) {
+    if (!DataHelper::readSourceData(kSourceDataFile, gold, elixir)) {
         return false;
     }
+    GameManager::getInstance()->setGold(gold);
+    GameManager::getInstance()->setElixir(elixir);
 
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -36,7 +39,19 @@ bool MainVillage::init()
     std::vector<ArchData> arch_list;
     DataHelper::mapToList(arch_status_, arch_list);
 
+    time_t time_diff = current_time - data_time;
+    last_exit_time_ = 0;
+
     for (auto& arch : arch_list) {
+        // 更新剩余升级时间
+        if (arch.remaining_upgrade_time_ > 0) {
+            if (arch.remaining_upgrade_time_ > time_diff) {
+                arch.remaining_upgrade_time_ -= static_cast<unsigned int>(time_diff);
+            }
+            else {
+                arch.remaining_upgrade_time_ = 0;
+            }
+        }
         Arch::create(arch, base_map_);
     }
 
@@ -68,16 +83,13 @@ bool MainVillage::init()
     //base_map_->sprites_.push_back(barbarian_sprite);
     //base_map_->addChild(barbarian_sprite, 2);
 
-    //  获取单例实例
-    UIBars* uiBars = UIBars::getInstance();
 
+    ui_layer_ = UIBars::create();
     if (!ui_layer_) {
         return false;
     }
     // UI层直接添加到场景，不受base_map变换影响
     this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
-
-
 
 
     // 获取屏幕尺寸
@@ -118,11 +130,38 @@ bool MainVillage::init()
         });
     this->addChild(attackButton, 200);
 
+    // 兵种配置图标
+    auto troop_config_button = cocos2d::ui::Button::create("TroopConfig.png");
+    troop_config_button->setPosition(Vec2(80, 230));
+    troop_config_button->setScale(0.9f);
+    troop_config_button->setContentSize(Size(300, 300));
+    troop_config_button->setTouchEnabled(true);
+    troop_config_button->setEnabled(true);
+
+    troop_config_button->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+            this->onTroopButtonClick(sender);
+        }
+    });
+    this->addChild(troop_config_button, 200);
+
     return true;
 }
 
 void MainVillage::onEnter()
 {
+    if (last_exit_time_ > 0) {
+        time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        time_t time_diff = current_time - last_exit_time_;
+
+        if (time_diff > 0) {
+            for (auto arch : base_map_->archs_) {
+                arch->updateUpgradeTime(time_diff);
+            }
+        }
+        last_exit_time_ = 0;
+    }
+
     Village::onEnter();
 
     //// 让角色动
@@ -167,7 +206,7 @@ void MainVillage::cleanup()
         arch_list.push_back(ArchData(a));
     }
     DataHelper::listToMap(arch_list, arch_status_);
-    DataHelper::writeSourceData(kSourceDataFile, gold_, elixir_);
+    DataHelper::writeSourceData(kSourceDataFile, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
     DataHelper::writeArchData(kMainVillageDataFile, std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(), arch_status_);
     Village::cleanup();
 }
@@ -178,7 +217,30 @@ void MainVillage::onAttackButtonClick(Ref* sender)
     // 创建并显示挑战场景选择面板
    UICommonHelper attack_panel;
    bool selected_bg[4] = {0};
-    showChallengeSelectionPanel(this, gold_, elixir_);
+    showChallengeSelectionPanel(this, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
+}
+
+void MainVillage::onTroopButtonClick(Ref* sender)
+{
+    
+    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));
+    addChild(panel, 99999);
+
+    // 面板标题
+    auto titleLabel = cocos2d::Label::createWithSystemFont("还没写好\n这里配置的内容会被保存到单例类TroopConfig", "Arial", 56);
+    titleLabel->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
+        cocos2d::Director::getInstance()->getVisibleSize().height / 2));
+    panel->addChild(titleLabel, 1);
+
+    // 退出按钮
+    auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exitButton->setPosition(cocos2d::Vec2(200, 100));
+    exitButton->setScale(0.8f);
+    exitButton->addClickEventListener([panel, this](cocos2d::Ref* sender) {
+        // 退出面板
+        panel->removeFromParent();
+        });
+    panel->addChild(exitButton);
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)
@@ -222,8 +284,9 @@ bool MainVillage::addBuildingByNO(unsigned char no,int price)
     data.level_ = level;
     data.x_ = MAP_SIZE/2;                 //默认左下角
     data.y_ = MAP_SIZE/2;
-    data.current_hp_ = info.hp_;         
-    data.current_capacity_ =0;              //资源建筑容量
+    data.remaining_upgrade_time_ = 0;
+    data.current_hp_ = info.hp_;
+    data.current_capacity_ = info.max_capacity_; //资源建筑容量
 
     // 创建建筑到地图
     auto arch = Arch::create(data, base_map_);
@@ -344,26 +407,7 @@ void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
     playBuildingDropEffect(pendingArch_);
     // 将建筑加入存档数据结构
     arch_status_[pendingArch_->getx()][pendingArch_->gety()] = ArchData(pendingArch_);
-
-    // 写入存档数据
-    DataHelper::writeArchData(
-        kMainVillageDataFile,
-        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()),
-        arch_status_
-    );
-    // 延迟一定的时间后执行该函数
-    unsigned int delayTime = kArchInfo.at(pendingArch_->getNo())[0].upgrade_time_;  // 设置延迟时间为5秒（你可以根据需要更改）
-
-    this->scheduleOnce([=](unsigned int) {
-        if (kArchInfo.at(pendingArch_->getNo())[0].type_ == RESOURCE) {
-            pendingArch_->Arch::startResourceProduction();  // 延时调用 startResourceProduction
-        }
-        }, delayTime, "start_resource_production");  // 延迟时间后执行
-
-
-
     CCLOG("建筑放置成功");
-
 }
 
 void MainVillage::removeCancelAndConfirmButtons(Arch* pendingArch_)
@@ -510,6 +554,7 @@ void MainVillage::showShopPopupWithDelay(float sec)
     }
 
 }
+
 // 选项点击事件处理
 void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button* confirmButton) {
     // 如果点击的是同一个按钮，保持选中状态
@@ -533,3 +578,32 @@ void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button
     }
 
 }
+
+void MainVillage::onExit()
+{
+    last_exit_time_ = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    Village::onExit();
+}
+
+unsigned char MainVillage::getTownHallLevel()
+{
+    for (auto arch : base_map_->archs_) {
+        if (arch->getNo() == TOWN_HALL) {
+            return arch->getLevel();
+        }
+    }
+    assert(false && "主村庄中无大本营");
+    return 1; // 这里不应该被触发
+}
+
+int MainVillage::getBuildingCount(unsigned char archNo)
+{
+    int count = 0;
+    for (auto arch : base_map_->archs_) {
+        if (arch->getNo() == archNo) {
+            count++;
+        }
+    }
+    return count;
+}
+

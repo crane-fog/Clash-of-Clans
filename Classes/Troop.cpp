@@ -280,3 +280,22 @@ void Troop::findNewTarget() {
     current_target_ = TroopTargetManager::getInstance()->getNearestTroopTarget(
         getCellPosition(), min_dist, false, preferred_target_);
 }
+
+std::string Troop::getTroopNameFromEnum(uchar troop_no) {
+    switch (troop_no) {
+        case BARBARIAN:
+            return "野蛮人";
+        case ARCHER:
+            return "弓箭手";
+        case GIANT:
+            return "巨人";
+        case WALL_BREAKER:
+            return "炸弹人";
+        case DRAGON:
+            return "飞龙";
+        case BALLOON:
+            return "气球兵";
+        default:
+            return "Unknown";
+    }
+}

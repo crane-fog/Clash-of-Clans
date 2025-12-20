@@ -18,37 +18,17 @@ struct ProgressBarData {
     cocos2d::Sprite* icon;
     std::string title;
 };
-//进度条上限数量
-enum UpperLimit :unsigned long long {
-    GoldLimit = 50000,
-    ElixirLimit = 50000
-};
 
 // UI部分基类
 class UIBars : public cocos2d::Node {
 private:
-    static UIBars* s_instance;  // 单例实例指针
-
     std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
     cocos2d::EventListenerCustom* goldUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* elixirUpdateListener;  // 存储监听器
+    cocos2d::EventListenerCustom* maxGoldUpdateListener;  // 存储监听器
+    cocos2d::EventListenerCustom* maxElixirUpdateListener;  // 存储监听器
 
-    // 私有构造函数，防止外部创建实例
-    UIBars();
-
-    // 私有析构函数
-    virtual ~UIBars();
-    // 禁止拷贝构造和赋值操作
-    UIBars(const UIBars&) = delete;
-    UIBars& operator=(const UIBars&) = delete;
 public:
-    // 获取单例实例
-    static UIBars* getInstance();
-
-    // 销毁单例实例
-    static void destroyInstance();
-
-
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
 
@@ -56,17 +36,18 @@ public:
     //title:进度条左边文字标签， barcolor:进度条颜色， iconPath：图标文件路径，nowAmount：当前数量，x,y位置，UpperLimit:上限
     void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, unsigned long long nowAmount, float x, float y, unsigned long long UpperLimit);
     // 更新指定进度条
-    void updateProgressBar(const std::string& title, unsigned long long nowAmount);
+    void updateProgressBar(const std::string& title, unsigned long long nowAmount, unsigned long long maxAmount);
 
     // 更新金币进度条的回调函数
     void onGoldUpdated(cocos2d::EventCustom* event);
     // 更新圣水进度条的回调函数
     void onElixirUpdated(cocos2d::EventCustom* event);
+    // 更新最大金币的回调函数
+    void onMaxGoldUpdated(cocos2d::EventCustom* event);
+    // 更新最大圣水的回调函数
+    void onMaxElixirUpdated(cocos2d::EventCustom* event);
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(UIBars);
-
-
-
 };
 
 enum ShopType :int {
