@@ -71,6 +71,7 @@ list(APPEND GAME_SOURCE
      Classes/ShopPopup.cpp
      Classes/Troop.cpp
      Classes/TroopAttackManager.cpp
+     Classes/TroopConfig.cpp
      Classes/TroopTargetManager.cpp
      Classes/UIparts.cpp
      Classes/VillageScene.cpp
@@ -98,6 +99,7 @@ list(APPEND GAME_HEADER
      Classes/ShopPopup.h
      Classes/Troop.h
      Classes/TroopAttackManager.h
+     Classes/TroopConfig.h
      Classes/TroopTargetManager.h
      Classes/UIcommon.h
      Classes/UIparts.h

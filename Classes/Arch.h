@@ -8,6 +8,7 @@
 #include <string.h>
 #include "HealthBar.h"
 #include "GameManager.h"
+#include "TroopConfig.h"
 
 class BaseMap;
 class Arch;
@@ -207,16 +208,24 @@ public:
 
 class Barracks : public Arch {
 public:
-    Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        TroopConfig::getInstance()->setBarrackLevel(level_);
+    }
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
 };
 
 class ArmyCamp : public Arch {
 public:
-    ArmyCamp(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    ArmyCamp(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    {
+        TroopConfig::getInstance()->setArmyCampCapacity(kArmyCampCapacity[level_ - 1]);
+    }
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override;
 };
 
 #endif // __ARCH_H__

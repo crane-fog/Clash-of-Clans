@@ -1000,6 +1000,11 @@ void Barracks::createUpgradeComparisonPanel()
     label->setString(str);
 }
 
+void Barracks::onUpgradeFinished()
+{
+    TroopConfig::getInstance()->setBarrackLevel(level_);
+}
+
 void ArmyCamp::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
@@ -1024,4 +1029,9 @@ void ArmyCamp::createUpgradeComparisonPanel()
     std::string add = "兵营容量: " + std::to_string(kArmyCampCapacity[level_ - 1]) + " -> " + std::to_string(kArmyCampCapacity[level_]) + "\n";
     str.insert(pos + 1, add);
     label->setString(str);
+}
+
+void ArmyCamp::onUpgradeFinished()
+{
+    TroopConfig::getInstance()->setArmyCampCapacity(kArmyCampCapacity[level_ - 1]);
 }
