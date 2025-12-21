@@ -8,8 +8,10 @@
 #include <set>
 #include <utility>
 #include "Barbarian.h"
-#include"Archer.h"
-#include"Giant.h"
+#include "Archer.h"
+#include "Giant.h"
+#include "Balloon.h"
+#include "Dragon.h"
 #include"UIcommon.h"
 #include "AudioEngine.h"
 USING_NS_CC;
@@ -46,9 +48,18 @@ bool EnemyVillage::myInit(int level)
         p = Arch::create(arch, base_map_, false);
         TroopTargetManager::getInstance()->registerTroopTarget(p);
     }
-    auto barbarian = Barbarian::create(base_map_, 1, cocos2d::Vec2(40, 20));
+    /*auto barbarian = Barbarian::create(base_map_, 1, cocos2d::Vec2(40, 20));
     if (!barbarian)return false;
-	troop_list_.push_back(barbarian);
+	troop_list_.push_back(barbarian);*/
+
+    /*auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
+    if (!dragon)return false;
+    troop_list_.push_back(dragon);*/
+
+    auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(10, 20));
+    if (!balloon)return false;
+    troop_list_.push_back(balloon);
+
     // 预计算所有建筑的距离场
     TroopTargetManager::getInstance()->precomputeDistanceFields();
 
@@ -306,10 +317,10 @@ bool EnemyVillage::spawnGiant(cocos2d::Vec2 position)
 bool EnemyVillage::spawnDragon(cocos2d::Vec2 position)
 {
     // 在触摸位置生成士兵
-    auto Giant = Giant::create(base_map_, 1, position);
-    if (Giant) {
-        troop_list_.push_back(Giant);
-        base_map_->sprites_.push_back(Giant);
+    auto Dragon = Dragon::create(base_map_, 1, position);
+    if (Dragon) {
+        troop_list_.push_back(Dragon);
+        base_map_->sprites_.push_back(Dragon);
         return true;
     }
     return false;
@@ -328,10 +339,10 @@ bool EnemyVillage::spawnBomb(cocos2d::Vec2 position)
 bool EnemyVillage::spawnBalloon(cocos2d::Vec2 position)
 {
     // 在触摸位置生成士兵
-    auto Giant = Giant::create(base_map_, 1, position);
-    if (Giant) {
-        troop_list_.push_back(Giant);
-        base_map_->sprites_.push_back(Giant);
+    auto Balloon = Balloon::create(base_map_, 1, position);
+    if (Balloon) {
+        troop_list_.push_back(Balloon);
+        base_map_->sprites_.push_back(Balloon);
         return true;
     }
     return false;

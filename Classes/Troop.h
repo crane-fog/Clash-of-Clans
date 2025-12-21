@@ -182,22 +182,6 @@ public:
     /*以下为渲染相关*/
 	//获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
 	inline virtual cocos2d::Vec2 getPixelPosition() const{ return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y)); }
-	// 创建士兵实例 由于Troop类不该能直接创建，改为由子类自行实现
-	/*static Troop* createTroop(const std::string& picfilename,
-        int level,
-		cocos2d::Vec2 position,
-		PreferredTarget preferred_target,
-		AttackType attack_type,
-		uchar housing_space,
-		uchar barracks_level_required,
-		float movement_speed,
-		float attack_speed,
-		float range,
-		const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
-		const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
-		const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
-		const std::array<int, MAX_TROOP_LEVEL + 1>& research_times,
-		const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);*/
     // 重写setPosition以自动同步ZOrder
     virtual void setPosition(const cocos2d::Vec2& pos) override {
         Sprite::setPosition(pos);

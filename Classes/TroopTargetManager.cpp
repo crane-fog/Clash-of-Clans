@@ -262,7 +262,6 @@ void TroopTargetManager::precomputeWallCostMap() {
     //        }
     //        debug_file << "\n";
     //    }
-
     //    debug_file << "\n=== TARGET_MAP_ (44x44) ===\n";
     //    for (int y = 0; y < MAP_HEIGHT; ++y) {
     //        for (int x = 0; x < MAP_WIDTH; ++x) {
@@ -274,7 +273,6 @@ void TroopTargetManager::precomputeWallCostMap() {
     //        }
     //        debug_file << "\n";
     //    }
-
     //    debug_file.close();
     //}
 }
@@ -457,6 +455,6 @@ bool TroopTargetManager::isInAttackRange(const cocos2d::Vec2& position, ITroopTa
     /*int x = static_cast<int>(position.x);
     int y = static_cast<int>(position.y);
     float distance = distance_field[x][y];*/
-    // TODO:重构，这里不对
+    // TODO:暂时就这样
     return CalculateHelper::calculateDistanceToSquare(position,center,size) <= attack_range;
 }

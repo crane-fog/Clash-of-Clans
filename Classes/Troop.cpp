@@ -207,22 +207,16 @@ void Troop::updateMovingState(float dt) {
         // 斜向向量（如{1,1}）的模长为sqrt(2)，需要归一化为单位向量
         current_path_direction_.normalize();
         cocos2d::Vec2 new_position;
-        if ((is_air || current_target_->getTargetType() == WALLT)&&(movement_speed_ * dt>range_)) {
-            new_position = getCellPosition() + current_path_direction_ * range_ * dt;
+        new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
+        //撞到墙上了
+        //TODO:感觉路径上的墙这一块还要改
+        if (TroopTargetManager::getInstance()->isCellWall(new_position)) {
+            ITroopTarget* wall = TroopTargetManager::getInstance()->getTroopTargetByCellPos(new_position);
+            float size;
+            new_position = getCellPosition() + current_path_direction_ * (-range_ +
+                CalculateHelper::calculateDistanceToSquare(getCellPosition(), wall->getCellPosition(size), 1.0f));
+            current_target_ = wall;
             changeStatus(ATTACKING);
-        }
-        else {
-            new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
-            //撞到墙上了
-            //TODO:感觉路径上的墙这一块还要改
-            if (TroopTargetManager::getInstance()->isCellWall(new_position)) {
-                ITroopTarget* wall = TroopTargetManager::getInstance()->getTroopTargetByCellPos(new_position);
-                float size;
-                new_position = getCellPosition() + current_path_direction_ *(-range_+
-                    CalculateHelper::calculateDistanceToSquare(getCellPosition(),wall->getCellPosition(size), 1.0f));
-                current_target_ = wall;
-                changeStatus(ATTACKING);
-            }
         }
         setCellPosition(new_position);
         setPosition(getPixelPosition());
