@@ -228,7 +228,6 @@ void TroopTargetManager::onTargetDestroyed(ITroopTarget* target) {
         distance_fields_.erase(target);
         // 其他建筑的摧毁会影响现有路径
     } 
-    // TODO:重新计算所有场数据
     precomputeDistanceFields();
 }
 
