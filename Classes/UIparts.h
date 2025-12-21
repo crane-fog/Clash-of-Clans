@@ -22,6 +22,8 @@ struct ProgressBarData {
 // UI部分基类
 class UIBars : public cocos2d::Node {
 private:
+
+
     std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
     cocos2d::EventListenerCustom* goldUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* elixirUpdateListener;  // 存储监听器
@@ -29,6 +31,9 @@ private:
     cocos2d::EventListenerCustom* maxElixirUpdateListener;  // 存储监听器
 
 public:
+
+
+
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
 
@@ -377,4 +382,55 @@ public:
     }
 };
 
+
+class AttackStars : public cocos2d::Node {
+public:
+    AttackStars()
+        : progress_(0) {
+    }
+
+    static AttackStars* create() {
+        AttackStars* ret = new AttackStars();
+        if (ret && ret->init()) {
+            ret->autorelease();
+            return ret;
+        }
+        CC_SAFE_DELETE(ret);
+        return nullptr;
+    }
+
+    bool init();
+    void setProgress(float progress) {
+        progress_ = progress;
+        progressBar_->setPercent(progress_);
+    }
+
+    void updateStars();
+
+    void setStarColor(cocos2d::Sprite* star, bool isAchieved) {
+        if (isAchieved) {
+            star->setColor(cocos2d::Color3B(255, 255, 255)); // 恢复原来的颜色
+        }
+        else {
+            star->setColor(cocos2d::Color3B(169, 169, 169)); // 灰色
+        }
+    }
+
+    // 检查其他条件
+    bool someOtherConditionMet() {
+        return progress_ > 75.0f;
+    }
+
+    //点亮星星动画
+    void showPopup(cocos2d::Sprite* targetStar, float progress);
+private:
+    float progress_;
+    cocos2d::ui::LoadingBar* progressBar_;
+    std::vector<cocos2d::Sprite*> stars_; // 存储星星的vector
+
+    // 创建星星
+    cocos2d::Sprite* createStar() {
+        return cocos2d::Sprite::create("attack_scene/star.png"); // 星星图片
+    }
+};
 #endif // __UI_PARTS_H__

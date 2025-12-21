@@ -4,6 +4,8 @@
 #include "VillageScene.h"
 #include "Troop.h"
 #include <vector>
+#include "AudioEngine.h"
+
 // 敌人村庄场景类
 class EnemyVillage : public Village {
 private:
@@ -11,6 +13,7 @@ private:
 
     cocos2d::LayerColor* selectedItemBg = nullptr;  // 当前选中的按钮背景
 public:
+    int attackingBGM = cocos2d::AudioEngine::play2d("music/attacking.mp3");
     virtual bool myInit(int level);
     static EnemyVillage* create(int level);
     void onExitButtonClick(cocos2d::Ref* sender);
@@ -29,7 +32,7 @@ public:
 
     void onButtonClick(cocos2d::LayerColor* itemBg, int index);
 
-
+  
 
     std::vector<int> troopMaxCounts_;          // 兵种最大数量
     std::vector<int> troopPlacedCounts_;       // 已放置数量

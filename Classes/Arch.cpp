@@ -79,7 +79,8 @@ bool Arch::initWithFile(const std::string& filename)
         }
         this->addChild(health_bar_);
         // 不要管这两个诡异的数据是怎么来的，反正看起来位置差不多（
-        health_bar_->setHealthBarPosition(CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size / 1.0f - 1.25f, size / 3.0f + 1.25f)));
+        health_bar_->setHealthBarPosition(CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(size /4.0f -3.25f, size / 2.0f +5.25f)));
+
     }
 
     return true;

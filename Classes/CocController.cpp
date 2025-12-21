@@ -10,6 +10,7 @@ CocController::CocController()
     auto scene = MainVillage::create();
     Director::getInstance()->runWithScene(scene);
     current_scene_ = 0; // 0=MainVillage
+
 }
 
 CocController* CocController::getInstance()
@@ -25,14 +26,19 @@ void CocController::endGame()
 
 void CocController::changeScene(int level_no, unsigned long long gold, unsigned long long elixir)
 {
+
     // 在自己的村庄时
     if (current_scene_ == 0) {
         current_scene_ = 1;
         Director::getInstance()->pushScene(EnemyVillage::create(level_no));
+
     }
     // 在敌人村庄时
     else if (current_scene_ == 1) {
+
         current_scene_ = 0;
+
         Director::getInstance()->popScene();
+
     }
 }

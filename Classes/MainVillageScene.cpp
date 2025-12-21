@@ -11,9 +11,10 @@
 #include "CocController.h"
 #include <chrono>
 #include <vector>
+#include "AudioEngine.h"
 
 USING_NS_CC;
- 
+
 
 bool MainVillage::init()
 {
@@ -83,7 +84,7 @@ bool MainVillage::init()
     //base_map_->sprites_.push_back(barbarian_sprite);
     //base_map_->addChild(barbarian_sprite, 2);
 
-
+    // 创建UI层（固定UI层）
     ui_layer_ = UIBars::create();
     if (!ui_layer_) {
         return false;
@@ -150,6 +151,7 @@ bool MainVillage::init()
 
 void MainVillage::onEnter()
 {
+    AudioEngine::resume(mainhome_bgm);
     if (last_exit_time_ > 0) {
         time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         time_t time_diff = current_time - last_exit_time_;
@@ -213,10 +215,11 @@ void MainVillage::cleanup()
 
 void MainVillage::onAttackButtonClick(Ref* sender)
 {
-    //CocController::getInstance()->changeScene(1, gold_, elixir_);
     // 创建并显示挑战场景选择面板
    UICommonHelper attack_panel;
    bool selected_bg[4] = {0};
+   // stop music.
+   cocos2d::AudioEngine::pause(mainhome_bgm);
     showChallengeSelectionPanel(this, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
 }
 
@@ -463,6 +466,8 @@ void MainVillage::showShopPopupWithDelay(float sec)
 
 // 显示挑战场景选择面板
  void MainVillage::showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_) {
+     // 播放音效
+     auto select_bgm = AudioEngine::play2d("music/choosing_battle.mp3", true);
     // 创建一个覆盖全屏的面板
     auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));  // 黑色背景
     parent->addChild(panel, 99999);
@@ -487,13 +492,14 @@ void MainVillage::showShopPopupWithDelay(float sec)
     confirmButton->setName("confirm_attack");
     panel->addChild(confirmButton);
 
-    confirmButton->addClickEventListener([parent, &selectedOptions, gold_, elixir_, panel, this](cocos2d::Ref* sender) {
+    confirmButton->addClickEventListener([ &selectedOptions, gold_, elixir_, panel, this, select_bgm](cocos2d::Ref* sender) {
         // 确认后更换场景
         if (selectedOptions[0] != -1) { // 确保已经选择了一个选项
             CocController::getInstance()->changeScene(1, gold_, elixir_);
             // 点击确认按钮后关闭面板
             panel->removeFromParent();
             this->selectedItemBg = nullptr;
+            AudioEngine::stop(select_bgm);
         }
         });
 
@@ -501,10 +507,12 @@ void MainVillage::showShopPopupWithDelay(float sec)
     auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
     exitButton->setPosition(cocos2d::Vec2(200, 100));
     exitButton->setScale(0.8f);
-    exitButton->addClickEventListener([panel,this](cocos2d::Ref* sender) {
+    exitButton->addClickEventListener([panel,this,select_bgm](cocos2d::Ref* sender) {
         // 退出面板
         panel->removeFromParent();
         selectedItemBg = nullptr;
+        // stop music.
+        AudioEngine::stop(select_bgm);
         });
     panel->addChild(exitButton);
 

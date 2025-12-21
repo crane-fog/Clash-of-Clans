@@ -73,6 +73,8 @@ protected:
     // 生命条指针
     HealthBar* health_bar_;
 public:
+    //建筑是否被摧毁
+    bool is_Destroyed = false;
     // 拖动相关
     bool is_dragging_ = false;
     cocos2d::Vec2 touch_start_pos_;

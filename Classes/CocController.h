@@ -11,6 +11,7 @@ private:
     // 变量示例：
     // 一个记录当前正在运行的场景的变量，0=MainVillage，1=EnemyVillage
     int current_scene_;
+
 public:
     // 获取单例实例，第一次调用时创建
     static CocController* getInstance();
