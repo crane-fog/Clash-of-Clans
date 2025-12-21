@@ -1,6 +1,6 @@
 #ifndef __COCCONTROLLER_H__
 #define __COCCONTROLLER_H__
-
+#include "AudioEngine.h"
 // 控制程序运行流程的单例类（实际上相当于对 Director 又做了一层封装？）
 class CocController {
 private:
@@ -11,6 +11,7 @@ private:
     // 变量示例：
     // 一个记录当前正在运行的场景的变量，0=MainVillage，1=EnemyVillage
     int current_scene_;
+
 public:
     // 获取单例实例，第一次调用时创建
     static CocController* getInstance();

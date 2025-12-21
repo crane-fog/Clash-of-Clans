@@ -4,6 +4,8 @@
 #include "VillageScene.h"
 #include "Troop.h"
 #include <vector>
+
+
 // 敌人村庄场景类
 class EnemyVillage : public Village {
 private:
@@ -29,7 +31,7 @@ public:
 
     void onButtonClick(cocos2d::LayerColor* itemBg, int index);
 
-
+  
 
     std::vector<int> troopMaxCounts_;          // 兵种最大数量
     std::vector<int> troopPlacedCounts_;       // 已放置数量

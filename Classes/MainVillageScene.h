@@ -4,7 +4,7 @@
 #include "cocos2d.h"
 #include "VillageScene.h"
 #include "Arch.h"
-
+#include "AudioEngine.h"
 // 主村庄场景类
 class MainVillage : public Village {
 private:
@@ -15,6 +15,8 @@ private:
     time_t last_exit_time_ = 0;
 
 public:
+    //背景音乐
+    int mainhome_bgm = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
     // 当对象被渲染时被自动调用

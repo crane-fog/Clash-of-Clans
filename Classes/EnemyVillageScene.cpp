@@ -11,6 +11,7 @@
 #include"Archer.h"
 #include"Giant.h"
 #include"UIcommon.h"
+#include "AudioEngine.h"
 USING_NS_CC;
 int selectedTroopType = 0;  // -1表示未选择任何兵种 todo: 最好不要全局变量
 
@@ -29,7 +30,7 @@ bool EnemyVillage::myInit(int level)
     if (!Village::init()) {
         return false;
     }
-
+    
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     time_t data_time = 0;
@@ -138,6 +139,8 @@ bool EnemyVillage::myInit(int level)
 
 void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
 {
+    cocos2d::AudioEngine::play2d("music/mainhome.mp3", true, 1.0f);
+    
     for(auto troop : troop_list_) {
         troop->setDead();
 	}
