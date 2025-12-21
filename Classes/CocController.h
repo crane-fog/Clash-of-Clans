@@ -1,6 +1,6 @@
 #ifndef __COCCONTROLLER_H__
 #define __COCCONTROLLER_H__
-#include "AudioEngine.h"
+
 // 控制程序运行流程的单例类（实际上相当于对 Director 又做了一层封装？）
 class CocController {
 private:

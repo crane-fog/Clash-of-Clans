@@ -1,7 +1,7 @@
 #include "CocController.h"
 #include "MainVillageScene.h"
 #include "EnemyVillageScene.h"
-#include "AudioEngine.h"
+
 USING_NS_CC;
 
 CocController::CocController()

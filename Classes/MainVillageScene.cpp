@@ -219,7 +219,7 @@ void MainVillage::onAttackButtonClick(Ref* sender)
    UICommonHelper attack_panel;
    bool selected_bg[4] = {0};
    // stop music.
-   cocos2d::AudioEngine::stop(mainhome_bgm);
+   cocos2d::AudioEngine::pause(mainhome_bgm);
     showChallengeSelectionPanel(this, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
 }
 

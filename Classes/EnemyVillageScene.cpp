@@ -139,13 +139,13 @@ bool EnemyVillage::myInit(int level)
 
 void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
 {
-    cocos2d::AudioEngine::play2d("music/mainhome.mp3", true, 1.0f);
+    cocos2d::AudioEngine::stop(attackingBGM);
     
     for(auto troop : troop_list_) {
         troop->setDead();
 	}
     TroopTargetManager::getInstance()->clear();
-    CocController::getInstance()->changeScene();
+    CocController::getInstance()->changeScene();;
 }
 
 bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, std::set<std::pair<int, int>> occupied_cells)
