@@ -30,7 +30,7 @@ class TroopTargetManager {
         // 移动代价常量
         static constexpr float NORMAL_COST = 1.0f;           // 普通地面移动代价
         static constexpr float DIAGONAL_COST = 1.414f;       // 斜向移动代价
-        static constexpr float WALL_COST = 10.0f;            // 墙的移动代价（可通行但代价很高）
+        static constexpr float WALL_COST = 30.0f;            // 墙的移动代价（可通行但代价很高）
         static constexpr float BUILDING_BLOCK_COST = 999.0f; // 建筑阻挡代价（基本不可通行）
         static constexpr float UNREACHABLE_COST = 1000.0f;   // 完全不可达的代价
 

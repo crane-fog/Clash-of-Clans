@@ -9,6 +9,7 @@
 #include "HealthBar.h"
 #include "GameManager.h"
 #include "TroopConfig.h"
+#include "TroopTargetManager.h"
 
 class BaseMap;
 class Arch;
@@ -107,10 +108,19 @@ public:
     virtual void onUpgradeFinished() {}
 
     // ITroopTarget 接口实现
+    //我先改了调试用，你到时候调整一下
+    void onDeath() {
+        health_bar_->setVisible(false);
+        TroopTargetManager::getInstance()->unregisterTroopTarget(this);
+        this->setTexture("arch/Arch_Destroyed.png");
+    }
     virtual void takeDamage(float damage) override { 
-        health_bar_->setHealthBarVisible(true);
+        if (current_hp_ <= 0)
+            return;
         health_bar_->takeDamage(damage);
         current_hp_ -= static_cast<UI>(damage); 
+        if(current_hp_<=0)
+            onDeath();
     }
     virtual cocos2d::Vec2 getCellPosition(float& size) const override
     { 

@@ -3,6 +3,9 @@
 #include <limits>
 #include <queue>
 #include <typeinfo>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 #include "CalculateHelper.h"
 
 
@@ -54,8 +57,8 @@ void TroopTargetManager::registerTroopTarget(ITroopTarget* target) {
     int top = static_cast<int>(building_pos.y + building_size / 2.0f);
 
     // 将建筑指针填入target_map_中覆盖的所有格子
-    for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
-        for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+    for (int y = std::max(0, bottom); y < std::min(MAP_HEIGHT, top); ++y) {
+        for (int x = std::max(0, left); x < std::min(MAP_WIDTH, right); ++x) {
             target_map_[x][y] = target;
         }
     }
@@ -89,8 +92,8 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
         int top = static_cast<int>(building_pos.y + building_size / 2.0f);
 
         // 将target_map_中对应的格子设为nullptr
-        for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
-            for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+        for (int y = std::max(0, bottom); y < std::min(MAP_HEIGHT, top); ++y) {
+            for (int x = std::max(0, left); x < std::min(MAP_WIDTH, right); ++x) {
                 target_map_[x][y] = nullptr;
             }
         }
@@ -214,8 +217,8 @@ void TroopTargetManager::onTargetDestroyed(ITroopTarget* target) {
     int top = static_cast<int>(target_pos.y + target_size / 2.0f);
 
     // 将wall_cost_map_中对应位置设为普通地面
-    for (int y = std::max(0, bottom); y <= std::min(MAP_HEIGHT - 1, top); ++y) {
-        for (int x = std::max(0, left); x <= std::min(MAP_WIDTH - 1, right); ++x) {
+    for (int y = std::max(0, bottom); y < std::min(MAP_HEIGHT, top); ++y) {
+        for (int x = std::max(0, left); x < std::min(MAP_WIDTH, right); ++x) {
             wall_cost_map_[x][y] = 0.0f; // 设为普通地面
         }
     }
@@ -226,6 +229,7 @@ void TroopTargetManager::onTargetDestroyed(ITroopTarget* target) {
         // 其他建筑的摧毁会影响现有路径
     } 
     // TODO:重新计算所有场数据
+    precomputeDistanceFields();
 }
 
 void TroopTargetManager::precomputeWallCostMap() {
@@ -248,6 +252,32 @@ void TroopTargetManager::precomputeWallCostMap() {
             // 如果没有建筑，保持为0.0f（普通地面）
         }
     }
+
+    //// 输出调试信息到文件
+    //std::ofstream debug_file("troop_target_debug.txt");
+    //if (debug_file.is_open()) {
+    //    debug_file << "=== WALL_COST_MAP_ (44x44) ===\n";
+    //    for (int y = 0; y < MAP_HEIGHT; ++y) {
+    //        for (int x = 0; x < MAP_WIDTH; ++x) {
+    //            debug_file << std::fixed << std::setprecision(1) << std::setw(6) << wall_cost_map_[x][y];
+    //        }
+    //        debug_file << "\n";
+    //    }
+
+    //    debug_file << "\n=== TARGET_MAP_ (44x44) ===\n";
+    //    for (int y = 0; y < MAP_HEIGHT; ++y) {
+    //        for (int x = 0; x < MAP_WIDTH; ++x) {
+    //            if (target_map_[x][y]) {
+    //                debug_file << std::setw(16) << std::hex << std::showbase << reinterpret_cast<uintptr_t>(target_map_[x][y]) << std::dec;
+    //            } else {
+    //                debug_file << std::setw(16) << "nullptr";
+    //            }
+    //        }
+    //        debug_file << "\n";
+    //    }
+
+    //    debug_file.close();
+    //}
 }
 
 void TroopTargetManager::precomputeDistanceFields() {
@@ -282,8 +312,8 @@ void TroopTargetManager::pqInit(DistancePQ& pq, std::vector<std::vector<float>>&
     int target_top = static_cast<int>(target_pos.y + target_size / 2.0f);
 
     // 1. 先把建筑范围内的格子强制置为0
-    for (int y = std::max(0, target_bottom); y <= std::min(MAP_HEIGHT - 1, target_top); ++y) {
-        for (int x = std::max(0, target_left); x <= std::min(MAP_WIDTH - 1, target_right); ++x) {
+    for (int y = std::max(0, target_bottom); y < std::min(MAP_HEIGHT, target_top); ++y) {
+        for (int x = std::max(0, target_left); x < std::min(MAP_WIDTH, target_right); ++x) {
             cocos2d::Vec2 grid_pos(static_cast<float>(x), static_cast<float>(y));
             distance_field[x][y] = 0.0f;
             pq.push(std::make_tuple(grid_pos, 0.0f));
@@ -395,7 +425,7 @@ cocos2d::Vec2 TroopTargetManager::getNextMoveDirection(const cocos2d::Vec2& curr
 
     const std::vector<cocos2d::Vec2> directions = {
         {0, 1}, {1, 0}, {0, -1}, {-1, 0},  // 上下左右
-        {1, 1}, {1, -1}, {-1, 1}, {-1, -1}  // 斜向
+        //{1, 1}, {1, -1}, {-1, 1}, {-1, -1}  // 斜向
     };
 
     for (const auto& dir : directions) {
