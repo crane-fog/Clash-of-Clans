@@ -1,6 +1,5 @@
 #include "Archer.h"
 #include "TroopTargetManager.h"
-#include "TroopAttackManager.h"
 #include "AudioEngine.h"
 Archer::Archer(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, RANGED_SINGLE_AIR_GROUND, 1, 2, 3.0f, 1.0f, 3.5f,
