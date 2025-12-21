@@ -1,6 +1,5 @@
 #include "Giant.h"
 #include "TroopTargetManager.h"
-#include "TroopAttackManager.h"
 #include "AudioEngine.h"
 Giant::Giant(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, DEFENSE, MELEE_SINGLE_GROUND, 5, 3, 1.5f, 2.0f, 1.0f,

@@ -1,6 +1,5 @@
 #include "Barbarian.h"
 #include "TroopTargetManager.h"
-#include "TroopAttackManager.h"
 #include "AudioEngine.h"
 Barbarian::Barbarian(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, MELEE_SINGLE_GROUND,1,1,2,1,0.4,

@@ -59,10 +59,12 @@ list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/Arch.cpp
      Classes/Archer.cpp
+     Classes/Balloon.cpp
      Classes/Barbarian.cpp
      Classes/BaseMap.cpp
      Classes/CocController.cpp
      Classes/DataHelper.cpp
+     Classes/Dragon.cpp
      Classes/EnemyVillageScene.cpp
      Classes/GameManager.cpp
      Classes/Giant.cpp
@@ -70,7 +72,6 @@ list(APPEND GAME_SOURCE
      Classes/MainVillageScene.cpp
      Classes/ShopPopup.cpp
      Classes/Troop.cpp
-     Classes/TroopAttackManager.cpp
      Classes/TroopConfig.cpp
      Classes/TroopTargetManager.cpp
      Classes/UIparts.cpp
@@ -83,12 +84,14 @@ list(APPEND GAME_HEADER
      Classes/ArchInfo.h
      Classes/ArchTargetManager.h
      Classes/AttackSceneUI.h
+     Classes/Balloon.h
      Classes/Barbarian.h
      Classes/BaseMap.h
      Classes/CalculateHelper.h
      Classes/CocController.h
      Classes/CoordAdaptor.h
      Classes/DataHelper.h
+     Classes/Dragon.h
      Classes/EnemyVillageScene.h
      Classes/GameManager.h
      Classes/Giant.h
@@ -98,7 +101,6 @@ list(APPEND GAME_HEADER
      Classes/MainVillageScene.h
      Classes/ShopPopup.h
      Classes/Troop.h
-     Classes/TroopAttackManager.h
      Classes/TroopConfig.h
      Classes/TroopTargetManager.h
      Classes/UIcommon.h
