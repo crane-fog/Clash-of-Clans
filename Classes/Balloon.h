@@ -33,10 +33,12 @@ public:
     //获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
     virtual cocos2d::Vec2 getPixelPosition() const override {
         cocos2d::Vec2 pixel_ground = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
-        return cocos2d::Vec2(pixel_ground.x, pixel_ground.y + 10.0f);
+        return cocos2d::Vec2(pixel_ground.x, pixel_ground.y + 20.0f);
     }
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return BALLOON; }
+
+	virtual void onDeath() override;
 };
 
 #endif // __BALLOON_H__

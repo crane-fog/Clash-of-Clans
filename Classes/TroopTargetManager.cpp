@@ -159,6 +159,39 @@ ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& pos
     return nearest_target;
 }
 
+
+/**
+ * @brief 获取与指定圆形区域接触的所有建筑
+ * @param position 圆心的坐标位置
+ * @param radius 圆的半径
+ * @return 所有与圆接触的建筑列表
+ */
+std::vector<ITroopTarget*>& TroopTargetManager::getTargetsInRange(const cocos2d::Vec2& position, float radius) {
+    std::vector<ITroopTarget*> targets_in_range;
+
+    // 遍历所有类型的建筑容器
+    for (size_t i = 0; i < targets_.size(); ++i) {
+        const auto& container = targets_[i];
+        for (ITroopTarget* target : container) {
+            if (!target->isAlive()) continue;
+
+            // 获取建筑位置和大小
+            float size;
+            cocos2d::Vec2 target_pos = target->getCellPosition(size);
+
+            // 计算建筑与圆心的距离
+            float distance = CalculateHelper::calculateDistanceToSquare(position, target_pos, size);
+
+            // 如果距离小于等于半径，则该建筑与圆接触
+            if (distance <= radius) {
+                targets_in_range.push_back(target);
+            }
+        }
+    }
+
+    return targets_in_range;
+}
+
 /**
  * @brief 按坐标位置查找对应的建筑目标
  * @param position 要查找的坐标位置（浮点数）
@@ -456,5 +489,6 @@ bool TroopTargetManager::isInAttackRange(const cocos2d::Vec2& position, ITroopTa
     int y = static_cast<int>(position.y);
     float distance = distance_field[x][y];*/
     // TODO:暂时就这样
+	if (attack_range == 0)return position.distance(center) <= 0.1f;
     return CalculateHelper::calculateDistanceToSquare(position,center,size) <= attack_range;
 }

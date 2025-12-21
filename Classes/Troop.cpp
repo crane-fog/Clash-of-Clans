@@ -181,10 +181,19 @@ void Troop::updateIdleState(float dt) {
 
 void Troop::updateMovingState(float dt) {
     // 更新ZOrder
+    bool is_air = (getTroopTypeIndex() == Troop::BALLOON || getTroopTypeIndex() == Troop::DRAGON);
     int currentZ = CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_, getPosition()));
-    if (currentZ != this->getLocalZOrder()) {
-        this->setLocalZOrder(currentZ);
+    if (is_air) {
+        if (currentZ+20 != this->getLocalZOrder()) {
+            this->setLocalZOrder(currentZ+20);
+        }
     }
+    else {
+        if (currentZ != this->getLocalZOrder()) {
+            this->setLocalZOrder(currentZ);
+        }
+    }
+    
     // 检查目标是否还有效
     if (!current_target_ || !current_target_->isAlive()) {
         changeStatus(TARGET_LOST);
@@ -198,8 +207,7 @@ void Troop::updateMovingState(float dt) {
     }
 
     // 获取移动方向（地面兵种考虑阻挡，空中兵种忽略）
-    bool is_air = (getTroopTypeIndex() == Troop::BALLOON ||getTroopTypeIndex() == Troop::DRAGON);
-    current_path_direction_ = TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, is_air);
+    current_path_direction_ = TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, range_, is_air);
 
     // 执行移动
     if (current_path_direction_ != cocos2d::Vec2::ZERO) {
@@ -210,7 +218,7 @@ void Troop::updateMovingState(float dt) {
         new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
         //撞到墙上了
         //TODO:感觉路径上的墙这一块还要改
-        if (TroopTargetManager::getInstance()->isCellWall(new_position)) {
+        if (!is_air&&TroopTargetManager::getInstance()->isCellWall(new_position)) {
             ITroopTarget* wall = TroopTargetManager::getInstance()->getTroopTargetByCellPos(new_position);
             float size;
             new_position = getCellPosition() + current_path_direction_ * (-range_ +
