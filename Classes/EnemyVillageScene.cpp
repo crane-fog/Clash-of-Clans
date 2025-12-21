@@ -134,6 +134,9 @@ bool EnemyVillage::myInit(int level)
     this->addChild(bgSprite,10);
     // 创建兵种按钮
     createTroopSelectionPanel(bgSprite);
+
+    auto Attacking_progress=AttackStars::create();
+    this->addChild(Attacking_progress,100);
     return true;
 }
 

@@ -154,8 +154,7 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
         {"arch/Archer_Tower1.webp", 1, 3, DEFENSE, GOLD, 1000, 15, 380, 0, 0, NOTRESOURCE, 5, 500, 100, 2},
         {"arch/Archer_Tower2.webp", 2, 3, DEFENSE, GOLD, 2000, 120, 420, 0, 0, NOTRESOURCE, 7, 500, 100, 2},
         {"arch/Archer_Tower3.webp", 3, 3, DEFENSE, GOLD, 5000, 1200, 460, 0, 0, NOTRESOURCE, 9, 500, 100, 2},
-        {"arch/Archer_Tower4.webp", 4, 3, DEFENSE, GOLD, 20000, 3600, 500, 0, 0, NOTRESOURCE, 12, 500, 100, 2},
-        {"arch/Arch_Destroyed.png", 3, 3, DEFENSE, GOLD, 5000, 1200, 460, 0, 0, NOTRESOURCE, 9, 500, 100, 2}}}
+        {"arch/Archer_Tower4.webp", 4, 3, DEFENSE, GOLD, 20000, 3600, 500, 0, 0, NOTRESOURCE, 12, 500, 100, 2}}}
 };
 
 const std::vector<unsigned int> kArmyCampCapacity = { 20, 30, 35, 40 };
