@@ -393,7 +393,7 @@ void EnemyVillage::showInvalidSpawnMessage(std::string text)
 void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 {
     std::vector<std::string> troopNames = { "野蛮人", "弓箭手", "巨人","炸弹人","气球兵","飞龙" };
-    std::vector<std::string> troopImages = { "troop/babarian_icon.png","troop/archer_icon.png","troop/Giant_icon.png","troop/bomb_icon.png" ,"troop/balloon_icon.png" ,"troop/dragonBaby_icon.png" };
+    std::vector<std::string> troopImages = { "troop/babarian_icon.png","troop/archer_icon.png","troop/Giant_icon.png","troop/bomb_icon.png" ,"troop/balloon_icon.png" ,"troop/dragon_icon.png" };
     troopMaxCounts_ = { 5, 10, 3 ,10,4,1 };  // 兵种最大数量
     troopPlacedCounts_ = { 0, 0, 0 ,0,0,0 };  // 已放置数量（成员变量）
 

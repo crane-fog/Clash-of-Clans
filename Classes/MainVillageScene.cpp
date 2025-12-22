@@ -12,6 +12,7 @@
 #include <chrono>
 #include <vector>
 #include "AudioEngine.h"
+#include "TroopConfig.h"
 
 USING_NS_CC;
 
@@ -253,21 +254,152 @@ void MainVillage::onTroopButtonClick(Ref* sender)
     auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));
     addChild(panel, 99999);
 
+    // 吞噬触摸事件，防止点击穿透
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->setSwallowTouches(true);
+    listener->onTouchBegan = [](Touch* touch, Event* event) { return true; };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, panel);
+
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+
     // 面板标题
-    auto titleLabel = cocos2d::Label::createWithSystemFont("还没写好\n这里配置的内容会被保存到单例类TroopConfig", "Arial", 56);
-    titleLabel->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
-        cocos2d::Director::getInstance()->getVisibleSize().height / 2));
-    panel->addChild(titleLabel, 1);
+    auto title_label = cocos2d::Label::createWithSystemFont("兵种配置", "Arial", 56);
+    title_label->setPosition(cocos2d::Vec2(visibleSize.width / 2, visibleSize.height - 50));
+    panel->addChild(title_label, 1);
 
     // 退出按钮
-    auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
-    exitButton->setPosition(cocos2d::Vec2(200, 100));
-    exitButton->setScale(0.8f);
-    exitButton->addClickEventListener([panel, this](cocos2d::Ref* sender) {
-        // 退出面板
+    auto exit_button = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exit_button->setPosition(cocos2d::Vec2(200, 100));
+    exit_button->setScale(0.8f);
+    exit_button->addClickEventListener([panel](cocos2d::Ref* sender) {
         panel->removeFromParent();
         });
-    panel->addChild(exitButton);
+    panel->addChild(exit_button);
+
+    // 人口容量显示
+    auto capacity_label = cocos2d::Label::createWithSystemFont("", "Arial", 36);
+    capacity_label->setPosition(cocos2d::Vec2(visibleSize.width / 2, 100));
+    panel->addChild(capacity_label);
+
+    // 确保TroopConfig有容量，如果没有则设置一个默认值
+    if (TroopConfig::getInstance()->getArmyCampCapacity() == 0) {
+        TroopConfig::getInstance()->setArmyCampCapacity(200); // 默认200
+    }
+
+    // 更新人口显示的lambda
+    auto update_capacity_label = [capacity_label]() {
+        unsigned int current = 0;
+        for (auto it : kTroopTypes) {
+            current += TroopConfig::getInstance()->getTroopCount(it) * kNoHousingSpace.at(it);
+        }
+        unsigned int max = TroopConfig::getInstance()->getArmyCampCapacity();
+        capacity_label->setString(StringUtils::format("人口: %d / %d", current, max));
+        };
+
+    update_capacity_label();
+
+    // 兵种网格布局
+    const float gap_x = 350.0f;
+    const float gap_y = 350.0f;
+    const float icon_size = 200.0f;
+    const int cols = 3;
+    const float start_x = (visibleSize.width - gap_x * (cols - 1)) / 2;
+    const float start_y = visibleSize.height - 300;
+
+    int i = 0;
+    for (const unsigned char it : kTroopTypes) {
+        int row = i / cols;
+        int col = i % cols;
+        float x = start_x + col * gap_x;
+        float y = start_y - row * gap_y;
+
+        // 兵种图标
+        std::string icon_path = kIconPaths.at(it);
+        auto icon = Sprite::create(icon_path);
+        if (icon) {
+            icon->setPosition(Vec2(x, y));
+            Size content_size = icon->getContentSize();
+            float scale = std::min(icon_size / content_size.width, icon_size / content_size.height);
+            icon->setScale(scale);
+            panel->addChild(icon);
+        }
+
+        // 兵种名称
+        auto name_label = Label::createWithSystemFont(Troop::getTroopNameFromEnum(it), "Arial", 32);
+        name_label->setPosition(Vec2(x, y + 150));
+        panel->addChild(name_label);
+
+        // 人口占用提示
+        auto space_label = Label::createWithSystemFont(StringUtils::format("人口占用: %d", kNoHousingSpace.at(it)), "Arial", 24);
+        space_label->setPosition(Vec2(x, y + 120));
+        panel->addChild(space_label);
+
+        // 检查兵种是否解锁
+        bool is_unlocked = i <= TroopConfig::getInstance()->getUnlockedTroopIndex();
+        int required_level = kBarracksTroopUnlock.at(it);
+
+        if (!is_unlocked) {
+            icon->setColor(Color3B::GRAY);
+            auto lock_label = Label::createWithSystemFont(StringUtils::format("需训练营Lv.%d", required_level), "Arial", 36);
+            lock_label->setPosition(Vec2(x, y - 130));
+            lock_label->setColor(Color3B::RED);
+            panel->addChild(lock_label);
+        }
+        else {
+            // 数量显示
+            auto count_label = Label::createWithSystemFont(StringUtils::format("%d", TroopConfig::getInstance()->getTroopCount(it)), "Arial", 40);
+            count_label->setPosition(Vec2(x, y - 130));
+            panel->addChild(count_label);
+
+            // 创建按钮 (- / +)
+            auto create_btn = [&](const std::string& text, float offset_x) {
+                auto btn = ui::Button::create();
+                btn->setTitleText(text);
+                btn->setTitleFontSize(60);
+                btn->setTitleColor(Color3B::WHITE);
+                btn->setPosition(Vec2(x + offset_x, y - 130));
+                panel->addChild(btn);
+                return btn;
+                };
+
+            auto minus_button = create_btn("-", -80);
+            auto plus_button = create_btn("+", 80);
+
+            // 按钮点击事件
+            minus_button->addClickEventListener([it, count_label, update_capacity_label](Ref*) {
+                int count = TroopConfig::getInstance()->getTroopCount(it);
+                if (count > 0) {
+                    TroopConfig::getInstance()->setTroopCount(it, count - 1);
+                    count_label->setString(StringUtils::format("%d", count - 1));
+                    update_capacity_label();
+                }
+                });
+
+            plus_button->addClickEventListener([it, count_label, update_capacity_label](Ref*) {
+                int count = TroopConfig::getInstance()->getTroopCount(it);
+                int space = kNoHousingSpace.at(it);
+
+                // 检查容量
+                unsigned int current_total = 0;
+                for (const unsigned char k : kTroopTypes) {
+                    current_total += TroopConfig::getInstance()->getTroopCount(k) * kNoHousingSpace.at(k);
+                }
+                unsigned int max = TroopConfig::getInstance()->getArmyCampCapacity();
+
+                if (current_total + space <= max) {
+                    TroopConfig::getInstance()->setTroopCount(it, count + 1);
+                    count_label->setString(StringUtils::format("%d", count + 1));
+                    update_capacity_label();
+                }
+                else {
+                    // 容量不足提示
+                    auto seq = Sequence::create(ScaleTo::create(0.1f, 1.5f), ScaleTo::create(0.1f, 1.0f), nullptr);
+                    count_label->runAction(seq);
+                }
+                });
+        }
+        i++;
+    }
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)

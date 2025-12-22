@@ -159,13 +159,13 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
 
 const std::vector<unsigned int> kArmyCampCapacity = { 20, 30, 35, 40 };
 
-const std::pair<unsigned char, unsigned char> kBarracksTroopUnlock[] = {
-    {1, Troop::BARBARIAN},
-    {1, Troop::ARCHER},
-    {2, Troop::GIANT},
-    {2, Troop::WALL_BREAKER},
-    {3, Troop::BALLOON},
-    {4, Troop::DRAGON}
+const std::map<unsigned char, unsigned char> kBarracksTroopUnlock = {
+    {Troop::BARBARIAN, 1},
+    {Troop::ARCHER, 1},
+    {Troop::GIANT, 2},
+    {Troop::WALL_BREAKER, 2},
+    {Troop::BALLOON, 3},
+    {Troop::DRAGON, 4}
 };
 
 #endif // __ARCH_INFO_H__
