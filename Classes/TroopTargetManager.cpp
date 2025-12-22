@@ -171,15 +171,18 @@ ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& pos
  * @param radius 圆的半径
  * @return 所有与圆接触的建筑列表
  */
-std::vector<ITroopTarget*>& TroopTargetManager::getTargetsInRange(const cocos2d::Vec2& position, float radius) {
+std::vector<ITroopTarget*> TroopTargetManager::getTargetsInRange(const cocos2d::Vec2& position, float radius) {
     std::vector<ITroopTarget*> targets_in_range;
 
     // 遍历所有类型的建筑容器
     for (size_t i = 0; i < targets_.size(); ++i) {
         const auto& container = targets_[i];
         for (ITroopTarget* target : container) {
+            if (!target) {
+                continue;
+            }
             if (!target->isAlive()) continue;
-
+           
             // 获取建筑位置和大小
             float size;
             cocos2d::Vec2 target_pos = target->getCellPosition(size);

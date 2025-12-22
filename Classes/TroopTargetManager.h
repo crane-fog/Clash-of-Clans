@@ -75,7 +75,7 @@ class TroopTargetManager {
         bool isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, float attack_range) const;
 
         // 获取与指定圆形区域接触的所有建筑
-        std::vector<ITroopTarget*>& getTargetsInRange(const cocos2d::Vec2& position, float radius);
+        std::vector<ITroopTarget*> getTargetsInRange(const cocos2d::Vec2& position, float radius);
 
     private:
         struct Compare {
