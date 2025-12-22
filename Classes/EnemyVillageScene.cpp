@@ -197,7 +197,7 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
 
     // 转换为本地坐标（考虑Y轴翻转）
     //touchLocation.y = cocos2d::Director::getInstance()->getWinSize().height - touchLocation.y;
-    touchLocation = this->convertToNodeSpace(touchLocation); // 转换为当前节点的本地坐标
+    touchLocation = base_map_->convertToNodeSpace(touchLocation); // 转换为BaseMap的本地坐标
 
     // 获取当前BaseMap的缩放因子
     float scale = base_map_->getScale();  
@@ -205,8 +205,7 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
 
     // 将像素坐标转换为格子坐标
     touchLocation = CoordAdaptor::pixelToCell(base_map_, touchLocation);
-    touchLocation.x = (touchLocation.x-10)*2;
-    touchLocation.y =(touchLocation.y+20)*2;
+    
     if (touchLocation.x < 0)touchLocation.x = 0;
     if (touchLocation.x > 44)touchLocation.x = 43.9;
     if (touchLocation.y < 0)touchLocation.y = 0;
