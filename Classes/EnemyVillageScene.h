@@ -21,12 +21,7 @@ public:
     void onExitButtonClick(cocos2d::Ref* sender);
 
     bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, std::set<std::pair<int, int>> occupied_cells);
-    bool EnemyVillage::spawnBarbarian(cocos2d::Vec2 position);
-    bool EnemyVillage::spawnArcher(cocos2d::Vec2 position);
-    bool EnemyVillage::spawnGiant(cocos2d::Vec2 position);
-    bool EnemyVillage::spawnDragon(cocos2d::Vec2 position);
-    bool EnemyVillage::spawnBalloon(cocos2d::Vec2 position);
-    bool EnemyVillage::spawnBomb(cocos2d::Vec2 position);
+    bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Vec2 position);
     void EnemyVillage::showInvalidSpawnMessage(std::string text= "不可以把士兵放在这里");
     void EnemyVillage::updateTroopCountLabel(int index);
     void EnemyVillage::disableTroopButton(int index);
@@ -34,12 +29,15 @@ public:
 
     void onButtonClick(cocos2d::LayerColor* itemBg, int index);
 
-  
+
+    // 利用 lambda 实现的轻量级工厂
+    std::map<unsigned char, std::function<Troop* (BaseMap*, unsigned char, cocos2d::Vec2)>> troop_factories_;
 
     std::vector<int> troopMaxCounts_;          // 兵种最大数量
     std::vector<int> troopPlacedCounts_;       // 已放置数量
     std::vector<cocos2d::LayerColor*> troopButtons_;   // 按钮引用
     std::vector<cocos2d::Label*> troopCountLabels_;    // 数量标签引用
+    unsigned char selected_troop_type_; // -1表示未选择任何兵种
 
     bool onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_);
     void EnemyVillage::ReplayBegin();

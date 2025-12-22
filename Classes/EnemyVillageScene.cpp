@@ -13,12 +13,11 @@
 #include "Balloon.h"
 #include "Dragon.h"
 #include "WallBreaker.h"
-#include"UIcommon.h"
+#include "UIcommon.h"
 #include "AudioEngine.h"
 #include"AttackStars.h"
 #include"ReplayAttack.h"
 USING_NS_CC;
-int selectedTroopType = 0;  // -1表示未选择任何兵种 todo: 最好不要全局变量
 
 EnemyVillage* EnemyVillage::create(int level)
 {
@@ -54,9 +53,13 @@ bool EnemyVillage::myInit(int level)
         int nowArch = TroopTargetManager::getInstance()->getlivingsum();
         if (arch.no_ != WALL)TroopTargetManager::getInstance()->setlivingsum(nowArch+1);
     }
-    /*auto barbarian = Barbarian::create(base_map_, 1, cocos2d::Vec2(40, 20));
-    if (!barbarian)return false;
-	troop_list_.push_back(barbarian);*/
+    
+    troop_factories_[Troop::BARBARIAN] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Barbarian::create(map, lvl, pos); };
+    troop_factories_[Troop::ARCHER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Archer::create(map, lvl, pos); };
+    troop_factories_[Troop::GIANT] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Giant::create(map, lvl, pos); };
+    // troop_factories_[Troop::WALL_BREAKER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return WallBreaker::create(map, lvl, pos); };
+    troop_factories_[Troop::BALLOON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Balloon::create(map, lvl, pos); };
+    troop_factories_[Troop::DRAGON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Dragon::create(map, lvl, pos); };
 
     /*auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
     if (!dragon)return false;
@@ -168,6 +171,8 @@ bool EnemyVillage::myInit(int level)
 
     auto Attacking_progress=AttackStars::create();
     this->addChild(Attacking_progress,100);
+
+    selected_troop_type_ = 0;
     //UnitManager::getInstance()->clearUnits();
     return true;
 }
@@ -178,7 +183,7 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
     
     for(auto troop : troop_list_) {
         troop->setDead();
-	}
+    }
     TroopTargetManager::getInstance()->clear();
     CocController::getInstance()->changeScene();
 
@@ -219,35 +224,11 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
     }
     // 如果位置有效（不在红色区域），生成士兵
     if (isValidLocation) {
-        int index = selectedTroopType - 1;
+        int index = selected_troop_type_ - 1;
         if (index < 0)return 1;
 
-        // 生成士兵
-        bool spawnSuccess = false;
-        if (selectedItemBg) {
-            if (selectedTroopType == 1) {
-                spawnSuccess = spawnBarbarian(touchLocation);
-                //在回放中记录
-                UnitManager::getInstance()->addUnit(0, touchLocation);
-            }
-            else if (selectedTroopType == 2) {
-                spawnSuccess = spawnArcher(touchLocation);
-            }
-            else if (selectedTroopType == 3) {
-                spawnSuccess = spawnGiant(touchLocation);
-            }
-            else if (selectedTroopType == 4) {
-                spawnSuccess = spawnBomb(touchLocation);
-            }
-            else if (selectedTroopType == 5) {
-                spawnSuccess = spawnBalloon(touchLocation);
-            }
-            else if (selectedTroopType == 6) {
-                spawnSuccess = spawnDragon(touchLocation);
-            }
-        }
         // 如果生成成功，更新计数
-        if (spawnSuccess) {
+        if (spawnTroop(kTroopTypes[index], 1, touchLocation)) {
             troopPlacedCounts_[index]++;
             updateTroopCountLabel(index);
 
@@ -257,8 +238,6 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
                 showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已全部放置完成");
             }
         }
-
-        
     }
     else {
         // 位置无效，显示相应的提示
@@ -295,80 +274,25 @@ void EnemyVillage::disableTroopButton(int index) {
         if (selectedItemBg == button) {
             remove_border(selectedItemBg);
             selectedItemBg = nullptr;
-            selectedTroopType = 0;
+            selected_troop_type_ = 0;
         }
     }
 }
 
-bool EnemyVillage::spawnBarbarian(cocos2d::Vec2 position)
+bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Vec2 position)
 {
-    // 在触摸位置生成士兵
-    auto barbarian = Barbarian::create(base_map_, 1, position);
-    if (barbarian) {
-        troop_list_.push_back(barbarian);
-        base_map_->sprites_.push_back(barbarian);
+    auto it = troop_factories_.find(type);
+    if (it != troop_factories_.end()) {
+        Troop* troop = it->second(base_map_, lvl, position);
+        if (troop) {
+            troop_list_.push_back(troop);
+            base_map_->sprites_.push_back(troop);
+            return true;
+        }
+    }
+    return false;
+}
 
-        return true;
-        
-    }
-    return false;
-    
-}
-bool EnemyVillage::spawnArcher(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto archer = Archer::create(base_map_, 1, position);
-    if (archer) {
-        troop_list_.push_back(archer);
-        base_map_->sprites_.push_back(archer);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnGiant(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto Giant = Giant::create(base_map_, 1, position);
-    if (Giant) {
-        troop_list_.push_back(Giant);
-        base_map_->sprites_.push_back(Giant);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnDragon(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto Dragon = Dragon::create(base_map_, 1, position);
-    if (Dragon) {
-        troop_list_.push_back(Dragon);
-        base_map_->sprites_.push_back(Dragon);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnBomb(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto wall_breaker = WallBreaker::create(base_map_, 1, position);
-    if (wall_breaker) {
-        troop_list_.push_back(wall_breaker);
-        base_map_->sprites_.push_back(wall_breaker);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnBalloon(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto Balloon = Balloon::create(base_map_, 1, position);
-    if (Balloon) {
-        troop_list_.push_back(Balloon);
-        base_map_->sprites_.push_back(Balloon);
-        return true;
-    }
-    return false;
-}
 void EnemyVillage::showInvalidSpawnMessage(std::string text)
 {
     // 显示消息提示玩家不能在该位置生成士兵（可以使用弹窗或标签）
