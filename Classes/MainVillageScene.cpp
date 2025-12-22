@@ -152,6 +152,8 @@ bool MainVillage::init()
 void MainVillage::onEnter()
 {
     AudioEngine::resume(mainhome_bgm);
+    auto currentScene = Director::getInstance()->getRunningScene();
+    addLoadingLayerToCurrentScene(currentScene, 2.5f);
     if (last_exit_time_ > 0) {
         time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         time_t time_diff = current_time - last_exit_time_;
@@ -215,6 +217,16 @@ void MainVillage::cleanup()
 
 void MainVillage::onAttackButtonClick(Ref* sender)
 {
+    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
     // 创建并显示挑战场景选择面板
    UICommonHelper attack_panel;
    bool selected_bg[4] = {0};
@@ -224,7 +236,16 @@ void MainVillage::onAttackButtonClick(Ref* sender)
 }
 
 void MainVillage::onTroopButtonClick(Ref* sender)
-{
+{    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
     
     auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));
     addChild(panel, 99999);
@@ -248,6 +269,16 @@ void MainVillage::onTroopButtonClick(Ref* sender)
 
 void MainVillage::onShopButtonClick(Ref* sender)
 {
+    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
     CCLOG("打开商店...");
     // 避免重复打开
     if (this->getChildByTag(100)) {
@@ -495,6 +526,16 @@ void MainVillage::showShopPopupWithDelay(float sec)
     confirmButton->addClickEventListener([ &selectedOptions, gold_, elixir_, panel, this, select_bgm](cocos2d::Ref* sender) {
         // 确认后更换场景
         if (selectedOptions[0] != -1) { // 确保已经选择了一个选项
+            // 播放音效
+            int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+            // 检查音频的状态，直到播放完成
+            this->schedule([button_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/button.mp3");
+                    this->unschedule("stop_audio_key"); // 停止检查
+                }
+                }, 0.1f, "stop_audio_key");
             CocController::getInstance()->changeScene(1, gold_, elixir_);
             // 点击确认按钮后关闭面板
             panel->removeFromParent();
@@ -508,6 +549,16 @@ void MainVillage::showShopPopupWithDelay(float sec)
     exitButton->setPosition(cocos2d::Vec2(200, 100));
     exitButton->setScale(0.8f);
     exitButton->addClickEventListener([panel,this,select_bgm](cocos2d::Ref* sender) {
+        // 播放音效
+        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule([button_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/button.mp3");
+                this->unschedule("stop_audio_key"); // 停止检查
+            }
+            }, 0.1f, "stop_audio_key");
         // 退出面板
         panel->removeFromParent();
         selectedItemBg = nullptr;
@@ -565,6 +616,16 @@ void MainVillage::showShopPopupWithDelay(float sec)
 
 // 选项点击事件处理
 void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button* confirmButton) {
+    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
     // 如果点击的是同一个按钮，保持选中状态
     if (selectedItemBg == itemBg) {
         return;  // 已经是选中的按钮，不做任何改变

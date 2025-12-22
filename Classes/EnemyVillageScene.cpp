@@ -56,10 +56,10 @@ bool EnemyVillage::myInit(int level)
     if (!barbarian)return false;
 	troop_list_.push_back(barbarian);*/
 
-    auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
+    /*auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
     if (!dragon)return false;
     troop_list_.push_back(dragon);
-
+*/
     auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(10, 20));
     if (!balloon)return false;
     troop_list_.push_back(balloon);
@@ -163,7 +163,8 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
         troop->setDead();
 	}
     TroopTargetManager::getInstance()->clear();
-    CocController::getInstance()->changeScene();;
+    CocController::getInstance()->changeScene();
+
 }
 
 bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, std::set<std::pair<int, int>> occupied_cells)
