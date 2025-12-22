@@ -4,6 +4,7 @@
 #include "CoordAdaptor.h"
 #include "UIcommon.h"
 #include "ui/CocosGUI.h"
+#include "AudioEngine.h"
 USING_NS_CC;
 
 
@@ -174,7 +175,16 @@ void Arch::updateHighlightPos()
 void Arch::updateHighlightColor(bool collision)
 {
     if (!highlight_node_) return;
-
+    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
     std::string textureName = collision ? "SingleCellRed.png" : "SingleCellGreen.png";
     
     for (auto child : highlight_node_->getChildren()) {
@@ -235,7 +245,7 @@ void Arch::onTouchUp(Touch* touch, Event* event)
 {
     base_map_->setInputEnabled(true); // 恢复地图拖动
     removeHighlight();
-    if (!is_dragging_) {
+    if (!is_dragging_&&!isUpgrading) {
         showArchPanel();
     }
     else {
@@ -568,6 +578,17 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice) {
         [notice, this, upgradeLabel](int remaining) {
             upgradeLabel->setString(notice + "中...还需: " + std::to_string(remaining) + " 秒");
             this->remaining_upgrade_time_ = remaining;
+            // 播放施工音效
+            int upgradingNoise = cocos2d::AudioEngine::play2d("music/upgrading.mp3", false, 0.5f);
+            // 检查音频的状态，直到播放完成
+            this->schedule([upgradingNoise, this,remaining](float dt) {
+                if (remaining == 0) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::stop(upgradingNoise);
+                    cocos2d::AudioEngine::uncache("music/upgrading.mp3");
+                    this->unschedule("stop_audio_key"); // 停止检查
+                }
+                }, 0.1f, "stop_audio_key");
         },
         [notice, this, upgradeLabel]() {
             upgradeLabel->setString(notice + "完成！");
@@ -583,7 +604,7 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice) {
             // 更新图片纹理
             auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
             this->setTexture(newImg);
-
+            isUpgrading = false;
             // 更新UI显示
             showArchPanel();
 
@@ -604,6 +625,7 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, 
     }
     else {
         // 如果金币足够，进行升级操作
+        isUpgrading = true;
         if (type == GOLD) {
             GameManager::getInstance()->setGold(currentGold - cost);  // 减少金币
         }

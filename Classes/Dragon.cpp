@@ -1,5 +1,6 @@
 #include "Dragon.h"
 #include "TroopTargetManager.h"
+#include "AudioEngine.h"
 Dragon::Dragon(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, RANGED_AOE_AIR_GROUND, 20, 9, 2.0f, 1.25f,0.3f,
         std::array<float, MAX_TROOP_LEVEL + 1>({0,175,200,225,262.5,300}),
@@ -36,4 +37,13 @@ void Dragon::performAttack() {
     current_target_->takeDamage(damage);
     // 播放攻击动画
     // 播放攻击音效
+    int fire_hit = cocos2d::AudioEngine::play2d("music/fire_hit.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([fire_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(fire_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/fire_hit.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
 }

@@ -18,6 +18,8 @@ TroopTargetManager* TroopTargetManager::getInstance() {
     if (instance.target_map_.empty()) {
         instance.target_map_= std::vector<std::vector<ITroopTarget*>>(MAP_WIDTH, std::vector<ITroopTarget*>(MAP_HEIGHT));
     }
+    if(instance.livingArch<instance.deadArch)   instance.deadArch = 0;
+
     return &instance;
 }
 
@@ -44,6 +46,7 @@ void TroopTargetManager::registerTroopTarget(ITroopTarget* target) {
     auto& container = targets_[container_index];
     if (std::find(container.begin(), container.end(), target) == container.end()) {
         container.push_back(target);
+
     }
 
     // 获取建筑位置和大小
@@ -79,6 +82,8 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target) {
     auto& container = targets_[container_index];
     auto it = std::find(container.begin(), container.end(), target);
     if (it != container.end()) {
+        //更新被摧毁的建筑数量
+        deadArch++;
         container.erase(it);
 
         // 清理target_map_中对应的格子

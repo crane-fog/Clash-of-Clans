@@ -14,6 +14,7 @@
 #include "Dragon.h"
 #include"UIcommon.h"
 #include "AudioEngine.h"
+#include"AttackStars.h"
 USING_NS_CC;
 int selectedTroopType = 0;  // -1表示未选择任何兵种 todo: 最好不要全局变量
 
@@ -42,11 +43,14 @@ bool EnemyVillage::myInit(int level)
 
     std::vector<ArchData> arch_list;
     DataHelper::mapToList(arch_status_, arch_list);
-
+    TroopTargetManager::getInstance()->setlivingsum(0);
     Arch* p = nullptr;
     for (auto& arch : arch_list) {
         p = Arch::create(arch, base_map_, false);
         TroopTargetManager::getInstance()->registerTroopTarget(p);
+        //统计建筑总量
+        int nowArch = TroopTargetManager::getInstance()->getlivingsum();
+        if (arch.no_ != WALL)TroopTargetManager::getInstance()->setlivingsum(nowArch+1);
     }
     /*auto barbarian = Barbarian::create(base_map_, 1, cocos2d::Vec2(40, 20));
     if (!barbarian)return false;
@@ -206,25 +210,26 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
 
         // 生成士兵
         bool spawnSuccess = false;
-        if (selectedTroopType == 1) {
-            spawnSuccess = spawnBarbarian(touchLocation);
+        if (selectedItemBg) {
+            if (selectedTroopType == 1) {
+                spawnSuccess = spawnBarbarian(touchLocation);
+            }
+            else if (selectedTroopType == 2) {
+                spawnSuccess = spawnArcher(touchLocation);
+            }
+            else if (selectedTroopType == 3) {
+                spawnSuccess = spawnGiant(touchLocation);
+            }
+            else if (selectedTroopType == 4) {
+                spawnSuccess = spawnBomb(touchLocation);
+            }
+            else if (selectedTroopType == 5) {
+                spawnSuccess = spawnBalloon(touchLocation);
+            }
+            else if (selectedTroopType == 6) {
+                spawnSuccess = spawnDragon(touchLocation);
+            }
         }
-        else if (selectedTroopType == 2) {
-            spawnSuccess = spawnArcher(touchLocation);
-        }
-        else if (selectedTroopType == 3) {
-            spawnSuccess = spawnGiant(touchLocation);
-        }
-        else if (selectedTroopType == 4) {
-            spawnSuccess = spawnBomb(touchLocation);
-        }
-        else if (selectedTroopType == 5) {
-            spawnSuccess = spawnBalloon(touchLocation);
-        }
-        else if (selectedTroopType == 6) {
-            spawnSuccess = spawnDragon(touchLocation);
-        }
-
         // 如果生成成功，更新计数
         if (spawnSuccess) {
             troopPlacedCounts_[index]++;
@@ -441,8 +446,11 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 }
 // 点击按钮时的处理函数
 void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
-    // 如果点击的是同一个按钮，保持选中状态
+    // 如果点击的是同一个按钮，取消选中状态
     if (selectedItemBg == itemBg) {
+        selectedItemBg->setColor(cocos2d::Color3B(140, 150, 200));  // 恢复原始颜色
+        remove_border(selectedItemBg);
+        selectedItemBg = nullptr;
         return;  // 已经是选中的按钮，不做任何改变
     }
     // 如果已有按钮被选中，取消选中状态并恢复原始颜色

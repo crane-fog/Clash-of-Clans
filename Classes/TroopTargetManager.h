@@ -36,7 +36,7 @@ class TroopTargetManager {
 
     public:
         static TroopTargetManager* getInstance();
-
+        
 		//清除所有数据，在离开场景时调用
         void clear();
 
@@ -99,6 +99,22 @@ class TroopTargetManager {
         bool isValidPosition(const cocos2d::Vec2& pos) const {
             return pos.x >= 0 && pos.x < MAP_WIDTH && pos.y >= 0 && pos.y < MAP_HEIGHT;
         }
+        int livingArch = 0;
+        int deadArch = 0;
+public:
+
+    int getlivingsum() {
+        return livingArch;
+    }
+    int getDeadsum() {
+        return deadArch;
+    }
+    void setlivingsum(int newArch) {
+        this->livingArch=newArch;
+    }
+    void setdeadsum(int newArch) {
+        this->deadArch = newArch;
+    }
     };
 
 #endif // __TROOPTARGETMANAGER_H__
