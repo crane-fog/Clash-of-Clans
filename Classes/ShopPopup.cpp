@@ -94,7 +94,7 @@ bool ShopPopup::init()
 
     // 创建选项卡按钮
     float tabStartY = panelBg->getContentSize().height - 120;
-    float tabWidth = panelBg->getContentSize().width / 3 - 20;
+    float tabWidth = panelBg->getContentSize().width / 2 - 20;
 
     // 建筑选项卡
     auto buildingTab = ui::Button::create();
@@ -118,28 +118,6 @@ bool ShopPopup::init()
         });
     panelBg->addChild(buildingTab, 10);
 
-    // 士兵选项卡
-    auto soldierTab = ui::Button::create();
-
-    auto soldierTabBg = LayerColor::create(Color4B::WHITE, 150, 60);
-    soldierTabBg->setPosition(Vec2(-40, -20));
-    soldierTab->addChild(soldierTabBg, -1);
-
-    soldierTab->setTitleText("士兵");
-    soldierTab->setTitleFontSize(28);
-    soldierTab->setTitleColor(Color3B::WHITE);
-    soldierTab->setContentSize(Size(tabWidth, 60));
-    soldierTab->setPosition(Vec2(tabWidth * 1.5 + 20, tabStartY));
-    soldierTab->setColor(Color3B(150, 100, 200)); // 紫色
-    soldierTab->setTag(2); // 标记为士兵标签
-    soldierTab->addTouchEventListener([this, soldierTab, soldierTabBg](Ref* sender, ui::Widget::TouchEventType type) {
-        if (type == ui::Widget::TouchEventType::ENDED) {
-            this->switchToTab(2); // 切换到士兵标签
-            soldierTabBg->setColor(Color3B(255, 230, 200));
-        }
-        });
-    panelBg->addChild(soldierTab, 10);
-
     // 抽卡选项卡
     auto gachaTab = ui::Button::create();
 
@@ -151,7 +129,7 @@ bool ShopPopup::init()
     gachaTab->setTitleFontSize(28);
     gachaTab->setTitleColor(Color3B::WHITE);
     gachaTab->setContentSize(Size(tabWidth, 60));
-    gachaTab->setPosition(Vec2(tabWidth * 2.5 + 30, tabStartY));
+    gachaTab->setPosition(Vec2(tabWidth * 1.5 + 20, tabStartY));
     gachaTab->setColor(Color3B(200, 150, 100)); // 橙色
     gachaTab->setTag(3); // 标记为抽卡标签
     gachaTab->addTouchEventListener([this, gachaTab, gachaTabBg](Ref* sender, ui::Widget::TouchEventType type) {
@@ -181,7 +159,6 @@ bool ShopPopup::init()
     // 保存商品数据供切换使用
     currentTab_ = 1; // 默认显示建筑
     buildingItems_ = kShopItemsInfo.at(1);
-    soldierItems_ = kShopItemsInfo.at(2);
     gachaItems_ = kShopItemsInfo.at(3);
     scrollView_ = scrollView; // 保存滚动容器引用
 
@@ -224,11 +201,6 @@ void ShopPopup::switchToTab(int tabIndex) {
             scrollView->setInnerContainerSize(Size(270 * buildingItems_.size(),
                 scrollView->getContentSize().height));
             showItemsInScrollView(buildingItems_, scrollView, tabIndex);
-            break;
-        case 2: // 士兵
-            scrollView->setInnerContainerSize(Size(270 * soldierItems_.size(),
-                scrollView->getContentSize().height));
-            showItemsInScrollView(kShopItemsInfo.at(2), scrollView, tabIndex);
             break;
         case 3: // 抽卡
             //scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),

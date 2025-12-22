@@ -414,10 +414,8 @@ void MainVillage::onShopButtonClick(Ref* sender)
             this->unschedule("stop_audio_key"); // 停止检查
         }
         }, 0.1f, "stop_audio_key");
-    CCLOG("打开商店...");
     // 避免重复打开
     if (this->getChildByTag(100)) {
-        CCLOG("商店已经打开");
         return;
     }
     auto popup = ShopPopup::create();
