@@ -221,11 +221,6 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
     if (isValidLocation) {
         int index = selectedTroopType - 1;
         if (index < 0)return 1;
-        // 检查是否达到上限
-        if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
-            showInvalidSpawnMessage(troopNames_[index] + "已达到上限！");
-            return true;
-        }
 
         // 生成士兵
         bool spawnSuccess = false;
@@ -259,7 +254,7 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, st
             // 如果达到上限，禁用按钮
             if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
                 disableTroopButton(index);
-                showInvalidSpawnMessage(troopNames_[index] + "已全部放置完成");
+                showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已全部放置完成");
             }
         }
 
@@ -392,10 +387,8 @@ void EnemyVillage::showInvalidSpawnMessage(std::string text)
 
 void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 {
-    std::vector<std::string> troopNames = { "野蛮人", "弓箭手", "巨人","炸弹人","气球兵","飞龙" };
-    std::vector<std::string> troopImages = { "troop/babarian_icon.png","troop/archer_icon.png","troop/Giant_icon.png","troop/bomb_icon.png" ,"troop/balloon_icon.png" ,"troop/dragon_icon.png" };
     troopMaxCounts_ = { 5, 10, 3 ,10,4,1 };  // 兵种最大数量
-    troopPlacedCounts_ = { 0, 0, 0 ,0,0,0 };  // 已放置数量（成员变量）
+    troopPlacedCounts_ = { 0, 0, 0, 0, 0, 0 };  // 已放置数量（成员变量）
 
     auto panelSwallowListener = cocos2d::EventListenerTouchOneByOne::create();
     panelSwallowListener->setSwallowTouches(true);
@@ -418,7 +411,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
     troopButtons_.clear();
     troopCountLabels_.clear();
 
-    for (size_t i = 0; i < troopNames.size(); ++i) {
+    for (size_t i = 0; i < TROOP_TYPE_NUM; ++i) {
         // 商品背景
         auto itemBg = cocos2d::LayerColor::create(cocos2d::Color4B(140, 150, 200, 255), buttonWidth, buttonHeight);
         itemBg->setPosition(cocos2d::Vec2((buttonWidth + padding) * i + buttonWidth, 30));
@@ -427,16 +420,11 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
         troopButtons_.push_back(itemBg);
 
         float maxSize = 200.0f;
-        auto itemPic = cocos2d::Sprite::create(troopImages[i]);
+        auto itemPic = cocos2d::Sprite::create(kIconPaths.at(kTroopTypes[i]));
         float scale = std::min(maxSize / itemPic->getContentSize().width,
             maxSize / itemPic->getContentSize().height);
         itemPic->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight / 2));
         itemPic->setScale(scale);
-
-        // 显示兵种名称
-        auto nameLabel = cocos2d::Label::createWithSystemFont(troopNames[i], "Arial", 30);
-        nameLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, 15));
-        itemBg->addChild(nameLabel, 150);
 
         // 显示数量标签（已放置/最大数量）
         auto countLabel = cocos2d::Label::createWithSystemFont(
@@ -484,7 +472,7 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
         }
         // 检查是否已达到上限
         if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
-            showInvalidSpawnMessage(troopNames_[index] + "已达到上限！");
+            showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已达到上限！");
             return;
         }
         // 更新当前选中的按钮

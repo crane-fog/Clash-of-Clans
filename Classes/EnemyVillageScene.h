@@ -38,7 +38,6 @@ public:
 
     std::vector<int> troopMaxCounts_;          // 兵种最大数量
     std::vector<int> troopPlacedCounts_;       // 已放置数量
-    std::vector<std::string> troopNames_ = { "野蛮人", "弓箭手", "巨人","炸弹人","气球兵","飞龙" };      // 兵种名称
     std::vector<cocos2d::LayerColor*> troopButtons_;   // 按钮引用
     std::vector<cocos2d::Label*> troopCountLabels_;    // 数量标签引用
 
