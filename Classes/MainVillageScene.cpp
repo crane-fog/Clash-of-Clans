@@ -66,11 +66,11 @@ bool MainVillage::init()
     archer->takeDamage(20);
     base_map_->sprites_.push_back(archer);*/
 
-    auto giant = Giant::create(base_map_, 1, Vec2(22, 22));
+    /*auto giant = Giant::create(base_map_, 1, Vec2(22, 22));
     if (!giant)return false;
     giant->setDead();
     giant->takeDamage(200);
-    base_map_->sprites_.push_back(giant);
+    base_map_->sprites_.push_back(giant);*/
 
     //// 创建一个角色 Sprite
     //auto barbarian_sprite = Sprite::create("Barbarian.png");
@@ -182,31 +182,27 @@ void MainVillage::onEnter()
     //auto move_by4 = MoveBy::create(2, CoordAdaptor::cellDeltaToPixelDelta(base_map_, Vec2(0, -44)));
     //auto seq_action = Sequence::create(move_by1, move_by2, move_by3, move_by4, nullptr);
     
-    float moveDuration = 5.0f;  // 移动所需时间（秒）
-    float delayTime = 2.0f;  // 停顿时间（秒）
-
-    // 构建动作序列
-    auto moveToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_,Vec2(22.1,22-0.3)));
-    auto delay1 = DelayTime::create(delayTime);
-
-    auto moveToBottom = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(0.1, 44-0.3)));
-    auto backToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(22.1, 22-0.3)));
-    auto delay2 = DelayTime::create(delayTime);
-
-    auto backToTop = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(44.1, -0.3)));
-
-    // 将所有动作串成一个 Sequence
-    auto seq_action = Sequence::create(
-        moveToMiddle1,
-        delay1,
-        moveToBottom,
-        backToMiddle1,
-        delay2,
-        backToTop,
-        nullptr  // 必须以 nullptr 结尾
-    );
-    auto repeatAction = RepeatForever::create(seq_action);
-    base_map_->sprites_.back()->runAction(repeatAction);
+    //float moveDuration = 5.0f;  // 移动所需时间（秒）
+    //float delayTime = 2.0f;  // 停顿时间（秒）
+    //// 构建动作序列
+    //auto moveToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_,Vec2(22.1,22-0.3)));
+    //auto delay1 = DelayTime::create(delayTime);
+    //auto moveToBottom = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(0.1, 44-0.3)));
+    //auto backToMiddle1 = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(22.1, 22-0.3)));
+    //auto delay2 = DelayTime::create(delayTime);
+    //auto backToTop = MoveTo::create(moveDuration, CoordAdaptor::cellToPixel(base_map_, Vec2(44.1, -0.3)));
+    //// 将所有动作串成一个 Sequence
+    //auto seq_action = Sequence::create(
+    //    moveToMiddle1,
+    //    delay1,
+    //    moveToBottom,
+    //    backToMiddle1,
+    //    delay2,
+    //    backToTop,
+    //    nullptr  // 必须以 nullptr 结尾
+    //);
+    //auto repeatAction = RepeatForever::create(seq_action);
+    //base_map_->sprites_.back()->runAction(repeatAction);
 }
 
 void MainVillage::cleanup()

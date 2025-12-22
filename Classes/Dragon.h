@@ -13,7 +13,7 @@ const std::vector<std::string> pics_dragon = {
 };
 class Dragon : public Troop {
 private:
-
+    const float area_splash_radius_ = 0.3f;// 普攻伤害半径
 public:
     // 构造函数
     Dragon(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
@@ -38,6 +38,8 @@ public:
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return DRAGON; }
+
+    void onDeath() override;
 };
 
 #endif // __DRAGON_H__

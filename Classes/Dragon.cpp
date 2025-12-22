@@ -34,7 +34,13 @@ bool Dragon::initWithFile(const std::string& filename) {
 void Dragon::performAttack() {
     // 执行范围攻击（可以攻击地面和空中目标）
     float damage = getCurrentDamage();
-    current_target_->takeDamage(damage);
+    float size;
+    cocos2d::Vec2 center = current_target_->getCellPosition(size);
+    std::vector<ITroopTarget*> targets = TroopTargetManager::getInstance()->getTargetsInRange(
+        center, area_splash_radius_);
+    for (auto target : targets) {
+        target->takeDamage(damage);
+    }
     // 播放攻击动画
     // 播放攻击音效
     int fire_hit = cocos2d::AudioEngine::play2d("music/fire_hit.mp3", false, 0.7f);
@@ -46,4 +52,25 @@ void Dragon::performAttack() {
             this->unschedule("stop_audio_key"); // 停止检查
         }
         }, 0.1f, "stop_audio_key");
+}
+
+
+void Dragon::onDeath() {
+
+    // 获取目标像素位置（提前计算好，避免在 lambda 中访问可能失效的成员）
+    cocos2d::Vec2 targetPos = CoordAdaptor::cellToPixel(base_map_, getCellPosition());
+
+    // 淡出动作
+    auto fadeOut = cocos2d::FadeOut::create(0.5f);
+
+    // 在淡出结束后，一次性设置位置、纹理和缩放
+    auto setupTomb = cocos2d::CallFunc::create([this, targetPos]() {
+        this->setPosition(targetPos);
+        this->setTexture("troop/tomb.png");
+        this->setScale(0.6f);
+        this->setOpacity(255); // 确保墓碑完全可见
+        });
+
+    // 执行序列：先淡出，再瞬间切换为墓碑（位置+图+缩放）
+    this->runAction(cocos2d::Sequence::create(fadeOut, setupTomb, nullptr));
 }

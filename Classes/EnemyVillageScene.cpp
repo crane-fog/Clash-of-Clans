@@ -60,10 +60,13 @@ bool EnemyVillage::myInit(int level)
     /*auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
     if (!dragon)return false;
     troop_list_.push_back(dragon);
+    dragon->takeDamage(5000);
+
 */
-    auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(10, 20));
+    /*auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(27, 22));
     if (!balloon)return false;
     troop_list_.push_back(balloon);
+    balloon->takeDamage(500);*/
 
     // 预计算所有建筑的距离场
     TroopTargetManager::getInstance()->precomputeDistanceFields();

@@ -126,6 +126,7 @@ public:
         // 清理内存（假设接收方会立即使用）
         delete data;*/
 
+        this->setLocalZOrder(5);
     }
     virtual void takeDamage(float damage) override { 
         if (current_hp_ <= 0)

@@ -32,10 +32,14 @@ bool Balloon::initWithFile(const std::string& filename) {
 }
 
 void Balloon::performAttack() {
-    // TODO:执行范围攻击
     float damage = getCurrentDamage();
-    current_target_->takeDamage(damage);
-
+    float size;
+    cocos2d::Vec2 center = current_target_->getCellPosition(size);
+    std::vector<ITroopTarget*> targets = TroopTargetManager::getInstance()->getTargetsInRange(
+		center,area_splash_radius_);
+    for (auto target : targets) {
+        target->takeDamage(damage);
+	}
     // 播放攻击动画
     // 播放攻击音效
     int bomb_hit = cocos2d::AudioEngine::play2d("music/bomb_hit.mp3", false, 0.7f);
@@ -50,5 +54,37 @@ void Balloon::performAttack() {
 }
 
 void Balloon::onDeath() {
-    //TODO:死亡溅射伤害
+    // ====== 1. 视觉动画序列：弹跳 → 下落 → 缩小+淡出 ======
+    auto jump = cocos2d::JumpBy::create(0.5f, cocos2d::Vec2(0, 0), 5.0f, 1);
+    auto scaleUp = cocos2d::ScaleTo::create(0.25f, 1.1f);
+    auto scaleDown = cocos2d::ScaleTo::create(0.25f, 1.0f);
+    auto scalePulse = cocos2d::Sequence::create(scaleUp, scaleDown, nullptr);
+    auto visualJump = cocos2d::Spawn::create(jump, scalePulse, nullptr);
+
+    // 下落偏移（请替换为你实际的值）
+    cocos2d::Vec2 fallOffset(0, -50);
+    auto fall = cocos2d::MoveBy::create(0.3f, fallOffset);
+    auto shrink = cocos2d::ScaleTo::create(0.3f, 0.01f);
+    auto fadeOut = cocos2d::FadeTo::create(0.3f, 0);
+    auto vanish = cocos2d::Spawn::create(shrink, fadeOut, nullptr);
+
+    auto visualSequence = cocos2d::Sequence::create(visualJump,fall,vanish,nullptr);
+
+    // ====== 2. 攻击逻辑：延迟后触发 AOE ======
+    auto delay = cocos2d::DelayTime::create(death_damage_delay_);
+    auto triggerAoe = cocos2d::CallFunc::create(CC_CALLBACK_0(Balloon::triggerDeathDamage, this));
+    auto attackSequence = cocos2d::Sequence::create(delay, triggerAoe, nullptr);
+
+    // ====== 同时启动两个动作 ======
+    this->runAction(visualSequence);
+    this->runAction(attackSequence);
+}
+
+void Balloon::triggerDeathDamage() {
+    float damage = damages_upon_death_[level_];
+    std::vector<ITroopTarget*> targets = TroopTargetManager::getInstance()->getTargetsInRange(
+        getCellPosition(), death_damage_radius_);
+    for (auto target : targets) {
+        target->takeDamage(damage);
+    }
 }
