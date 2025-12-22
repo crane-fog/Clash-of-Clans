@@ -4,7 +4,7 @@
 #include "ArchInfo.h"
 #include <vector>
 
-// Íæ¼Ò±øÖÖÅäÖÃ
+// ç©å®¶å…µç§é…ç½®
 class TroopConfig {
 private:
     unsigned int capacity_;
@@ -22,16 +22,16 @@ public:
         return &instance;
     }
     
-    // ÉèÖÃÑµÁ·ÓªµÈ¼¶
+    // è®¾ç½®è®­ç»ƒè¥ç­‰çº§
     void setBarrackLevel(unsigned char level);
 
-    // ÉèÖÃÈË¿ÚÈİÁ¿
+    // è®¾ç½®äººå£å®¹é‡
     void setArmyCampCapacity(unsigned int capacity)
     {
         capacity_ = capacity;
     }
 
-    // ÅäÖÃ±øÖÖÊıÁ¿
+    // é…ç½®å…µç§æ•°é‡
     void setTroopCount(unsigned char troop_type, unsigned int count)
     {
         if (troop_type <= unlocked_troop_type_) {
@@ -39,19 +39,19 @@ public:
         }
     }
 
-    // »ñÈ¡ÈË¿ÚÈİÁ¿
+    // è·å–äººå£å®¹é‡
     unsigned int getArmyCampCapacity() const
     {
         return capacity_;
     }
 
-    // »ñÈ¡ÒÑ½âËøµÄ±øÖÖ½ø¶ÈË÷Òı
+    // è·å–å·²è§£é”çš„å…µç§è¿›åº¦ç´¢å¼•
     unsigned char getUnlockedTroops() const
     {
         return unlocked_troop_type_;
     }
 
-    // »ñÈ¡µ±Ç°ÒÑÅäÖÃµÄ±øÖÖÊıÁ¿
+    // è·å–å½“å‰å·²é…ç½®çš„å…µç§æ•°é‡
     unsigned int getTroopCount(unsigned char troop_type) const
     {
         return config_[troop_type];
