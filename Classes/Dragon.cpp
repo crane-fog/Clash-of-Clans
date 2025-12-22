@@ -73,4 +73,5 @@ void Dragon::onDeath() {
 
     // 执行序列：先淡出，再瞬间切换为墓碑（位置+图+缩放）
     this->runAction(cocos2d::Sequence::create(fadeOut, setupTomb, nullptr));
+    changeStatus(DEAD);
 }

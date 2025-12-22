@@ -3,12 +3,12 @@
 #include "AudioEngine.h"
 
 WallBreaker::WallBreaker(BaseMap* base_map, int level, cocos2d::Vec2 position)
-    : Troop(base_map, level, position, WALLT, MELEE_AOE_GROUND, 2, 3, 1.8f, 1.0f, 0.4f,
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,12,16,20,24,30}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,20,23,26,30,36}),
-        std::array<int, MAX_TROOP_LEVEL + 1>({0,0,10000,50000,130000,300000}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,0,0.5,1,2,4}),
-        std::array<uchar, MAX_TROOP_LEVEL + 1>({0,0,2,4,5,6})
+    : Troop(base_map, level, position, WALLT, MELEE_AOE_GROUND, 2, 5, 3.0f, 100000.0f, 0.5f,
+        std::array<float, MAX_TROOP_LEVEL + 1>({0,12,16,20,24,30}),//TODO:wiki和驿站对伤害的数值描述不一致，待确认
+        std::array<float, MAX_TROOP_LEVEL + 1>({0,20,24,29,35,53}),
+        std::array<int, MAX_TROOP_LEVEL + 1>({0,0,80000,200000,450000,1000000}),
+        std::array<float, MAX_TROOP_LEVEL + 1>({0,0,3,4,12,16}),
+        std::array<uchar, MAX_TROOP_LEVEL + 1>({0,1,2,4,5,6})
         )
 {
 }

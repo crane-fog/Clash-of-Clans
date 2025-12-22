@@ -78,6 +78,7 @@ void Balloon::onDeath() {
     // ====== 同时启动两个动作 ======
     this->runAction(visualSequence);
     this->runAction(attackSequence);
+    changeStatus(DEAD);
 }
 
 void Balloon::triggerDeathDamage() {
