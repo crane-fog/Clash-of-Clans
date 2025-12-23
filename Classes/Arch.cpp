@@ -949,11 +949,10 @@ void Barracks::showArchPanel()
     std::string str = label->getString();
     str += "当前可用的兵种：\n";
     int extraLines = 0;
-    for (const auto& troop : kBarracksTroopUnlock) {
-        if (troop.first <= level_) {
-            str += Troop::getTroopNameFromEnum(troop.second) + "\n";
-            extraLines++;
-        }
+    int index = TroopConfig::getInstance()->getUnlockedTroopIndex();
+    for (int i = 0; i < index; ++i) {
+        str += Troop::getTroopNameFromEnum(kTroopTypes[i]) + "\n";
+        extraLines++;
     }
     label->setString(str);
 
