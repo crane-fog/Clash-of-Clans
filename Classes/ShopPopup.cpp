@@ -7,10 +7,11 @@
 #include"Arch.h"
 #include"ArchInfo.h"
 #include"MainVillageScene.h"
+#include "AudioEngine.h"
 USING_NS_CC;
 using namespace ui;
 
-// todo: 拆分类头文件
+
 void ShopPopup::setupBackground() {
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -192,6 +193,16 @@ bool ShopPopup::init()
 }
 // 切换到指定标签的函数
 void ShopPopup::switchToTab(int tabIndex) {
+    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
     if (currentTab_ == tabIndex) {
         return; // 已经是当前标签，不切换
     }
@@ -280,7 +291,16 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
         listener->onTouchBegan = [this, itemBg, item, scrollView, archNo, currentGold, currentElixir, isLimitReached, tabIndex](Touch* touch, Event* event) -> bool {
-
+            // 播放音效
+            int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+            // 检查音频的状态，直到播放完成
+            this->schedule([button_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/button.mp3");
+                    this->unschedule("stop_audio_key"); // 停止检查
+                }
+                }, 0.1f, "stop_audio_key");
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
             Rect rect = Rect(0, 0, size.width, size.height);
@@ -480,6 +500,16 @@ void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)
 {
     if (type == Widget::TouchEventType::ENDED) {
         close();
+        // 播放音效
+        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule([button_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/button.mp3");
+                this->unschedule("stop_audio_key"); // 停止检查
+            }
+            }, 0.1f, "stop_audio_key");
     }
 }
 void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView,std::string reason) {

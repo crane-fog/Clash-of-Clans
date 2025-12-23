@@ -59,6 +59,7 @@ list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/Arch.cpp
      Classes/Archer.cpp
+     Classes/AttackStars.cpp
      Classes/Balloon.cpp
      Classes/Barbarian.cpp
      Classes/BaseMap.cpp
@@ -84,6 +85,7 @@ list(APPEND GAME_HEADER
      Classes/ArchInfo.h
      Classes/ArchTargetManager.h
      Classes/AttackSceneUI.h
+     Classes/AttackStars.h
      Classes/Balloon.h
      Classes/Barbarian.h
      Classes/BaseMap.h
@@ -99,6 +101,7 @@ list(APPEND GAME_HEADER
      Classes/IArchTarget.h
      Classes/ITroopTarget.h
      Classes/MainVillageScene.h
+     Classes/ReplayAttack.h
      Classes/ShopPopup.h
      Classes/Troop.h
      Classes/TroopConfig.h

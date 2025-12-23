@@ -115,6 +115,17 @@ public:
         health_bar_->setVisible(false);
         TroopTargetManager::getInstance()->unregisterTroopTarget(this);
         this->setTexture("arch/Arch_Destroyed.png");
+
+        /*发布建筑摧毁数量更新事件
+        static int deathA = TroopTargetManager::getInstance()->getDeadsum();
+        int* data = new int(deathA);
+        CCLOG("建筑死亡，当前死亡数：%d", deathA);
+        cocos2d::EventCustom event("update_deadArchs_event");
+        event.setUserData(&deathA);
+        cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+        // 清理内存（假设接收方会立即使用）
+        delete data;*/
+
     }
     virtual void takeDamage(float damage) override { 
         if (current_hp_ <= 0)
@@ -134,6 +145,8 @@ public:
 
     // 建筑面板UI相关
     virtual void showArchPanel();
+    bool isUpgrading = false;
+    //关闭建筑信息面板
     void closeArchPanel();
     //升级按钮
     void Arch::archUpgrade();

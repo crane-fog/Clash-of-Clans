@@ -15,6 +15,7 @@ private:
     ULL max_elixir_;
 
 public:
+
     static GameManager* getInstance()
     {
         static GameManager instance;
@@ -46,6 +47,7 @@ public:
     {
         return max_elixir_;
     }
+    bool isReplay=0;
 };
 
 
