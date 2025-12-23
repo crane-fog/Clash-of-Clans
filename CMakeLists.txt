@@ -101,6 +101,7 @@ list(APPEND GAME_HEADER
      Classes/IArchTarget.h
      Classes/ITroopTarget.h
      Classes/MainVillageScene.h
+     Classes/ReplayAttack.h
      Classes/ShopPopup.h
      Classes/Troop.h
      Classes/TroopConfig.h

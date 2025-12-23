@@ -146,14 +146,21 @@ bool MainVillage::init()
     });
     this->addChild(troop_config_button, 200);
 
+    /*auto replayItem = cocos2d::MenuItemLabel::create(
+        cocos2d::Label::createWithSystemFont("回放战斗", "Arial", 72),
+        CC_CALLBACK_1(MainVillage::onReplayButtonClick, this));
+    replayItem->setPosition(cocos2d::Vec2(80,300));
+    this->addChild(replayItem,200);
+    */
     return true;
+
 }
 
 void MainVillage::onEnter()
 {
     AudioEngine::resume(mainhome_bgm);
     auto currentScene = Director::getInstance()->getRunningScene();
-    addLoadingLayerToCurrentScene(currentScene, 2.5f);
+    addLoadingLayerToCurrentScene(currentScene, 1.5f);
     if (last_exit_time_ > 0) {
         time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         time_t time_diff = current_time - last_exit_time_;
@@ -537,6 +544,7 @@ void MainVillage::showShopPopupWithDelay(float sec)
                 }
                 }, 0.1f, "stop_audio_key");
             CocController::getInstance()->changeScene(1, gold_, elixir_);
+
             // 点击确认按钮后关闭面板
             panel->removeFromParent();
             this->selectedItemBg = nullptr;
@@ -676,3 +684,7 @@ int MainVillage::getBuildingCount(unsigned char archNo)
     return count;
 }
 
+void MainVillage::onReplayButtonClick(cocos2d::Ref* sender,int gold_,int elixir_,bool isReplay) {
+
+    CocController::getInstance()->changeScene(1, gold_, elixir_);
+}

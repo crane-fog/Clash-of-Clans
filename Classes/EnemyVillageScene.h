@@ -12,7 +12,9 @@ private:
     std::vector<Troop*> troop_list_;
 
     cocos2d::LayerColor* selectedItemBg = nullptr;  // 当前选中的按钮背景
+   
 public:
+
     int attackingBGM = cocos2d::AudioEngine::play2d("music/attacking.mp3");
     virtual bool myInit(int level);
     static EnemyVillage* create(int level);
@@ -39,6 +41,11 @@ public:
     std::vector<std::string> troopNames_ = { "野蛮人", "弓箭手", "巨人","炸弹人","气球兵","飞龙" };      // 兵种名称
     std::vector<cocos2d::LayerColor*> troopButtons_;   // 按钮引用
     std::vector<cocos2d::Label*> troopCountLabels_;    // 数量标签引用
+
+    bool onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_);
+    void EnemyVillage::ReplayBegin();
+    void EnemyVillage::startReplaySequence();
 };
+
 
 #endif // __ENEMY_VILLAGE_SCENE_H__
