@@ -12,6 +12,8 @@ const std::string kOfflineDataFile[] = {
     "data/LevelInfo.dat",
     "data/Level1.dat",
     "data/Level2.dat",
+    "data/Level3.dat",
+    "data/Level4.dat",
 };
 
 struct LevelInfo {

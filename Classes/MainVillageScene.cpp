@@ -243,12 +243,10 @@ void MainVillage::onAttackButtonClick(Ref* sender)
             this->unschedule("stop_audio_key"); // 停止检查
         }
         }, 0.1f, "stop_audio_key");
-    // 创建并显示挑战场景选择面板
-   UICommonHelper attack_panel;
-   bool selected_bg[4] = {0};
-   // stop music.
-   cocos2d::AudioEngine::pause(mainhome_bgm);
-    showChallengeSelectionPanel(this, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
+    auto u = UICommonHelper::create();
+    // stop music.
+    cocos2d::AudioEngine::pause(mainhome_bgm);
+    u->showChallengeSelectionPanel(this);
 }
 
 void MainVillage::onTroopButtonClick(Ref* sender)
@@ -638,160 +636,6 @@ void MainVillage::showShopPopupWithDelay(float sec)
             shopPopup->show(this);  // 将商店面板显示到当前场景（this 即为当前场景）
         }
         }, sec, "show_shop_popup_key");  // 延迟 2 秒调用
-}
-
-// 显示挑战场景选择面板
- void MainVillage::showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_) {
-     // 播放音效
-     auto select_bgm = AudioEngine::play2d("music/choosing_battle.mp3", true);
-    // 创建一个覆盖全屏的面板
-    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));  // 黑色背景
-    parent->addChild(panel, 99999);
-    bool selectedOptions[4] = { false,false,false,false };
-    // 面板标题
-    auto titleLabel = cocos2d::Label::createWithSystemFont("选择挑战场景", "Arial", 56);
-    titleLabel->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
-        cocos2d::Director::getInstance()->getVisibleSize().height - 50));
-    panel->addChild(titleLabel, 1);
-
-    // 创建四个选项
-    std::vector<std::string> sceneNames = { "场景1", "场景2", "场景3", "场景4" };
-    std::vector<std::string> sceneImages = { "attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp", "attack_scene/Scenery3.webp", "attack_scene/Scenery4.webp" };
-    std::vector<std::string> difficultyLevels = { "简单", "中等", "困难", "极难" };
-
-
-    // 确认按钮
-    auto confirmButton = cocos2d::ui::Button::create("attack_scene/yes.png");
-    confirmButton->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width - 200, 100));
-    confirmButton->setScale(0.8f);
-    confirmButton->setEnabled(false);  // 默认不可点击
-    confirmButton->setName("confirm_attack");
-    panel->addChild(confirmButton);
-
-    confirmButton->addClickEventListener([ &selectedOptions, gold_, elixir_, panel, this, select_bgm](cocos2d::Ref* sender) {
-        // 确认后更换场景
-        if (selectedOptions[0] != -1) { // 确保已经选择了一个选项
-            // 播放音效
-            int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
-            // 检查音频的状态，直到播放完成
-            this->schedule([button_hit, this](float dt) {
-                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                    // 停止音效播放并释放资源
-                    cocos2d::AudioEngine::uncache("music/button.mp3");
-                    this->unschedule("stop_audio_key"); // 停止检查
-                }
-                }, 0.1f, "stop_audio_key");
-            CocController::getInstance()->changeScene(1, gold_, elixir_);
-
-            // 点击确认按钮后关闭面板
-            panel->removeFromParent();
-            this->selectedItemBg = nullptr;
-            AudioEngine::stop(select_bgm);
-        }
-        });
-
-    // 退出按钮
-    auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
-    exitButton->setPosition(cocos2d::Vec2(200, 100));
-    exitButton->setScale(0.8f);
-    exitButton->addClickEventListener([panel,this,select_bgm](cocos2d::Ref* sender) {
-        // 播放音效
-        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
-        // 检查音频的状态，直到播放完成
-        this->schedule([button_hit, this](float dt) {
-            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                // 停止音效播放并释放资源
-                cocos2d::AudioEngine::uncache("music/button.mp3");
-                this->unschedule("stop_audio_key"); // 停止检查
-            }
-            }, 0.1f, "stop_audio_key");
-        // 退出面板
-        panel->removeFromParent();
-        selectedItemBg = nullptr;
-        // stop music.
-        AudioEngine::stop(select_bgm);
-        });
-    panel->addChild(exitButton);
-
-    float buttonWidth = 350;
-    float buttonHeight = 400;
-    float padding = 130;
-    int canConfirm[1] = { -1 };
-    for (size_t i = 0; i < sceneNames.size(); i++) {
-        // 选项背景
-        auto itemBg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 255), buttonWidth, buttonHeight);
-        itemBg->setPosition(cocos2d::Vec2((buttonWidth + padding) * i + 50, 350));
-        itemBg->setTag(i);
-        // 选项图片
-        auto itemPic = cocos2d::Sprite::create(sceneImages[i]);
-        float scale = std::min(buttonWidth / itemPic->getContentSize().width, buttonHeight / itemPic->getContentSize().height);
-        itemPic->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight / 2 + 20));
-        itemPic->setScale(scale);
-
-        // 显示场景名称
-        auto nameLabel = cocos2d::Label::createWithSystemFont(sceneNames[i], "Arial", 34);
-        nameLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, 25));  // 名字位置
-        nameLabel->setColor(cocos2d::Color3B::BLACK);
-        itemBg->addChild(nameLabel, 150);
-
-        // 显示难度级别
-        auto difficultyLabel = cocos2d::Label::createWithSystemFont(difficultyLevels[i], "Arial", 25);
-        difficultyLabel->setColor(cocos2d::Color3B::BLACK);
-        difficultyLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight + 20));  // 难度位置
-        itemBg->addChild(difficultyLabel, 150);
-
-        // 将按钮添加到背景层
-        itemBg->addChild(itemPic);
-        panel->addChild(itemBg);
-
-        // 添加触摸事件监听器
-        auto touchListener = cocos2d::EventListenerTouchOneByOne::create();
-        touchListener->onTouchBegan = [parent, itemBg, i, &selectedOptions, panel, confirmButton, &canConfirm,this](cocos2d::Touch* touch, cocos2d::Event* event) {
-            // 获取触摸点并判断是否点击了按钮
-            cocos2d::Rect buttonRect = itemBg->getBoundingBox();
-            if (buttonRect.containsPoint(touch->getLocation())) {
-                onOptionClick(itemBg, confirmButton);
-                return true;  // 阻止事件继续传播
-            }
-            return false;
-            };
-        parent->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, itemBg);  // 为按钮添加触摸事件
-    }
-
-}
-
-// 选项点击事件处理
-void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button* confirmButton) {
-    // 播放音效
-    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
-    // 检查音频的状态，直到播放完成
-    this->schedule([button_hit, this](float dt) {
-        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-            // 停止音效播放并释放资源
-            cocos2d::AudioEngine::uncache("music/button.mp3");
-            this->unschedule("stop_audio_key"); // 停止检查
-        }
-        }, 0.1f, "stop_audio_key");
-    // 如果点击的是同一个按钮，保持选中状态
-    if (selectedItemBg == itemBg) {
-        return;  // 已经是选中的按钮，不做任何改变
-    }
-    // 如果已有按钮被选中，取消选中状态并恢复原始颜色
-    if (selectedItemBg) {
-        selectedItemBg->setColor(cocos2d::Color3B::WHITE);  // 恢复原始颜色
-        remove_border(selectedItemBg);
-    }
-    // 更新当前选中的按钮
-    selectedItemBg = itemBg;
-    if (selectedItemBg) {
-        // 更改选中按钮的颜色
-        selectedItemBg->setColor(cocos2d::Color3B::BLUE);  // 变暗的颜色
-        draw_border(selectedItemBg);
-
-
-        confirmButton->setEnabled(true);
-    }
-
 }
 
 void MainVillage::onExit()

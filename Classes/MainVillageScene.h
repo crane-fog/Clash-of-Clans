@@ -43,11 +43,6 @@ public:
     void onAttackButtonClick(Ref* sender);
     void onTroopButtonClick(Ref* sender);
 
-    cocos2d::LayerColor* selectedItemBg = nullptr;  // 当前选中的按钮背景
-    void showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_);
-    void onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button* confirmButton);
-
-
     // 获取大本营等级
     unsigned char getTownHallLevel();
     // 获取指定建筑数量

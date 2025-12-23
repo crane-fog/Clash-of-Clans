@@ -24,9 +24,8 @@ void CocController::endGame()
     Director::getInstance()->end();
 }
 
-void CocController::changeScene(int level_no, unsigned long long gold, unsigned long long elixir)
+void CocController::changeScene(int level_no)
 {
-
     // 在自己的村庄时
     if (current_scene_ == 0) {
         current_scene_ = 1;
@@ -35,10 +34,7 @@ void CocController::changeScene(int level_no, unsigned long long gold, unsigned 
     }
     // 在敌人村庄时
     else if (current_scene_ == 1) {
-
         current_scene_ = 0;
-
         Director::getInstance()->popScene();
-
     }
 }
