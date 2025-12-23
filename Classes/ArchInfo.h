@@ -103,6 +103,19 @@ const std::map<unsigned char, std::vector<unsigned char>> kArchCount = {
     {ARCHER_TOWER, {0, 1, 1, 2}}
 };
 
+// 建筑物等级所需要的大本营等级
+const std::map<unsigned char, std::vector<unsigned char>> kArchTownHallLevelLimit = {
+    {WALL, {1, 2, 3, 4}},
+    {GOLD_STORAGE, {1, 2, 2, 3}},
+    {ELIXIR_STORAGE, {1, 2, 2, 3}},
+    {GOLD_MINE, {1, 1, 2, 2}},
+    {ELIXIR_COLLECTOR, {1, 1, 2, 2}},
+    {BARRACKS, {1, 2, 3, 4}},
+    {ARMY_CAMP, {1, 2, 3, 4}},
+    {CANNON, {1, 1, 2, 3}},
+    {ARCHER_TOWER, {2, 3, 3, 4}}
+};
+
 // 建筑物信息数据
 const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
     {TOWN_HALL, {

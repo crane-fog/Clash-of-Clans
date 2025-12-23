@@ -424,8 +424,31 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
 
 void Arch::archUpgrade() {
     
-    unsigned char max_ = 4;
+    unsigned char max_ = kArchInfo.at(no_).size();
     if (level_ < max_) {
+        // 获取大本营等级
+        unsigned char townHallLevel = 1;
+        if (base_map_) {
+            for (auto arch : base_map_->archs_) {
+                if (arch->getNo() == TOWN_HALL) {
+                    townHallLevel = arch->getLevel();
+                    break;
+                }
+            }
+        }
+
+        // 检查是否受大本营等级限制
+        if (kArchTownHallLevelLimit.find(no_) != kArchTownHallLevelLimit.end()) {
+            const auto& limits = kArchTownHallLevelLimit.at(no_);
+            if (level_ < limits.size()) {
+                unsigned char requiredTH = limits[level_];
+                if (townHallLevel < requiredTH) {
+                    showRefusePopup("需大本营等级 " + std::to_string(requiredTH));
+                    return;
+                }
+            }
+        }
+
         // 创建一个新的面板显示升级前后的数据和金币提示
         createUpgradeComparisonPanel();
     }
