@@ -66,7 +66,7 @@ class TroopTargetManager {
         void precomputeDistanceFields();
 
         // 获取指定目标的距离场
-        const std::vector<std::vector<float>>& getDistanceField(ITroopTarget* target) const;
+        const std::vector<std::vector<float>>& getDistanceField(ITroopTarget* target);
 
         // 根据距离场获取下一步移动方向 (返回相对于当前位置的偏移)
         cocos2d::Vec2 getNextMoveDirection(const cocos2d::Vec2& current_pos, ITroopTarget* target, float attack_range, bool is_air=false);
@@ -75,7 +75,10 @@ class TroopTargetManager {
         bool isInAttackRange(const cocos2d::Vec2& position, ITroopTarget* target, float attack_range) const;
 
         // 获取与指定圆形区域接触的所有建筑
-        std::vector<ITroopTarget*>& getTargetsInRange(const cocos2d::Vec2& position, float radius);
+        std::vector<ITroopTarget*> getTargetsInRange(const cocos2d::Vec2& position, float radius);
+
+        // 为炸弹人查找最优的墙壁目标（周围至少有2个墙壁）
+        ITroopTarget* getOptimalWallTarget(const cocos2d::Vec2& position);
 
     private:
         struct Compare {

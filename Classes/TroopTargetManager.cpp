@@ -171,15 +171,18 @@ ITroopTarget* TroopTargetManager::getNearestTroopTarget(const cocos2d::Vec2& pos
  * @param radius 圆的半径
  * @return 所有与圆接触的建筑列表
  */
-std::vector<ITroopTarget*>& TroopTargetManager::getTargetsInRange(const cocos2d::Vec2& position, float radius) {
+std::vector<ITroopTarget*> TroopTargetManager::getTargetsInRange(const cocos2d::Vec2& position, float radius) {
     std::vector<ITroopTarget*> targets_in_range;
 
     // 遍历所有类型的建筑容器
     for (size_t i = 0; i < targets_.size(); ++i) {
         const auto& container = targets_[i];
         for (ITroopTarget* target : container) {
+            if (!target) {
+                continue;
+            }
             if (!target->isAlive()) continue;
-
+           
             // 获取建筑位置和大小
             float size;
             cocos2d::Vec2 target_pos = target->getCellPosition(size);
@@ -357,7 +360,7 @@ void TroopTargetManager::pqInit(DistancePQ& pq, std::vector<std::vector<float>>&
 }
 
 void TroopTargetManager::computeDistanceField(ITroopTarget* target) {
-    if (!target||target->getTargetType()==Troop::WALLT) return; // 墙没有距离场数据
+    if (!target) return;
 
     // 初始化距离场为无限大（所有位置都不可达）
     std::vector<std::vector<float>> distance_field(MAP_WIDTH,
@@ -374,6 +377,26 @@ void TroopTargetManager::computeDistanceField(ITroopTarget* target) {
         {0, 1}, {1, 0}, {0, -1}, {-1, 0},  // 上下左右
         {1, 1}, {1, -1}, {-1, 1}, {-1, -1}  // 斜向
     };
+
+    std::vector<std::vector<float>> terrain_cost_map;
+    if(target->getTargetType()==Troop::WALLT){
+        // 为墙创建terrain_cost_map，所有建筑（包括墙）的位置值为BUILDING_BLOCK_COST
+        
+        terrain_cost_map = std::vector<std::vector<float>>(MAP_WIDTH, std::vector<float>(MAP_HEIGHT, 0.0f));
+
+        // 遍历所有建筑位置，将它们设为BUILDING_BLOCK_COST
+        for (int y = 0; y < MAP_HEIGHT; ++y) {
+            for (int x = 0; x < MAP_WIDTH; ++x) {
+                ITroopTarget* building = target_map_[x][y];
+                if (building && building->isAlive()) {
+                    terrain_cost_map[x][y] = BUILDING_BLOCK_COST;
+                }
+            }
+        }
+    }
+    else{
+        terrain_cost_map = wall_cost_map_;
+    }
 
     // Dijkstra算法主循环
     while (!pq.empty()) {
@@ -399,13 +422,13 @@ void TroopTargetManager::computeDistanceField(ITroopTarget* target) {
 
             // 检查邻居格子是否可通行
             // 距离场计算中，假设所有单位都可以穿过墙，但不能穿过其他建筑
-            bool is_neighbor_passable = wall_cost_map_[nx][ny] < BUILDING_BLOCK_COST;
+            bool is_neighbor_passable = terrain_cost_map[nx][ny] < BUILDING_BLOCK_COST;
 
             if (!is_neighbor_passable) continue;
 
             // 计算移动到邻居格子的总代价
             float base_move_cost = (dir.x != 0 && dir.y != 0) ? DIAGONAL_COST : NORMAL_COST; // 基础移动代价
-            float terrain_extra_cost = wall_cost_map_[nx][ny]; // 从wall_cost_map读取额外地形代价
+            float terrain_extra_cost = terrain_cost_map[nx][ny]; // 从terrain_cost_map读取额外地形代价
             float total_move_cost = base_move_cost + terrain_extra_cost; // 总移动代价
             float new_path_cost = current_distance + total_move_cost; // 新的路径代价
 
@@ -421,8 +444,9 @@ void TroopTargetManager::computeDistanceField(ITroopTarget* target) {
     distance_fields_[target] = std::move(distance_field);
 }
 
-const std::vector<std::vector<float>>& TroopTargetManager::getDistanceField(ITroopTarget* target) const {
+const std::vector<std::vector<float>>& TroopTargetManager::getDistanceField(ITroopTarget* target) {
     static const std::vector<std::vector<float>> empty_field;
+    if(target->getTargetType()==Troop::WALLT){computeDistanceField(target);}
 
     auto it = distance_fields_.find(target);
     return (it != distance_fields_.end()) ? it->second : empty_field;
@@ -437,8 +461,8 @@ cocos2d::Vec2 TroopTargetManager::getNextMoveDirection(const cocos2d::Vec2& curr
         return cocos2d::Vec2::ZERO; // 不需要移动，已经在攻击范围内
     }
     float size;
-    if (target->getTargetType() == Troop::WALLT|| is_air) {
-        return (target->getCellPosition(size) - current_pos);// 空中单位和目标为墙时都视为无需绕路
+    if (is_air) {
+        return (target->getCellPosition(size) - current_pos);// 空中单位视为无需绕路
     }
 
     
@@ -446,7 +470,6 @@ cocos2d::Vec2 TroopTargetManager::getNextMoveDirection(const cocos2d::Vec2& curr
     if (distance_field.empty()) return cocos2d::Vec2::ZERO;
 
     
-    //TODO: 炸弹人单独的逻辑
     int x = static_cast<int>(current_pos.x);
     int y = static_cast<int>(current_pos.y);
     float current_distance = distance_field[x][y];
@@ -496,4 +519,80 @@ bool TroopTargetManager::isInAttackRange(const cocos2d::Vec2& position, ITroopTa
     // TODO:暂时就这样
 	if (attack_range == 0)return position.distance(center) <= 0.1f;
     return CalculateHelper::calculateDistanceToSquare(position,center,size) <= attack_range;
+}
+
+/**
+ * @brief 为炸弹人查找最优的墙壁目标（周围至少有2个墙壁）
+ * @param position 炸弹人的当前位置
+ * @return 最优的墙壁目标，如果没有找到则返回nullptr
+ */
+ITroopTarget* TroopTargetManager::getOptimalWallTarget(const cocos2d::Vec2& position) {
+    // 获取所有墙壁目标
+    size_t wall_container_index = static_cast<size_t>(Troop::WALLT);
+    if (wall_container_index >= targets_.size()) {
+        return nullptr; // 没有墙壁容器
+    }
+
+    const auto& wall_targets = targets_[wall_container_index];
+    if (wall_targets.empty()) {
+        return nullptr; // 没有墙壁
+    }
+
+    // 8个方向的偏移
+    const std::vector<cocos2d::Vec2> directions = {
+        {0, 1}, {1, 0}, {0, -1}, {-1, 0},  // 上下左右
+        {1, 1}, {1, -1}, {-1, 1}, {-1, -1}  // 斜向
+    };
+
+    ITroopTarget* best_wall = nullptr;
+    float min_distance = std::numeric_limits<float>::max();
+
+    // 第一遍：查找符合条件的最优墙壁（周围至少有2个墙壁）
+    for (ITroopTarget* wall : wall_targets) {
+        if (!wall->isAlive()) continue;
+
+        float wall_size;
+        cocos2d::Vec2 wall_pos = wall->getCellPosition(wall_size);
+        int wall_count = 0;
+
+        // 检查周围8个格子中的墙壁数量
+        for (const auto& dir : directions) {
+            cocos2d::Vec2 check_pos = wall_pos + dir;
+            if (isCellWall(check_pos)) {
+                wall_count++;
+            }
+        }
+
+        // 如果周围墙壁数量 >= 2，则该墙符合条件
+        if (wall_count >= 2) {
+            // 计算距离，找到最近的符合条件的墙
+            float distance = CalculateHelper::calculateDistanceToSquare(position, wall_pos, wall_size);
+            if (distance < min_distance) {
+                min_distance = distance;
+                best_wall = wall;
+            }
+        }
+    }
+
+    // 如果找到了符合条件的墙壁，返回它
+    if (best_wall != nullptr) {
+        return best_wall;
+    }
+
+    // 第二遍：如果没有找到符合条件的墙壁，返回最近的墙壁
+    min_distance = std::numeric_limits<float>::max();
+    for (ITroopTarget* wall : wall_targets) {
+        if (!wall->isAlive()) continue;
+
+        float wall_size;
+        cocos2d::Vec2 wall_pos = wall->getCellPosition(wall_size);
+        float distance = CalculateHelper::calculateDistanceToSquare(position, wall_pos, wall_size);
+
+        if (distance < min_distance) {
+            min_distance = distance;
+            best_wall = wall;
+        }
+    }
+
+    return best_wall;
 }

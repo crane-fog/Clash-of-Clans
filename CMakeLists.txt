@@ -77,6 +77,7 @@ list(APPEND GAME_SOURCE
      Classes/TroopTargetManager.cpp
      Classes/UIparts.cpp
      Classes/VillageScene.cpp
+     Classes/WallBreaker.cpp
      )
 list(APPEND GAME_HEADER
      Classes/AppDelegate.h
@@ -109,6 +110,7 @@ list(APPEND GAME_HEADER
      Classes/UIcommon.h
      Classes/UIparts.h
      Classes/VillageScene.h
+     Classes/WallBreaker.h
      )
 
 if(ANDROID)

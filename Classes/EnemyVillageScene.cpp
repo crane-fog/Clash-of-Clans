@@ -12,6 +12,7 @@
 #include "Giant.h"
 #include "Balloon.h"
 #include "Dragon.h"
+#include "WallBreaker.h"
 #include"UIcommon.h"
 #include "AudioEngine.h"
 #include"AttackStars.h"
@@ -60,10 +61,18 @@ bool EnemyVillage::myInit(int level)
     /*auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
     if (!dragon)return false;
     troop_list_.push_back(dragon);
+    dragon->takeDamage(5000);*/
+
 */
-    auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(10, 20));
+    /*auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(27, 22));
     if (!balloon)return false;
     troop_list_.push_back(balloon);
+    balloon->takeDamage(500);*/
+
+	/*auto wall_breaker = WallBreaker::create(base_map_, 1, cocos2d::Vec2(22, 22));
+	if (!wall_breaker)return false;
+	troop_list_.push_back(wall_breaker);
+	wall_breaker->takeDamage(500);*/
 
     // 预计算所有建筑的距离场
     TroopTargetManager::getInstance()->precomputeDistanceFields();
@@ -347,10 +356,10 @@ bool EnemyVillage::spawnDragon(cocos2d::Vec2 position)
 bool EnemyVillage::spawnBomb(cocos2d::Vec2 position)
 {
     // 在触摸位置生成士兵
-    auto Giant = Giant::create(base_map_, 1, position);
-    if (Giant) {
-        troop_list_.push_back(Giant);
-        base_map_->sprites_.push_back(Giant);
+    auto wall_breaker = WallBreaker::create(base_map_, 1, position);
+    if (wall_breaker) {
+        troop_list_.push_back(wall_breaker);
+        base_map_->sprites_.push_back(wall_breaker);
         return true;
     }
     return false;
