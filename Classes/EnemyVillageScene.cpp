@@ -63,7 +63,6 @@ bool EnemyVillage::myInit(int level)
     troop_list_.push_back(dragon);
     dragon->takeDamage(5000);*/
 
-*/
     /*auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(27, 22));
     if (!balloon)return false;
     troop_list_.push_back(balloon);
