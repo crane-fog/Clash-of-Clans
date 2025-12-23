@@ -68,10 +68,10 @@ void WallBreaker::performAttack() {
         center, area_splash_radius_);
     for (auto target : targets) {
         target->takeDamage(damage);
+        float size;
+        // 播放攻击动画
+        playBlackSmokeAt(CoordAdaptor::cellDeltaToPixelDelta(base_map_, target->getCellPosition(size) - this->getCellPosition()));
     }
-
-
-    // 播放攻击动画
 
     //// 播放攻击音效
     //int wallbreaker_hit = cocos2d::AudioEngine::play2d("music/babarian_hit.mp3",false,0.7f);
@@ -101,8 +101,34 @@ void WallBreaker::onDeath() {
         if(target->getTargetType()== Troop::WALLT)
 			damage *= 40; // 对墙壁伤害加成
         target->takeDamage(damage);
+		float size;
+		playBlackSmokeAt(CoordAdaptor::cellDeltaToPixelDelta(base_map_,target->getCellPosition(size)-this->getCellPosition()));
     }
     this->setTexture("troop/tomb.png");
     this->setScale(0.6f);  // 根据需要调整大小
     changeStatus(DEAD);
+}
+
+void WallBreaker::playBlackSmokeAt(const cocos2d::Vec2& pos)
+{
+    auto smoke = Sprite::create("troop/smoke.png");
+    if (!smoke) return;
+
+    smoke->setColor(cocos2d::Color3B(100, 100, 100));
+    smoke->setPosition(pos);
+    smoke->setScale(2.0f);
+    smoke->setOpacity(255);
+    this->addChild(smoke, 10); // zOrder 可根据需要调整
+	//smoke->setGlobalZOrder(1000); // 确保在最前面显示
+    auto scale = cocos2d::ScaleTo::create(0.6f, 1.2f);
+    auto fade = cocos2d::FadeOut::create(1.0f);
+    auto cleanup = cocos2d::RemoveSelf::create();
+
+    smoke->runAction(cocos2d::Sequence::create(
+        cocos2d::Spawn::create(scale, fade, nullptr),
+        cleanup,
+        nullptr
+    ));
+
+    
 }

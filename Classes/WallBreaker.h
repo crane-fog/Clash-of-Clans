@@ -46,6 +46,8 @@ public:
     virtual void onDeath() override;
 
     //virtual bool isAlive() const override { return status_!=DEAD; }
+
+    void playBlackSmokeAt(const cocos2d::Vec2& pos);
 };
 
 #endif // __WALLBREAKER_H__
