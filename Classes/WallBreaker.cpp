@@ -4,7 +4,7 @@
 
 WallBreaker::WallBreaker(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, WALLT, MELEE_AOE_GROUND, 2, 5, 3.0f, 100000.0f, 0.5f,
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,12,16,20,24,30}),//TODO:wiki和驿站对伤害的数值描述不一致，待确认
+        std::array<float, MAX_TROOP_LEVEL + 1>({ 0,10,20,25,30,43 }),
         std::array<float, MAX_TROOP_LEVEL + 1>({0,20,24,29,35,53}),
         std::array<int, MAX_TROOP_LEVEL + 1>({0,0,80000,200000,450000,1000000}),
         std::array<float, MAX_TROOP_LEVEL + 1>({0,0,3,4,12,16}),

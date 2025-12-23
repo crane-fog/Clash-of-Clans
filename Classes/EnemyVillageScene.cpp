@@ -12,6 +12,7 @@
 #include "Giant.h"
 #include "Balloon.h"
 #include "Dragon.h"
+#include "WallBreaker.h"
 #include"UIcommon.h"
 #include "AudioEngine.h"
 #include"AttackStars.h"
@@ -350,10 +351,10 @@ bool EnemyVillage::spawnDragon(cocos2d::Vec2 position)
 bool EnemyVillage::spawnBomb(cocos2d::Vec2 position)
 {
     // 在触摸位置生成士兵
-    auto Giant = Giant::create(base_map_, 1, position);
-    if (Giant) {
-        troop_list_.push_back(Giant);
-        base_map_->sprites_.push_back(Giant);
+    auto wall_breaker = WallBreaker::create(base_map_, 1, position);
+    if (wall_breaker) {
+        troop_list_.push_back(wall_breaker);
+        base_map_->sprites_.push_back(wall_breaker);
         return true;
     }
     return false;

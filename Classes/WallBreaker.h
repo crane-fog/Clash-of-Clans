@@ -15,7 +15,7 @@ const std::vector<std::string> pics_wallbreaker = {
 
 class WallBreaker : public Troop {
 private:
-
+    std::array<float, MAX_TROOP_LEVEL + 1> damage_when_destroyed_ = { 0, 6, 9, 13, 16, 23 };
 public:
     // 构造函数
     WallBreaker(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
