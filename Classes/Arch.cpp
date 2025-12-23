@@ -755,6 +755,13 @@ void Arch::updateBuildingDisplay()
 
 
 /* 具体建筑的虚函数重写 */
+void TownHall::onDeath()
+{
+    // todo: 发布事件，加星
+    /*******************************/
+    Arch::onDeath();
+}
+
 void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
 {
     for (auto arch : base_map_->archs_) {

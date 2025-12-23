@@ -111,7 +111,7 @@ public:
 
     // ITroopTarget 接口实现
     //我先改了调试用，你到时候调整一下
-    void onDeath() {
+    virtual void onDeath() {
         health_bar_->setVisible(false);
         TroopTargetManager::getInstance()->unregisterTroopTarget(this);
         this->setTexture("arch/Arch_Destroyed.png");
@@ -190,6 +190,7 @@ public:
 class TownHall : public Arch {
 public:
     TownHall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void onDeath() override;
 };
 
 class Wall : public Arch {

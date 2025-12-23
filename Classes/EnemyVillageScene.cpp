@@ -57,7 +57,7 @@ bool EnemyVillage::myInit(int level)
     troop_factories_[Troop::BARBARIAN] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Barbarian::create(map, lvl, pos); };
     troop_factories_[Troop::ARCHER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Archer::create(map, lvl, pos); };
     troop_factories_[Troop::GIANT] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Giant::create(map, lvl, pos); };
-    // troop_factories_[Troop::WALL_BREAKER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return WallBreaker::create(map, lvl, pos); };
+    troop_factories_[Troop::WALL_BREAKER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return WallBreaker::create(map, lvl, pos); };
     troop_factories_[Troop::BALLOON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Balloon::create(map, lvl, pos); };
     troop_factories_[Troop::DRAGON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Dragon::create(map, lvl, pos); };
 
@@ -148,16 +148,16 @@ bool EnemyVillage::myInit(int level)
         cocos2d::Label::createWithSystemFont("退出", "Arial", 72),
         CC_CALLBACK_1(EnemyVillage::onExitButtonClick, this));
 
-    auto replayItem = cocos2d::MenuItemLabel::create(
-        cocos2d::Label::createWithSystemFont("回放战斗", "Arial",50),
-        CC_CALLBACK_1(EnemyVillage::onReplayButtonClick, this, currentGold, currentElixir));
+    //auto replayItem = cocos2d::MenuItemLabel::create(
+    //    cocos2d::Label::createWithSystemFont("回放战斗", "Arial",50),
+    //    CC_CALLBACK_1(EnemyVillage::onReplayButtonClick, this, currentGold, currentElixir));
 
     float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2 - 20;
     float y = origin.y + closeItem->getContentSize().height / 2 + 20;
     closeItem->setPosition(cocos2d::Vec2(x, y));
-    replayItem->setPosition(cocos2d::Vec2(x, y + 150));
+    //replayItem->setPosition(cocos2d::Vec2(x, y + 150));
 
-    auto menu = cocos2d::Menu::create(closeItem, replayItem, NULL);
+    auto menu = cocos2d::Menu::create(closeItem, NULL);
     menu->setPosition(cocos2d::Vec2::ZERO);
     this->addChild(menu, 100);
 
@@ -373,109 +373,109 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
             remove_border(selectedItemBg);
         }
         // 检查是否已达到上限
-        if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
+        if (troopPlacedCounts_[index] >= TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])) {
             showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已达到上限！");
             return;
         }
         // 更新当前选中的按钮
         selectedItemBg = itemBg;
-        selectedTroopType = index + 1;
+        selected_troop_type_ = index + 1;
         // 更改选中按钮的颜色
         selectedItemBg->setColor(cocos2d::Color3B(100, 100, 150));  // 变暗的颜色
         draw_border(selectedItemBg);
     }
 }
 
-bool EnemyVillage::onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_) {
-    AudioEngine::stopAll();
-    if (GameManager::getInstance()->isReplay)return false;
-    for (auto troop : troop_list_) {
-        troop->setDead();
-    }
-    TroopTargetManager::getInstance()->clear();
-    CocController::getInstance()->changeScene();
-    CocController::getInstance()->changeScene(1, gold_, elixir_);
-    GameManager::getInstance()->isReplay = true;
-    // 在UI层之后添加回放检查
-    /*if (GameManager::getInstance()->isReplay) {
-        CCLOG("检测到回放模式，准备回放");
-
-        // 使用scheduleOnce确保场景完全初始化
-        this->scheduleOnce([=](float dt) {
-            this->startReplaySequence();
-            }, 0.0f, "init_replay");
-    }*/
-    return true;
-}
-void EnemyVillage::ReplayBegin() {
-    bool isR = GameManager::getInstance()->isReplay;
-    if (isR) {
-        int sum = UnitManager::getInstance()->units.size();
-        int maxSpawnCount = sum; // 设置上限
-
-
-        // 定义一个定时器，每隔1秒执行一次
-        this->schedule([=](float dt) {
-            static int currentSpawnCount = 0;
-            CCLOG("投放士兵");
-            if (currentSpawnCount < maxSpawnCount) {
-                Unit unit = UnitManager::getInstance()->units[currentSpawnCount];
-                if (unit.type == 0) {
-                    spawnBarbarian(unit.position);
-                }
-                currentSpawnCount++;
-            }
-
-            }, 1.0f, "spawnUnitsWithInterval"); // 每隔1秒调用一次
-    }
-    //GameManager::getInstance()->isReplay = false;
-}
-
-void EnemyVillage::startReplaySequence() {
-    CCLOG("启动回放序列");
-
-    auto& units = UnitManager::getInstance()->units;
-    CCLOG("回放单位数量: %zu", units.size());
-
-    if (units.empty()) {
-        CCLOG("没有单位需要回放");
-        return;
-    }
-
-    // 创建序列动作：逐个生成士兵
-    Vector<FiniteTimeAction*> actions;
-
-    for (size_t i = 0; i < units.size(); ++i) {
-        // 延迟
-        auto delay = DelayTime::create(1.0f);
-
-        // 生成士兵的动作
-        auto spawn = CallFunc::create([this, i, &units]() {
-            Unit unit = units[i];
-            CCLOG("回放生成士兵 %zu: type=%d", i, unit.type);
-
-            switch (unit.type) {
-                case 0: spawnBarbarian(unit.position); break;
-                case 1: spawnArcher(unit.position); break;
-                case 2: spawnGiant(unit.position); break;
-                case 3: spawnBomb(unit.position); break;
-                case 4: spawnBalloon(unit.position); break;
-                case 5: spawnDragon(unit.position); break;
-            }
-            });
-
-        actions.pushBack(delay);
-        actions.pushBack(spawn);
-    }
-
-    // 添加完成回调
-    auto finish = CallFunc::create([this]() {
-        CCLOG("回放完成");
-        GameManager::getInstance()->isReplay = false;
-        });
-    actions.pushBack(finish);
-
-    // 运行序列
-    auto sequence = Sequence::create(actions);
-    this->runAction(sequence);
-}
+//bool EnemyVillage::onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_) {
+//    AudioEngine::stopAll();
+//    if (GameManager::getInstance()->isReplay)return false;
+//    for (auto troop : troop_list_) {
+//        troop->setDead();
+//    }
+//    TroopTargetManager::getInstance()->clear();
+//    CocController::getInstance()->changeScene();
+//    CocController::getInstance()->changeScene(1, gold_, elixir_);
+//    GameManager::getInstance()->isReplay = true;
+//    // 在UI层之后添加回放检查
+//    /*if (GameManager::getInstance()->isReplay) {
+//        CCLOG("检测到回放模式，准备回放");
+//
+//        // 使用scheduleOnce确保场景完全初始化
+//        this->scheduleOnce([=](float dt) {
+//            this->startReplaySequence();
+//            }, 0.0f, "init_replay");
+//    }*/
+//    return true;
+//}
+//void EnemyVillage::ReplayBegin() {
+//    bool isR = GameManager::getInstance()->isReplay;
+//    if (isR) {
+//        int sum = UnitManager::getInstance()->units.size();
+//        int maxSpawnCount = sum; // 设置上限
+//
+//
+//        // 定义一个定时器，每隔1秒执行一次
+//        this->schedule([=](float dt) {
+//            static int currentSpawnCount = 0;
+//            CCLOG("投放士兵");
+//            if (currentSpawnCount < maxSpawnCount) {
+//                Unit unit = UnitManager::getInstance()->units[currentSpawnCount];
+//                if (unit.type == 0) {
+//                    spawnBarbarian(unit.position);
+//                }
+//                currentSpawnCount++;
+//            }
+//
+//            }, 1.0f, "spawnUnitsWithInterval"); // 每隔1秒调用一次
+//    }
+//    //GameManager::getInstance()->isReplay = false;
+//}
+//
+//void EnemyVillage::startReplaySequence() {
+//    CCLOG("启动回放序列");
+//
+//    auto& units = UnitManager::getInstance()->units;
+//    CCLOG("回放单位数量: %zu", units.size());
+//
+//    if (units.empty()) {
+//        CCLOG("没有单位需要回放");
+//        return;
+//    }
+//
+//    // 创建序列动作：逐个生成士兵
+//    Vector<FiniteTimeAction*> actions;
+//
+//    for (size_t i = 0; i < units.size(); ++i) {
+//        // 延迟
+//        auto delay = DelayTime::create(1.0f);
+//
+//        // 生成士兵的动作
+//        auto spawn = CallFunc::create([this, i, &units]() {
+//            Unit unit = units[i];
+//            CCLOG("回放生成士兵 %zu: type=%d", i, unit.type);
+//
+//            switch (unit.type) {
+//                case 0: spawnBarbarian(unit.position); break;
+//                case 1: spawnArcher(unit.position); break;
+//                case 2: spawnGiant(unit.position); break;
+//                case 3: spawnBomb(unit.position); break;
+//                case 4: spawnBalloon(unit.position); break;
+//                case 5: spawnDragon(unit.position); break;
+//            }
+//            });
+//
+//        actions.pushBack(delay);
+//        actions.pushBack(spawn);
+//    }
+//
+//    // 添加完成回调
+//    auto finish = CallFunc::create([this]() {
+//        CCLOG("回放完成");
+//        GameManager::getInstance()->isReplay = false;
+//        });
+//    actions.pushBack(finish);
+//
+//    // 运行序列
+//    auto sequence = Sequence::create(actions);
+//    this->runAction(sequence);
+//}

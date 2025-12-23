@@ -172,8 +172,8 @@ bool MainVillage::init()
 void MainVillage::onEnter()
 {
     AudioEngine::resume(mainhome_bgm);
-    auto currentScene = Director::getInstance()->getRunningScene();
-    addLoadingLayerToCurrentScene(currentScene, 1.5f);
+    // auto currentScene = Director::getInstance()->getRunningScene();
+    // addLoadingLayerToCurrentScene(currentScene, 1.5f);
     if (last_exit_time_ > 0) {
         time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         time_t time_diff = current_time - last_exit_time_;
@@ -666,7 +666,7 @@ int MainVillage::getBuildingCount(unsigned char archNo)
     return count;
 }
 
-void MainVillage::onReplayButtonClick(cocos2d::Ref* sender,int gold_,int elixir_,bool isReplay) {
-
-    CocController::getInstance()->changeScene(1, gold_, elixir_);
-}
+//void MainVillage::onReplayButtonClick(cocos2d::Ref* sender,int gold_,int elixir_,bool isReplay) {
+//
+//    CocController::getInstance()->changeScene(1, gold_, elixir_);
+//}

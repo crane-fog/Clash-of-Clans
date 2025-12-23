@@ -94,8 +94,6 @@ public:
     void showChallengeSelectionPanel(cocos2d::Node* parent);
     // 选项点击事件处理
     void onOptionClick(cocos2d::LayerColor* item_bg, int index, cocos2d::ui::Button* confirm_button);
-            confirmButton->setEnabled(true);
-
 
 private:
     // 创建单个选项
