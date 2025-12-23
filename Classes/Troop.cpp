@@ -230,7 +230,7 @@ void Troop::updateMovingState(float dt) {
         setCellPosition(new_position);
         setPosition(getPixelPosition());
     }
-}
+	}
 
 void Troop::updateAttackingState(float dt) {
     // 检查目标是否还有效
@@ -274,7 +274,7 @@ void Troop::updateTargetLostState(float dt) {
 }
 
 void Troop::changeStatus(Status new_status) {
-    status_ = new_status;
+    if(status_!=DEAD) status_ = new_status;
 }
 
 void Troop::findNewTarget() {

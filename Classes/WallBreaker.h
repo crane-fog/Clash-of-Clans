@@ -15,7 +15,9 @@ const std::vector<std::string> pics_wallbreaker = {
 
 class WallBreaker : public Troop {
 private:
-    std::array<float, MAX_TROOP_LEVEL + 1> damage_when_destroyed_ = { 0, 6, 9, 13, 16, 23 };
+    const float area_splash_radius_ = 0.8f;// 普攻伤害半径
+    const float death_damage_radius_ = 1.5f;// 死亡伤害半径
+    std::array<float, MAX_TROOP_LEVEL + 1> damages_upon_death_ = { 0, 6, 9, 13, 16, 23 };
 public:
     // 构造函数
     WallBreaker(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
@@ -29,6 +31,9 @@ public:
     // 执行攻击
     virtual void performAttack() override;
 
+    // 炸弹人目标搜索逻辑
+    virtual void findNewTarget() override;
+
     // 获取士兵类型（地面兵种）
     virtual ArchTargetType getTargetType() const override { return GROUND; }
 
@@ -37,6 +42,10 @@ public:
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return WALL_BREAKER; }
+
+    virtual void onDeath() override;
+
+    //virtual bool isAlive() const override { return status_!=DEAD; }
 };
 
 #endif // __WALLBREAKER_H__
