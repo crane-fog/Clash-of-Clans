@@ -418,6 +418,7 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
         case ARMY_CAMP: return "兵营";
         case CANNON: return "加农炮";
         case ARCHER_TOWER: return "箭塔";
+        case BOMB: return "隐形炸弹";
         default: return "未知建筑";
     }
 }
@@ -1054,4 +1055,48 @@ void ArmyCamp::createUpgradeComparisonPanel()
 void ArmyCamp::onUpgradeFinished()
 {
     TroopConfig::getInstance()->setArmyCampCapacity(kArmyCampCapacity[level_ - 1]);
+}
+
+void Cannon::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "每秒伤害: " + std::to_string(static_cast<int>(kArchInfo.at(CANNON)[level_ - 1].damage_ / (kArchInfo.at(CANNON)[level_ - 1].attack_interval_ / 1000.0))) + "\n";
+    label->setString(str);
+}
+
+void ArcherTower::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "每秒伤害: " + std::to_string(static_cast<int>(kArchInfo.at(ARCHER_TOWER)[level_ - 1].damage_ / (kArchInfo.at(ARCHER_TOWER)[level_ - 1].attack_interval_ / 1000.0))) + "\n";
+    label->setString(str);
+}
+
+void Bomb::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str.pop_back();
+    auto pos = str.find_last_of('\n');
+    if (pos != std::string::npos) {
+        str.erase(pos);
+    }
+    str += "\n爆炸伤害: " + std::to_string(kArchInfo.at(BOMB)[level_ - 1].damage_) + "\n";
+    label->setString(str);
 }

@@ -262,11 +262,19 @@ public:
 class Cannon : public Arch {
 public:
     Cannon(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
 };
 
 class ArcherTower : public Arch {
 public:
     ArcherTower(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+};
+
+class Bomb : public Arch {
+public:
+    Bomb(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
 };
 
 class ArchFactory {

@@ -54,6 +54,7 @@ bool MainVillage::init()
     ArchFactory::registerCreater(ARMY_CAMP, [](const ArchData& data, BaseMap* map) { return new ArmyCamp(data, map); });
     ArchFactory::registerCreater(CANNON, [](const ArchData& data, BaseMap* map) { return new Cannon(data, map); });
     ArchFactory::registerCreater(ARCHER_TOWER, [](const ArchData& data, BaseMap* map) { return new ArcherTower(data, map); });
+    ArchFactory::registerCreater(BOMB, [](const ArchData& data, BaseMap* map) { return new Bomb(data, map); });
 
     for (auto& arch : arch_list) {
         // 更新剩余升级时间
