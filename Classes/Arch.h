@@ -187,6 +187,11 @@ public:
     friend struct ArchData;
 };
 
+class TownHall : public Arch {
+public:
+    TownHall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+};
+
 class Wall : public Arch {
 private:
     std::vector<cocos2d::Node*> connection_nodes_;
@@ -254,4 +259,32 @@ public:
     virtual void onUpgradeFinished() override;
 };
 
+class Cannon : public Arch {
+public:
+    Cannon(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+};
+
+class ArcherTower : public Arch {
+public:
+    ArcherTower(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+};
+
+class ArchFactory {
+    using Creater = std::function<Arch* (const ArchData&, BaseMap*)>;
+private:
+    static std::map<unsigned char, Creater> creaters_;
+public:
+    static void registerCreater(unsigned char no, const Creater& creater)
+    {
+        creaters_[no] = creater;
+    }
+    static Arch* createArch(const ArchData& data, BaseMap* base_map)
+    {
+        auto it = creaters_.find(data.no_);
+        if (it != creaters_.end()) {
+            return it->second(data, base_map);
+        }
+        return nullptr;
+    }
+};
 #endif // __ARCH_H__

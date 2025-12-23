@@ -44,6 +44,17 @@ bool MainVillage::init()
     time_t time_diff = current_time - data_time;
     last_exit_time_ = 0;
 
+    ArchFactory::registerCreater(TOWN_HALL, [](const ArchData& data, BaseMap* map) { return new TownHall(data, map); });
+    ArchFactory::registerCreater(WALL, [](const ArchData& data, BaseMap* map) { return new Wall(data, map); });
+    ArchFactory::registerCreater(GOLD_STORAGE, [](const ArchData& data, BaseMap* map) { return new GoldStorage(data, map); });
+    ArchFactory::registerCreater(ELIXIR_STORAGE, [](const ArchData& data, BaseMap* map) { return new ElixirStorage(data, map); });
+    ArchFactory::registerCreater(GOLD_MINE, [](const ArchData& data, BaseMap* map) { return new GoldMine(data, map); });
+    ArchFactory::registerCreater(ELIXIR_COLLECTOR, [](const ArchData& data, BaseMap* map) { return new ElixirCollector(data, map); });
+    ArchFactory::registerCreater(BARRACKS, [](const ArchData& data, BaseMap* map) { return new Barracks(data, map); });
+    ArchFactory::registerCreater(ARMY_CAMP, [](const ArchData& data, BaseMap* map) { return new ArmyCamp(data, map); });
+    ArchFactory::registerCreater(CANNON, [](const ArchData& data, BaseMap* map) { return new Cannon(data, map); });
+    ArchFactory::registerCreater(ARCHER_TOWER, [](const ArchData& data, BaseMap* map) { return new ArcherTower(data, map); });
+
     for (auto& arch : arch_list) {
         // 更新剩余升级时间
         if (arch.remaining_upgrade_time_ > 0) {
