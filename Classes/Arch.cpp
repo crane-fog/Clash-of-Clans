@@ -68,7 +68,8 @@ void Arch::onEnter()
     Sprite::onEnter();
 
     updateWall();
-    if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE) {
+    //我方建筑生产资源
+    if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE&&is_mine_) {
         startResourceProduction();
     }
 
@@ -729,7 +730,7 @@ void Arch::startResourceProduction()
     // 获取建筑资源的生产速度
     const auto& info = kArchInfo.at(no_)[level_ - 1];
     float produceSpeedPerSecond = info.produce_speed_ / 60.0f;
-
+    if (produceSpeedPerSecond == 0)return;
     // 启动资源生产定时器
     this->schedule([=](float dt) {
         if (current_capacity_ <= info.max_capacity_) {

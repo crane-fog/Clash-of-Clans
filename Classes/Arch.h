@@ -121,6 +121,12 @@ public:
     virtual void takeDamage(float damage) override { 
         if (current_hp_ <= 0)
             return;
+        if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE && !is_mine_) {
+            float p_ = damage / kArchInfo.at(no_)[level_ - 1].hp_;
+            unsigned long long resource_get = current_capacity_ * p_;
+            if(kArchInfo.at(no_)[level_ - 1].produce_type_==GOLD)GameManager::getInstance()->setGold(GameManager::getInstance()->getGold() + resource_get);
+            else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)GameManager::getInstance()->setElixir(GameManager::getInstance()->getElixir() + resource_get);;
+        }
         health_bar_->takeDamage(damage);
         current_hp_ -= static_cast<UI>(damage); 
         if(current_hp_<=0)
@@ -201,6 +207,7 @@ public:
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override;
+
 };
 
 class ElixirStorage : public Arch {
