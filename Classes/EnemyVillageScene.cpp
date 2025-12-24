@@ -215,8 +215,9 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
     int index = selected_troop_type_ - 1;
     if (index < 0) return true;
 
+    int level_ = TroopConfig::getInstance()->getTroopLevel(kTroopTypes[index]);
     // 如果生成成功，更新计数
-    if (spawnTroop(kTroopTypes[index], 1, cellPos)) {
+    if (spawnTroop(kTroopTypes[index], level_, cellPos)) {
         troopPlacedCounts_[index]++;
         updateTroopCountLabel(index);
 

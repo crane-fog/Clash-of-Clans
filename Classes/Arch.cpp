@@ -758,7 +758,8 @@ void Arch::updateBuildingDisplay()
 void TownHall::onDeath()
 {
     // todo: 发布事件，加星
-    /*******************************/
+    Director::getInstance()->getEventDispatcher()->dispatchCustomEvent("town_hall_destroyed");
+
     Arch::onDeath();
 }
 

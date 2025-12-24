@@ -10,7 +10,9 @@ bool AttackStars::init() {
     if (!Node::init()) {
         return false;
     }
-
+    // 注册大本营摧毁事件监听
+    TownHallDeathListener = cocos2d::EventListenerCustom::create("town_hall_destroyed", CC_CALLBACK_1(AttackStars::onTownHallDeath, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(TownHallDeathListener, this);
     // 初始化成员变量
     progress_ = 0;
     lastDeadArch = 0;
@@ -107,14 +109,12 @@ void AttackStars::checkForUpdates(float dt) {
             setStarColor(stars_[0], true);
             isComplete[0] = true;
         }
-
-        // 添加75%星星
-        if (newProgress >= 75 && !isComplete[1]) {
-            showPopup(stars_[1], 75);
+        if(isTownStar&&!isComplete[1])
+        {
+            showPopup(stars_[1], newProgress);
             setStarColor(stars_[1], true);
             isComplete[1] = true;
         }
-
         // 100%胜利画面
         if (newProgress >= 100 && !isComplete[2]) {
             showPopup(stars_[2], 100);
@@ -268,9 +268,7 @@ void AttackStars::showPopup(cocos2d::Sprite* targetStar, int progress) {
     if (progress == 50) {
         text = "摧毁进度超过50%！";
     }
-    else if (progress == 75) {
-        text = "摧毁进度超过75%！";
-    }
+    if(isTownStar) text = "敌方大本营已被摧毁！";
     else if (progress == 100) {
         text = "所有建筑已被摧毁！";
     }
@@ -301,6 +299,10 @@ void AttackStars::showPopup(cocos2d::Sprite* targetStar, int progress) {
     // 执行动画
     flyingStar->runAction(Sequence::create(spawn, cleanup, nullptr));
     progressText->runAction(Sequence::create(DelayTime::create(0.5f), textFadeOut, nullptr));
+}
+void AttackStars::onTownHallDeath(cocos2d::EventCustom* event) {
+    isTownStar = 1;
+    checkForUpdates();
 }
 
 // 析构函数

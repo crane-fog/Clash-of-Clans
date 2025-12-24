@@ -13,7 +13,9 @@
 #include <vector>
 #include "AudioEngine.h"
 #include "TroopConfig.h"
-
+#include"WallBreaker.h"
+#include"Balloon.h"
+#include"Dragon.h"
 USING_NS_CC;
 
 
@@ -358,6 +360,10 @@ void MainVillage::onTroopButtonClick(Ref* sender)
         auto name_label = Label::createWithSystemFont(Troop::getTroopNameFromEnum(it), "Arial", 32);
         name_label->setPosition(Vec2(x, y + 150));
         panel->addChild(name_label);
+        // 兵种等级
+        auto level_label = Label::createWithSystemFont( std::to_string(TroopConfig::getInstance()->getTroopLevel(it)) + "级", "Arial", 32);
+        level_label->setPosition(Vec2(x-120, y + 150));
+        panel->addChild(level_label);
 
         // 人口占用提示
         auto space_label = Label::createWithSystemFont(StringUtils::format("人口占用: %d", kNoHousingSpace.at(it)), "Arial", 24);
@@ -507,25 +513,27 @@ void MainVillage::onLabButtonClick(Ref* sender)
             icon->setScale(scale);
             troopBtnBg->addChild(icon,1);
         }
-
+        int level_ = TroopConfig::getInstance()->getTroopLevel(it);
         // 兵种名称
         auto name_label = Label::createWithSystemFont(Troop::getTroopNameFromEnum(it), "Arial", 32);
         name_label->setPosition(Vec2(x, y + 150));
         panel->addChild(name_label);
         // 兵种等级
-        auto level_label = Label::createWithSystemFont("当前等级："+std::to_string(TroopConfig::getInstance()->getTroopLevel(it)) + "级", "Arial", 32);
+        auto level_label = Label::createWithSystemFont("当前等级："+std::to_string(level_) + "级", "Arial", 32);
         level_label->setPosition(Vec2(x, y - 120));
         level_label->setName(Troop::getTroopNameFromEnum(it)+"level_name");
         panel->addChild(level_label);
         // 升级按钮背景
         auto upgradeBtnBg = LayerColor::create(Color4B(255,255,255, 255), 80, 40);
         upgradeBtnBg->setPosition(Vec2(x-40, y - 190));
+        upgradeBtnBg->setName(Troop::getTroopNameFromEnum(it) + "upbg");
         draw_border(upgradeBtnBg,2.0f,cocos2d::Color4F::BLACK);
         panel->addChild(upgradeBtnBg);
 
         // 升级按钮
         auto upgradeBtn = Button::create();
         upgradeBtn->setTitleText("升级");
+        upgradeBtn->setName(Troop::getTroopNameFromEnum(it) + "up");
         upgradeBtn->setTitleColor(Color3B(0, 0, 0));
         upgradeBtn->setTitleFontSize(20);
         upgradeBtn->setContentSize(Size(80, 40));
@@ -539,7 +547,7 @@ void MainVillage::onLabButtonClick(Ref* sender)
         // 获取金币
         unsigned long long currentGold = GameManager::getInstance()->getGold();
         unsigned long long currentElixir = GameManager::getInstance()->getElixir();
-        if (1) {
+
             // 商品价格图标
             auto goldIcon = Sprite::create("Elixir.png");
             goldIcon->setPosition(Vec2(x+70, y - 170));
@@ -547,24 +555,21 @@ void MainVillage::onLabButtonClick(Ref* sender)
             panel->addChild(goldIcon);
 
             // 商品价格
-            auto priceLabel = Label::createWithSystemFont("$" + std::to_string(1), "Arial", 25);
-            priceLabel->setPosition(Vec2(x + 105, y - 170));
+            int p_ = 0;
+            if(i==0)p_ = Barbarian::research_costs_[level_ + 1];
+            else if (i == 1)p_ = Archer::research_costs_[level_ + 1];
+            else if (i == 2)p_ = Giant::research_costs_[level_ + 1];
+            else if (i == 3)p_ = WallBreaker::research_costs_[level_ + 1];
+            else if (i == 4)p_ = Balloon::research_costs_[level_ + 1];
+            else if (i == 5)p_ = Dragon::research_costs_[level_ + 1];
+
+
+            auto priceLabel = Label::createWithSystemFont("$" + std::to_string(p_), "Arial", 25);
+            priceLabel->setAnchorPoint(Vec2(0.0f, 0.5f));
+            priceLabel->setPosition(Vec2(x + 100, y - 170));
             priceLabel->setColor(Color3B::MAGENTA);
             panel->addChild(priceLabel);
-        }
-        else {
-            // 商品价格图标
-            auto goldIcon = Sprite::create("Gold.png");
-            goldIcon->setPosition(Vec2(x + 70, y - 170));
-            goldIcon->setScale(0.5f);
-            panel->addChild(goldIcon);
 
-            // 商品价格
-            auto priceLabel = Label::createWithSystemFont("$" + std::to_string(1), "Arial", 25);
-            priceLabel->setPosition(Vec2(x + 105, y - 170));
-            priceLabel->setColor(Color3B::YELLOW);
-            panel->addChild(priceLabel);
-        }
 
         if (!is_unlocked) {
             icon->setColor(Color3B::GRAY);
@@ -577,22 +582,19 @@ void MainVillage::onLabButtonClick(Ref* sender)
         }
         else {
             bool canAfford = false;
-            if (1) {
-                canAfford = currentGold >= 1;
-                if (!canAfford) {
-                    upgradeBtnBg->setColor(Color3B::GRAY);
-                    upgradeBtn->setEnabled(false);
-                }
-            }
-            else {
-                canAfford = currentElixir >=1;
-                if (!canAfford) {
-                    upgradeBtnBg->setColor(Color3B::GRAY);
-                    upgradeBtn->setEnabled(false);
-                }
+            canAfford = currentElixir >= p_;
+            if (!canAfford) {
+                priceLabel->setColor(Color3B::RED);
+                upgradeBtnBg->setColor(Color3B::GRAY);
+                upgradeBtn->setEnabled(false);
             }
 
-            if (canAfford) {
+            if (TroopConfig::getInstance()->getTroopLevel(it) >= MAX_TROOP_LEVEL) {
+                upgradeBtnBg->setColor(Color3B::GRAY);
+                upgradeBtn->setEnabled(false);
+            }
+            else if (canAfford) {
+                priceLabel->setColor(Color3B::MAGENTA);
                 upgradeBtnBg->setColor(Color3B::WHITE);
                 upgradeBtn->setEnabled(true);
 
@@ -603,6 +605,7 @@ void MainVillage::onLabButtonClick(Ref* sender)
 }
 void MainVillage::onTroopUpradeClick(Ref* sender, Widget::TouchEventType type,unsigned char & it, cocos2d::LayerColor* panel) {
     if (type == Widget::TouchEventType::ENDED) {
+
 
         // 播放音效
         int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
@@ -616,13 +619,45 @@ void MainVillage::onTroopUpradeClick(Ref* sender, Widget::TouchEventType type,un
             }, 0.1f, "stop_audio_key");
 
         // 获取金币
-        unsigned long long currentGold = GameManager::getInstance()->getGold();
         unsigned long long currentElixir = GameManager::getInstance()->getElixir();
+        //升级
         TroopConfig::getInstance()->upgradeTroopLevel(it);
-        if (1)GameManager::getInstance()->setGold(currentGold - 1);
-        else GameManager::getInstance()->setElixir(currentElixir - 1);
+
+        // 商品价格
+        int p_ = 0;
+
+        //当前等级
+        int l_ = TroopConfig::getInstance()->getTroopLevel(it);
+        if (it == Troop::BARBARIAN)p_ = Barbarian::research_costs_[l_];
+        else if (it == Troop::ARCHER)p_ = Archer::research_costs_[l_];
+        else if (it == Troop::GIANT)p_ = Giant::research_costs_[l_];
+        else if (it == Troop::WALL_BREAKER)p_ = WallBreaker::research_costs_[l_];
+        else if (it == Troop::BALLOON)p_ = Balloon::research_costs_[l_];
+        else if (it == Troop::DRAGON)p_ = Dragon::research_costs_[l_];
+
+        GameManager::getInstance()->setElixir(currentElixir - l_);
+        currentElixir = GameManager::getInstance()->getElixir();
         auto label = dynamic_cast<Label*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "level_name"));
-        label->setString("当前等级：" + std::to_string(TroopConfig::getInstance()->getTroopLevel(it)) + "级");
+        label->setString("当前等级：" + std::to_string(l_) + "级");
+
+        if (l_ < MAX_TROOP_LEVEL) {
+
+            if (it == Troop::BARBARIAN)p_ = Barbarian::research_costs_[l_+1];
+            else if (it == Troop::ARCHER)p_ = Archer::research_costs_[l_ + 1];
+            else if (it == Troop::GIANT)p_ = Giant::research_costs_[l_ + 1];
+            else if (it == Troop::WALL_BREAKER)p_ = WallBreaker::research_costs_[l_ + 1];
+            else if (it == Troop::BALLOON)p_ = Balloon::research_costs_[l_ + 1];
+            else if (it == Troop::DRAGON)p_ = Dragon::research_costs_[l_ + 1];
+        }
+        // 检查是否已达最高级
+        if (l_ == MAX_TROOP_LEVEL|| (currentElixir<p_)) {
+            // 已经是最高级，不需要升级
+            auto bg = dynamic_cast<Layer*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "upbg"));
+            bg->setColor(cocos2d::Color3B::GRAY);
+            auto upbtn = dynamic_cast<Button*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "up"));
+            upbtn->setEnabled(false);
+            return;
+        }
     }
 }
 void MainVillage::onShopButtonClick(Ref* sender)
