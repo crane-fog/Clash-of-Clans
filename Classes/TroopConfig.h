@@ -34,6 +34,7 @@ static const std::map<unsigned char, std::string> kIconPaths = {
     { Troop::BALLOON, "troop/balloon_icon.png" }
 };
 
+
 // 玩家兵种配置
 class TroopConfig {
 private:
@@ -44,7 +45,15 @@ private:
     TroopConfig() : capacity_(0), unlocked_troop_type_(0) { for (auto it : kTroopTypes) config_.emplace(it, 0); }
     TroopConfig(const TroopConfig&) = delete;
     TroopConfig& operator= (const TroopConfig&) = delete;
-
+    // 兵种等级
+    std::map<unsigned char, int> kTroopLevels = {
+       { Troop::BARBARIAN, 1},
+       { Troop::ARCHER, 1 },
+       { Troop::GIANT, 1 },
+       { Troop::WALL_BREAKER, 1},
+       { Troop::DRAGON,1},
+       { Troop::BALLOON, 1 }
+    };
 public:
     static TroopConfig* getInstance()
     {
@@ -86,6 +95,15 @@ public:
     {
         return config_.at(troop_type);
     }
+
+    //获取兵种的等级
+    int getTroopLevel(unsigned char troopname) {
+        return kTroopLevels.at(troopname);
+    }
+    void upgradeTroopLevel(unsigned char troopname) {
+        kTroopLevels.at(troopname)++;
+    }
 };
+
 
 #endif // __TROOP_CONFIG_H__

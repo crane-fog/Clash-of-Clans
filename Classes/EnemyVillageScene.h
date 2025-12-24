@@ -39,6 +39,11 @@ public:
     std::vector<cocos2d::Label*> troopCountLabels_;    // 数量标签引用
     unsigned char selected_troop_type_; // -1表示未选择任何兵种
 
+
+
+public:
+
+    // 回放
     //bool onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_);
     //void EnemyVillage::ReplayBegin();
     //void EnemyVillage::startReplaySequence();

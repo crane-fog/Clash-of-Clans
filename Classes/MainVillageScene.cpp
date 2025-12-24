@@ -13,7 +13,9 @@
 #include <vector>
 #include "AudioEngine.h"
 #include "TroopConfig.h"
-
+#include"WallBreaker.h"
+#include"Balloon.h"
+#include"Dragon.h"
 USING_NS_CC;
 
 
@@ -116,7 +118,7 @@ bool MainVillage::init()
     shopButton->setTitleFontSize(50);
 
     //商店图标
-    shopButton->setPosition(Vec2(visibleSize.width - 100, 100));
+    shopButton->setPosition(Vec2(visibleSize.width - 100, 90));
     shopButton->setScale(0.5f);
     shopButton->setContentSize(Size(300, 300));  // 设置足够的触摸区域
     shopButton->setTouchEnabled(true);
@@ -128,6 +130,26 @@ bool MainVillage::init()
         }
         });
     this->addChild(shopButton,300);
+
+
+    // 实验室：兵种升级图标
+    auto lab_button = cocos2d::ui::Button::create("Laboratory.webp");
+    lab_button->setPosition(Vec2(visibleSize.width - 100, 250));
+    lab_button->setScale(0.5f);
+    lab_button->setContentSize(Size(300, 300));
+    lab_button->setTouchEnabled(true);
+    lab_button->setEnabled(true);
+    //实验室标签
+    lab_button->setTitleText("实验室");
+    lab_button->setTitleAlignment(TextHAlignment::LEFT, TextVAlignment::BOTTOM); 
+    lab_button->setTitleFontSize(50);
+
+    lab_button->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+            this->onLabButtonClick(sender);
+        }
+        });
+    this->addChild(lab_button, 200);
 
     auto attackButton = cocos2d::ui::Button::create("attack.png");
     //进攻图标
@@ -338,6 +360,10 @@ void MainVillage::onTroopButtonClick(Ref* sender)
         auto name_label = Label::createWithSystemFont(Troop::getTroopNameFromEnum(it), "Arial", 32);
         name_label->setPosition(Vec2(x, y + 150));
         panel->addChild(name_label);
+        // 兵种等级
+        auto level_label = Label::createWithSystemFont( std::to_string(TroopConfig::getInstance()->getTroopLevel(it)) + "级", "Arial", 32);
+        level_label->setPosition(Vec2(x-120, y + 150));
+        panel->addChild(level_label);
 
         // 人口占用提示
         auto space_label = Label::createWithSystemFont(StringUtils::format("人口占用: %d", kNoHousingSpace.at(it)), "Arial", 24);
@@ -412,6 +438,230 @@ void MainVillage::onTroopButtonClick(Ref* sender)
     }
 }
 
+void MainVillage::onLabButtonClick(Ref* sender)
+{    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+    // 添加半透明黑色背景
+    auto colorBg = LayerColor::create(Color4B(0, 0, 0, 180)); // 深色半透明
+    colorBg->setContentSize(visibleSize);
+    addChild(colorBg,99999);
+
+    auto panel = LayerColor::create(Color4B(255, 204, 153, 255),
+        visibleSize.width * 0.8f,
+        visibleSize.height * 0.8f);
+    panel->setPosition(Vec2(visibleSize.width * 0.1f, visibleSize.height * 0.1f));
+    colorBg->addChild(panel);
+
+    // 吞噬触摸事件，防止点击穿透
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->setSwallowTouches(true);
+    listener->onTouchBegan = [](Touch* touch, Event* event) { return true; };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, panel);
+
+    // 面板标题
+    auto title_label = cocos2d::Label::createWithSystemFont("兵种升级", "Arial", 56);
+    title_label->setPosition(cocos2d::Vec2(panel->getContentSize().width / 2, panel->getContentSize().height- 50));
+    panel->addChild(title_label, 1);
+
+    // 退出按钮
+    auto exit_button = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exit_button->setPosition(cocos2d::Vec2(50, 50));
+    exit_button->setScale(0.4f);
+    exit_button->addClickEventListener([colorBg](cocos2d::Ref* sender) {
+        colorBg->removeFromParent();
+        });
+    panel->addChild(exit_button);
+
+
+    // 兵种网格布局
+    const float gap_x = 400.0f;
+    const float gap_y = 380.0f;
+    const float icon_size = 180.0f;
+    const int cols = 3;
+    const float start_x = (panel->getContentSize().width - gap_x * (cols - 1)) / 2;
+    const float start_y = panel->getContentSize().height - 280;
+
+    int i = 0;
+
+    for (const unsigned char it : kTroopTypes) {
+        int row = i / cols;
+        int col = i % cols;
+        float x = start_x + col * gap_x;
+        float y = start_y - row * gap_y;
+
+        // 兵种图标
+        std::string icon_path = kIconPaths.at(it);
+        // 兵种背景
+        auto troopBtnBg = LayerColor::create(Color4B(255, 255, 255, 255),180,180);
+        troopBtnBg->setPosition(Vec2(x-100 , y-80));
+        draw_border(troopBtnBg, 3.0f, cocos2d::Color4F::BLACK);
+        panel->addChild(troopBtnBg);
+        auto icon = Sprite::create(icon_path);
+        if (icon) {
+            icon->setPosition(Vec2(90,90));
+            Size content_size = icon->getContentSize();
+            float scale = std::min(icon_size / content_size.width, icon_size / content_size.height);
+            icon->setScale(scale);
+            troopBtnBg->addChild(icon,1);
+        }
+        int level_ = TroopConfig::getInstance()->getTroopLevel(it);
+        // 兵种名称
+        auto name_label = Label::createWithSystemFont(Troop::getTroopNameFromEnum(it), "Arial", 32);
+        name_label->setPosition(Vec2(x, y + 150));
+        panel->addChild(name_label);
+        // 兵种等级
+        auto level_label = Label::createWithSystemFont("当前等级："+std::to_string(level_) + "级", "Arial", 32);
+        level_label->setPosition(Vec2(x, y - 120));
+        level_label->setName(Troop::getTroopNameFromEnum(it)+"level_name");
+        panel->addChild(level_label);
+        // 升级按钮背景
+        auto upgradeBtnBg = LayerColor::create(Color4B(255,255,255, 255), 80, 40);
+        upgradeBtnBg->setPosition(Vec2(x-40, y - 190));
+        upgradeBtnBg->setName(Troop::getTroopNameFromEnum(it) + "upbg");
+        draw_border(upgradeBtnBg,2.0f,cocos2d::Color4F::BLACK);
+        panel->addChild(upgradeBtnBg);
+
+        // 升级按钮
+        auto upgradeBtn = Button::create();
+        upgradeBtn->setTitleText("升级");
+        upgradeBtn->setName(Troop::getTroopNameFromEnum(it) + "up");
+        upgradeBtn->setTitleColor(Color3B(0, 0, 0));
+        upgradeBtn->setTitleFontSize(20);
+        upgradeBtn->setContentSize(Size(80, 40));
+        upgradeBtn->setPosition(Vec2(x, y - 170));
+        upgradeBtn->addTouchEventListener(CC_CALLBACK_2(MainVillage::onTroopUpradeClick, this,it,panel));
+        panel->addChild(upgradeBtn, 9999);
+        // 检查兵种是否解锁
+        bool is_unlocked = i <= TroopConfig::getInstance()->getUnlockedTroopIndex();
+        int required_level = kBarracksTroopUnlock.at(it);
+
+        // 获取金币
+        unsigned long long currentGold = GameManager::getInstance()->getGold();
+        unsigned long long currentElixir = GameManager::getInstance()->getElixir();
+
+            // 商品价格图标
+            auto goldIcon = Sprite::create("Elixir.png");
+            goldIcon->setPosition(Vec2(x+70, y - 170));
+            goldIcon->setScale(0.5f);
+            panel->addChild(goldIcon);
+
+            // 商品价格
+            int p_ = 0;
+            if(i==0)p_ = Barbarian::research_costs_[level_ + 1];
+            else if (i == 1)p_ = Archer::research_costs_[level_ + 1];
+            else if (i == 2)p_ = Giant::research_costs_[level_ + 1];
+            else if (i == 3)p_ = WallBreaker::research_costs_[level_ + 1];
+            else if (i == 4)p_ = Balloon::research_costs_[level_ + 1];
+            else if (i == 5)p_ = Dragon::research_costs_[level_ + 1];
+
+
+            auto priceLabel = Label::createWithSystemFont("$" + std::to_string(p_), "Arial", 25);
+            priceLabel->setAnchorPoint(Vec2(0.0f, 0.5f));
+            priceLabel->setPosition(Vec2(x + 100, y - 170));
+            priceLabel->setColor(Color3B::MAGENTA);
+            panel->addChild(priceLabel);
+
+
+        if (!is_unlocked) {
+            icon->setColor(Color3B::GRAY);
+            auto lock_label = Label::createWithSystemFont(StringUtils::format("需训练营Lv.%d", required_level), "Arial", 30);
+            lock_label->setPosition(Vec2(x-5, y + 45));
+            lock_label->setColor(Color3B::RED);
+            panel->addChild(lock_label);
+            upgradeBtn->setEnabled(false);
+            upgradeBtnBg->setColor(Color3B::GRAY);
+            troopBtnBg->setColor(Color3B::GRAY);
+        }
+        else {
+            troopBtnBg->setColor(Color3B::WHITE);
+            bool canAfford = false;
+            canAfford = currentElixir >= p_;
+            if (!canAfford) {
+                priceLabel->setColor(Color3B::RED);
+                upgradeBtnBg->setColor(Color3B::GRAY);
+                upgradeBtn->setEnabled(false);
+            }
+
+            if (TroopConfig::getInstance()->getTroopLevel(it) >= MAX_TROOP_LEVEL) {
+                upgradeBtnBg->setColor(Color3B::GRAY);
+                upgradeBtn->setEnabled(false);
+            }
+            else if (canAfford) {
+                priceLabel->setColor(Color3B::MAGENTA);
+                upgradeBtnBg->setColor(Color3B::WHITE);
+                upgradeBtn->setEnabled(true);
+
+            }
+        }
+        i++;
+    }
+}
+void MainVillage::onTroopUpradeClick(Ref* sender, Widget::TouchEventType type,unsigned char & it, cocos2d::LayerColor* panel) {
+    if (type == Widget::TouchEventType::ENDED) {
+
+
+        // 播放音效
+        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule([button_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/button.mp3");
+                this->unschedule("stop_audio_key"); // 停止检查
+            }
+            }, 0.1f, "stop_audio_key");
+
+        // 获取金币
+        unsigned long long currentElixir = GameManager::getInstance()->getElixir();
+        //升级
+        TroopConfig::getInstance()->upgradeTroopLevel(it);
+
+        // 商品价格
+        int p_ = 0;
+
+        //当前等级
+        int l_ = TroopConfig::getInstance()->getTroopLevel(it);
+        if (it == Troop::BARBARIAN)p_ = Barbarian::research_costs_[l_];
+        else if (it == Troop::ARCHER)p_ = Archer::research_costs_[l_];
+        else if (it == Troop::GIANT)p_ = Giant::research_costs_[l_];
+        else if (it == Troop::WALL_BREAKER)p_ = WallBreaker::research_costs_[l_];
+        else if (it == Troop::BALLOON)p_ = Balloon::research_costs_[l_];
+        else if (it == Troop::DRAGON)p_ = Dragon::research_costs_[l_];
+
+        GameManager::getInstance()->setElixir(currentElixir - l_);
+        currentElixir = GameManager::getInstance()->getElixir();
+        auto label = dynamic_cast<Label*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "level_name"));
+        label->setString("当前等级：" + std::to_string(l_) + "级");
+
+        if (l_ < MAX_TROOP_LEVEL) {
+
+            if (it == Troop::BARBARIAN)p_ = Barbarian::research_costs_[l_+1];
+            else if (it == Troop::ARCHER)p_ = Archer::research_costs_[l_ + 1];
+            else if (it == Troop::GIANT)p_ = Giant::research_costs_[l_ + 1];
+            else if (it == Troop::WALL_BREAKER)p_ = WallBreaker::research_costs_[l_ + 1];
+            else if (it == Troop::BALLOON)p_ = Balloon::research_costs_[l_ + 1];
+            else if (it == Troop::DRAGON)p_ = Dragon::research_costs_[l_ + 1];
+        }
+        // 检查是否已达最高级
+        if (l_ == MAX_TROOP_LEVEL|| (currentElixir<p_)) {
+            // 已经是最高级，不需要升级
+            auto bg = dynamic_cast<Layer*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "upbg"));
+            bg->setColor(cocos2d::Color3B::GRAY);
+            auto upbtn = dynamic_cast<Button*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "up"));
+            upbtn->setEnabled(false);
+            return;
+        }
+    }
+}
 void MainVillage::onShopButtonClick(Ref* sender)
 {
     // 播放音效

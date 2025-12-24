@@ -193,7 +193,7 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
 {
     if (GameManager::getInstance()->isReplay)return false;
     cocos2d::Vec2 cellPos = CoordAdaptor::pixelToCell(base_map_, base_map_->convertToNodeSpace(touch->getLocation()));
-    
+
     // 边界检查
     if (cellPos.x < 0 || cellPos.x >= MAP_SIZE || cellPos.y < 0 || cellPos.y >= MAP_SIZE) {
         showInvalidSpawnMessage();
@@ -214,8 +214,9 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
     int index = selected_troop_type_ - 1;
     if (index < 0) return true;
 
+    int level_ = TroopConfig::getInstance()->getTroopLevel(kTroopTypes[index]);
     // 如果生成成功，更新计数
-    if (spawnTroop(kTroopTypes[index], 1, cellPos)) {
+    if (spawnTroop(kTroopTypes[index], level_, cellPos)) {
         troopPlacedCounts_[index]++;
         updateTroopCountLabel(index);
 
@@ -312,12 +313,12 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
     for (size_t i = 0; i < TROOP_TYPE_NUM; ++i) {
         // 商品背景
         auto itemBg = cocos2d::LayerColor::create(cocos2d::Color4B(140, 150, 200, 255), buttonWidth, buttonHeight);
-        itemBg->setPosition(cocos2d::Vec2((buttonWidth + padding) * i + buttonWidth, 30));
+        itemBg->setPosition(cocos2d::Vec2((buttonWidth + padding) * i +200, 30));
 
         // 保存按钮引用
         troopButtons_.push_back(itemBg);
 
-        float maxSize = 200.0f;
+        float maxSize = 180.0f;
         auto itemPic = cocos2d::Sprite::create(kIconPaths.at(kTroopTypes[i]));
         float scale = std::min(maxSize / itemPic->getContentSize().width,
             maxSize / itemPic->getContentSize().height);
@@ -355,6 +356,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
             };
         _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, itemBg);
     }
+
 }
 // 点击按钮时的处理函数
 void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
@@ -373,7 +375,7 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
             remove_border(selectedItemBg);
         }
         // 检查是否已达到上限
-        if (troopPlacedCounts_[index] >= TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])) {
+        if (index<=5&&troopPlacedCounts_[index] >= TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])) {
             showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已达到上限！");
             return;
         }
@@ -479,3 +481,5 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
 //    auto sequence = Sequence::create(actions);
 //    this->runAction(sequence);
 //}
+
+

@@ -42,7 +42,8 @@ public:
 
     void onAttackButtonClick(Ref* sender);
     void onTroopButtonClick(Ref* sender);
-
+    void onLabButtonClick(Ref* sender);
+    void onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, unsigned char &it,cocos2d::LayerColor* panel);
     // 获取大本营等级
     unsigned char getTownHallLevel();
     // 获取指定建筑数量

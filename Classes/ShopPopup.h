@@ -12,7 +12,7 @@
 #include"TroopTargetManager.h"
 enum ShopType :int {
     buildingItems = 1,
-    soldierItems = 2,
+    magicItems = 2,
     gachaItems = 3
 };
 enum Rarity :int {
@@ -57,12 +57,10 @@ const std::map<int, std::vector<ShopItem>> kShopItemsInfo = {
         {8, "加农炮", kArchInfo.at(CANNON)[0].upgrade_cost_amount_, false, "VIP only", "arch/Cannon1.webp",0,kArchInfo.at(CANNON)[0].upgrade_cost_type_},
         {9, "训练营", kArchInfo.at(BARRACKS)[0].upgrade_cost_amount_, false, "VIP only", "arch/Barracks1.webp",0,kArchInfo.at(BARRACKS)[0].upgrade_cost_type_}}},
 
-        {soldierItems, {
-        {1, "野蛮人", 30,false, "", "Barbarian.png"},
-        {2, "弓箭手", 45, false, "", "Barbarian.png"},
-        {3, "巨人", 150, false, "需要2级兵营", "Barbarian.png"},
-        {4, "哥布林", 25, false, "", "Barbarian.png"},
-        {5, "炸弹人", 50, false, "需要完成训练", "Barbarian.png"}}},
+        {magicItems, {
+        {1, "治疗法术", 30,false, "VIP only", "shop/Healing_Spell.webp"},
+        {2, "加速法术", 45, false, "VIP only",  "shop/Haste_Spell.webp"},
+        {3, "狂暴法术", 150, false, "VIP only",  "shop/Rage_Spell.webp"}}},
 
         {gachaItems, {
         {201, "神秘宝箱", 1000, true, "有机会获得稀有物品！", "lucky.png"}}},
@@ -161,9 +159,9 @@ private:
     void showItemsInScrollView(const std::vector<ShopItem>& items, cocos2d::ui::ScrollView* scrollView, int tabIndex = 1);  // 显示商品函数
 
     // 成员变量
-    int currentTab_;  // 当前选中的标签：1-建筑，2-士兵，3-抽卡
+    int currentTab_;  // 当前选中的标签：1-建筑，2-法术，3-抽卡
     std::vector<ShopItem> buildingItems_;  // 建筑商品
-    std::vector<ShopItem> soldierItems_ = kShopItemsInfo.at(2);   // 士兵商品
+    std::vector<ShopItem> magicItems_ = kShopItemsInfo.at(2);   // 法术商品
     std::vector<ShopItem> gachaItems_;     // 抽卡商品
     cocos2d::ui::ScrollView* scrollView_;  // 滚动容器引用
 

@@ -21,11 +21,13 @@ bool UIBars::init()
     unsigned long long elixir = GameManager::getInstance()->getElixir();
     unsigned long long maxGold = GameManager::getInstance()->getMaxGold();
     unsigned long long maxElixir = GameManager::getInstance()->getMaxElixir();
+    unsigned long long jewel = GameManager::getInstance()->getJewel();
+    unsigned long long maxJewel =GameManager::getInstance()->getMaxJewel();
 
     // 创建多个进度条:金币和圣水
     createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visibleSize.width - 500, visibleSize.height - 50, maxGold);
     createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", elixir, visibleSize.width - 500, visibleSize.height - 150, maxElixir);
-
+    createProgressBarWithBackground("宝石", Color3B::GREEN, "jewel.png", jewel, visibleSize.width - 500, visibleSize.height - 250, maxJewel);
 
     // 创建返回按钮 - 固定在左上角
     auto backButton = ui::Button::create("BackButton.png");
@@ -41,6 +43,10 @@ bool UIBars::init()
 
     // 注册圣水更新事件监听
     elixirUpdateListener = cocos2d::EventListenerCustom::create("update_elixir_event", CC_CALLBACK_1(UIBars::onElixirUpdated, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixirUpdateListener, this);
+
+    // 注册宝石更新事件监听
+    elixirUpdateListener = cocos2d::EventListenerCustom::create("update_jewel_event", CC_CALLBACK_1(UIBars::onJewelUpdated, this));
     cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixirUpdateListener, this);
 
     // 注册最大金币更新事件监听
@@ -134,7 +140,11 @@ void UIBars::onElixirUpdated(cocos2d::EventCustom* event) {
     unsigned long long maxElixir = GameManager::getInstance()->getMaxElixir();
     updateProgressBar("圣水", elixir, maxElixir);
 }
-
+void UIBars::onJewelUpdated(cocos2d::EventCustom* event) {
+    unsigned long long  Jewel = *static_cast<unsigned long long*>(event->getUserData());
+    unsigned long long maxJewel = GameManager::getInstance()->getMaxJewel();
+    updateProgressBar("宝石", Jewel, maxJewel);
+}
 void UIBars::onMaxGoldUpdated(cocos2d::EventCustom* event) {
     unsigned long long maxGold = *static_cast<unsigned long long*>(event->getUserData());
     unsigned long long gold = GameManager::getInstance()->getGold();

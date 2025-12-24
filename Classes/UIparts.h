@@ -30,6 +30,8 @@ private:
     cocos2d::EventListenerCustom* elixirUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* maxGoldUpdateListener;  // 存储监听器
     cocos2d::EventListenerCustom* maxElixirUpdateListener;  // 存储监听器
+    cocos2d::EventListenerCustom* jewelUpdateListener;  // 存储监听器
+    cocos2d::EventListenerCustom* maxJewelUpdateListener;  // 存储监听器
 
 public:
 
@@ -48,6 +50,9 @@ public:
     void onGoldUpdated(cocos2d::EventCustom* event);
     // 更新圣水进度条的回调函数
     void onElixirUpdated(cocos2d::EventCustom* event);
+    // 更新宝石进度条的回调函数
+    void onJewelUpdated(cocos2d::EventCustom* event);
+
     // 更新最大金币的回调函数
     void onMaxGoldUpdated(cocos2d::EventCustom* event);
     // 更新最大圣水的回调函数

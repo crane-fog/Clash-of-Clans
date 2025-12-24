@@ -34,3 +34,20 @@ void GameManager::setMaxElixir(ULL max_elixir)
     event.setUserData(&max_elixir_);
     cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
 }
+
+void GameManager::setJewel(ULL Jewel)
+{
+    this->my_jewel_ = Jewel;
+    // 发布宝石更新事件
+    cocos2d::EventCustom event("update_jewel_event");
+    event.setUserData(&my_jewel_);
+    cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+}
+
+void GameManager::setMaxJewel(ULL max_jewel)
+{
+    max_jewel_ = max_jewel;
+    cocos2d::EventCustom event("update_max_jewel_event");
+    event.setUserData(&max_jewel_);
+    cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+}
