@@ -44,14 +44,7 @@ protected:
     //生命值
     const std::array<float, MAX_TROOP_LEVEL + 1> hitpoints_;
 
-    //升到level级所需资源花费
-    const std::array<int, MAX_TROOP_LEVEL + 1> research_costs_;
-
-    //升到level级所需时间 单位：小时
-    const std::array<float, MAX_TROOP_LEVEL + 1> research_times_;
-
-    //升到level级所需实验室等级
-    const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
+    
 
 public:
     enum TroopType : uchar {
@@ -112,10 +105,7 @@ public:
           float attack_speed,
           float range,
           const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
-          const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
-          const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
-          const std::array<float, MAX_TROOP_LEVEL + 1>& research_times,
-          const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds);
+          const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints);
     virtual ~Troop() = default;
 
     // 初始化方法，当对象被创建时被自动调用，由于Troop没有实现create，仅由子类调用。

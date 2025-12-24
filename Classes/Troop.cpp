@@ -13,10 +13,7 @@ Troop::Troop(BaseMap* base_map,
              float attack_speed,
              float range,
              const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
-             const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints,
-             const std::array<int, MAX_TROOP_LEVEL + 1>& research_costs,
-             const std::array<float, MAX_TROOP_LEVEL + 1>& research_times,
-             const std::array<uchar, MAX_TROOP_LEVEL + 1>& laboratory_level_requireds)
+             const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints)
 	: base_map_(base_map)
     , level_(level)
     , position_(position)
@@ -30,9 +27,6 @@ Troop::Troop(BaseMap* base_map,
     , range_(range)
     , damage_per_attacks_(damage_per_attacks)
     , hitpoints_(hitpoints)
-    , research_costs_(research_costs)
-    , research_times_(research_times)
-    , laboratory_level_requireds_(laboratory_level_requireds)
     , status_(IDLE)
     , current_target_(nullptr)
     , current_path_direction_(cocos2d::Vec2::ZERO)

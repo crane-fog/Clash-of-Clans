@@ -1,13 +1,20 @@
 #include "Balloon.h"
 #include "TroopTargetManager.h"
 #include "AudioEngine.h"
+
+//升到level级所需资源花费
+const std::array<int, MAX_TROOP_LEVEL + 1> Balloon::research_costs_ = { 0,0,100000,400000,720000,1300000 };
+
+//升到level级所需时间 单位：小时
+const std::array<float, MAX_TROOP_LEVEL + 1> Balloon::research_times_ = { 0,0,4,6,18,24 };
+
+//升到level级所需实验室等级
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Balloon::laboratory_level_requireds_ = { 0,1,2,4,5,6 };
+
 Balloon::Balloon(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, DEFENSE, RANGED_AOE_GROUND, 5, 6, 1.3f, 3.0f,0.0f,
         std::array<float, MAX_TROOP_LEVEL + 1>({0,75,96,144,216,324}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,150,180,216,280,390}),
-        std::array<int, MAX_TROOP_LEVEL + 1>({0,0,100000,400000,720000,1300000}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,0,4,6,18,24}),
-        std::array<uchar, MAX_TROOP_LEVEL + 1>({0,1,2,4,5,6})
+        std::array<float, MAX_TROOP_LEVEL + 1>({0,150,180,216,280,390})
         )
 {
 }
