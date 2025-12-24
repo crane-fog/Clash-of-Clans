@@ -573,14 +573,16 @@ void MainVillage::onLabButtonClick(Ref* sender)
 
         if (!is_unlocked) {
             icon->setColor(Color3B::GRAY);
-            auto lock_label = Label::createWithSystemFont(StringUtils::format("需训练营Lv.%d", required_level), "Arial", 36);
-            lock_label->setPosition(Vec2(x, y - 130));
+            auto lock_label = Label::createWithSystemFont(StringUtils::format("需训练营Lv.%d", required_level), "Arial", 30);
+            lock_label->setPosition(Vec2(x-5, y + 45));
             lock_label->setColor(Color3B::RED);
             panel->addChild(lock_label);
             upgradeBtn->setEnabled(false);
             upgradeBtnBg->setColor(Color3B::GRAY);
+            troopBtnBg->setColor(Color3B::GRAY);
         }
         else {
+            troopBtnBg->setColor(Color3B::WHITE);
             bool canAfford = false;
             canAfford = currentElixir >= p_;
             if (!canAfford) {

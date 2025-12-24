@@ -2,7 +2,7 @@
 #define __GAME_MANAGER_H__
 #include "cocos2d.h"
 
-//尝试把资源单独出来一个类单例，之前的获取有点搞不来
+//把资源单独出来一个类单例
 //使用例子：       
 // unsigned long long currentGold = GameManager::getInstance()->getGold();
 //GameManager::getInstance()->setGold(currentGold - item.price);

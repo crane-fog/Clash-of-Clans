@@ -123,10 +123,10 @@ const std::map<unsigned char, std::vector<unsigned char>> kArchTownHallLevelLimi
 // 建筑物信息数据
 const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
     {TOWN_HALL, {
-        {"arch/Town_Hall1.webp", 1, 4, OTHER, GOLD, 0, 0, 400},
-        {"arch/Town_Hall2.webp", 2, 4, OTHER, GOLD, 1000, 10, 800},
-        {"arch/Town_Hall3.webp", 3, 4, OTHER, GOLD, 4000, 1800, 1600},
-        {"arch/Town_Hall4.webp", 4, 4, OTHER, GOLD, 25000, 10800, 2000}}},
+        {"arch/Town_Hall1.webp", 1, 4, OTHER, GOLD, 0, 0, 400,1000},
+        {"arch/Town_Hall2.webp", 2, 4, OTHER, GOLD, 1000, 10, 800,2500},
+        {"arch/Town_Hall3.webp", 3, 4, OTHER, GOLD, 4000, 1800, 1600,10000},
+        {"arch/Town_Hall4.webp", 4, 4, OTHER, GOLD, 25000, 10800, 2000,50000}}},
     {WALL, {
         {"arch/Wall1.webp", 1, 1, WALLT, GOLD, 0, 0, 100},
         {"arch/Wall2.webp", 2, 1, WALLT, GOLD, 1000, 0, 200},

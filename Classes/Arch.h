@@ -116,16 +116,6 @@ public:
         TroopTargetManager::getInstance()->unregisterTroopTarget(this);
         this->setTexture("arch/Arch_Destroyed.png");
 
-        /*发布建筑摧毁数量更新事件
-        static int deathA = TroopTargetManager::getInstance()->getDeadsum();
-        int* data = new int(deathA);
-        CCLOG("建筑死亡，当前死亡数：%d", deathA);
-        cocos2d::EventCustom event("update_deadArchs_event");
-        event.setUserData(&deathA);
-        cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
-        // 清理内存（假设接收方会立即使用）
-        delete data;*/
-
         this->setLocalZOrder(5);
     }
     virtual void takeDamage(float damage) override { 

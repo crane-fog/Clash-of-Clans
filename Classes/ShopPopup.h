@@ -58,9 +58,9 @@ const std::map<int, std::vector<ShopItem>> kShopItemsInfo = {
         {9, "训练营", kArchInfo.at(BARRACKS)[0].upgrade_cost_amount_, false, "VIP only", "arch/Barracks1.webp",0,kArchInfo.at(BARRACKS)[0].upgrade_cost_type_}}},
 
         {magicItems, {
-        {1, "治疗法术", 30,false, "", "shop/Healing_Spell.webp"},
-        {2, "加速法术", 45, false, "",  "shop/Haste_Spell.webp"},
-        {3, "狂暴法术", 150, false, "需要2级兵营",  "shop/Rage_Spell.webp"}}},
+        {1, "治疗法术", 30,false, "VIP only", "shop/Healing_Spell.webp"},
+        {2, "加速法术", 45, false, "VIP only",  "shop/Haste_Spell.webp"},
+        {3, "狂暴法术", 150, false, "VIP only",  "shop/Rage_Spell.webp"}}},
 
         {gachaItems, {
         {201, "神秘宝箱", 1000, true, "有机会获得稀有物品！", "lucky.png"}}},

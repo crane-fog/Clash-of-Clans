@@ -687,7 +687,7 @@ void Arch::startResourceProduction()
 
     // 启动资源生产定时器
     this->schedule([=](float dt) {
-        if (current_capacity_ < info.max_capacity_) {
+        if (current_capacity_ <= info.max_capacity_) {
             // 增加生产量，每秒按生产速度增加
             current_capacity_ += produceSpeedPerSecond;
 
@@ -711,9 +711,13 @@ void Arch::updateBuildingDisplay()
 
     // 如果容量大于一定值，显示资源转移图标
     if (current_capacity_ >info.max_capacity_/100 && !this->getChildByName("resource_icon")) {
-        auto icon = cocos2d::ui::Button::create("GoldPop.png");
+
+        auto icon = cocos2d::ui::Button::create();
         if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR) {
             icon->loadTextureNormal("ElixirPop.png");
+        }
+        else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD) {
+            icon->loadTextureNormal("GoldPop.png");
         }
         icon->setPosition(Vec2(x_ + 50.0f, y_ + 180.0f));  // 显示在建筑上方
         icon->setName("resource_icon");
@@ -740,11 +744,15 @@ void Arch::updateBuildingDisplay()
             // 点击后将资源转移到总资源
             if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD) {
                 unsigned long long currentGold = GameManager::getInstance()->getGold();
-                GameManager::getInstance()->setGold(current_capacity_ + currentGold);  // 资源是金币
+                unsigned long long max_gold = GameManager::getInstance()->getMaxGold();
+                max_gold = (max_gold > current_capacity_ + currentGold) ?( current_capacity_ + currentGold ): max_gold;
+                GameManager::getInstance()->setGold(max_gold);  // 资源是金币
             }
             else {
                 unsigned long long currentElixir = GameManager::getInstance()->getElixir();
-                GameManager::getInstance()->setElixir(current_capacity_ + currentElixir);  // 资源是金币
+                unsigned long long max_Elixir = GameManager::getInstance()->getMaxElixir();
+                max_Elixir = (max_Elixir > current_capacity_ + currentElixir) ? (current_capacity_ + currentElixir) : max_Elixir;
+                GameManager::getInstance()->setElixir(max_Elixir);  // 资源是金币
             }
             current_capacity_ = 0;  // 清空当前建筑的容量
             this->removeChildByName("resource_icon");  // 移除资源图标
