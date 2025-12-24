@@ -159,6 +159,7 @@ bool ShopPopup::init()
     // 保存商品数据供切换使用
     currentTab_ = 1; // 默认显示建筑
     buildingItems_ = kShopItemsInfo.at(1);
+    magicItems_ = kShopItemsInfo.at(2);
     gachaItems_ = kShopItemsInfo.at(3);
     scrollView_ = scrollView; // 保存滚动容器引用
 
@@ -201,6 +202,11 @@ void ShopPopup::switchToTab(int tabIndex) {
             scrollView->setInnerContainerSize(Size(270 * buildingItems_.size(),
                 scrollView->getContentSize().height));
             showItemsInScrollView(buildingItems_, scrollView, tabIndex);
+            break;
+        case 2: // 士兵
+            scrollView->setInnerContainerSize(Size(270 * magicItems_.size(),
+                scrollView->getContentSize().height));
+            showItemsInScrollView(kShopItemsInfo.at(2), scrollView, tabIndex);
             break;
         case 3: // 抽卡
             //scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),

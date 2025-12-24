@@ -39,6 +39,35 @@ public:
     std::vector<cocos2d::Label*> troopCountLabels_;    // 数量标签引用
     unsigned char selected_troop_type_; // -1表示未选择任何兵种
 
+
+
+
+    // 法术相关
+    //SpellBase* _selectedSpell;           // 当前选中的法术
+    cocos2d::Sprite* _spellIndicator;    // 法术释放指示器
+    bool _isSelectingSpellTarget=0;        // 是否正在选择法术目标
+
+public:
+    void createTemporarySprite(const std::string& texturePath,
+        const cocos2d::Vec2& position,
+        float duration);
+    // 新增法术相关方法
+    void setupSpellSystem();
+    //void selectSpell(SpellType spellType);
+    void cancelSpellSelection();
+    void castSpellAtPosition(const cocos2d::Vec2& position);
+    void updateSpellIndicator(const cocos2d::Vec2& position);
+    void onSpellButtonClicked(cocos2d::Ref* sender);
+
+    // 创建法术按钮
+    void createSpellButtons();
+
+    // 查找范围内的友方单位
+    //std::vector<Troop*> findTroopsInRange(const cocos2d::Vec2& position, float radius);
+
+    // 显示法术效果
+    //void showSpellEffect(const cocos2d::Vec2& position, SpellBase* spell);
+    // 回放
     //bool onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_);
     //void EnemyVillage::ReplayBegin();
     //void EnemyVillage::startReplaySequence();

@@ -12,6 +12,7 @@
 #include"TroopTargetManager.h"
 class AttackStars : public cocos2d::Node {
 public:
+    bool isShowingVictory = false; // 防止胜利画面重复显示
     AttackStars()
         : progress_(0) {
     }
@@ -51,6 +52,11 @@ public:
 
     // 更新摧毁进度条的回调函数
     void checkForUpdates(float dt);  // 定时检查函数
+    // 重置UI到原始位置
+    void AttackStars::resetUIPosition();
+
+    // 显示胜利画面
+    void AttackStars::showVictoryScreen();
 private:
     int lastDeadArch = 0;  // 记录上次的数量
     bool isComplete[3] = { false };

@@ -17,6 +17,7 @@
 #include "AudioEngine.h"
 #include"AttackStars.h"
 #include"ReplayAttack.h"
+#include"Spell.h"
 USING_NS_CC;
 
 EnemyVillage* EnemyVillage::create(int level)
@@ -359,6 +360,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 // 点击按钮时的处理函数
 void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
     bool isC = GameManager::getInstance()->isReplay;
+    _isSelectingSpellTarget = 0;
     if (!isC) {
         // 如果点击的是同一个按钮，取消选中状态
         if (selectedItemBg == itemBg) {
@@ -377,6 +379,7 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
             showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已达到上限！");
             return;
         }
+        if (index > 5)_isSelectingSpellTarget = 1;
         // 更新当前选中的按钮
         selectedItemBg = itemBg;
         selected_troop_type_ = index + 1;
@@ -479,3 +482,136 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
 //    auto sequence = Sequence::create(actions);
 //    this->runAction(sequence);
 //}
+
+
+void EnemyVillage::createTemporarySprite(const std::string& texturePath,
+    const cocos2d::Vec2& position,
+    float duration=1.0f) {
+    auto sprite = Spell::create(base_map_);
+    if (!sprite) return ;
+
+    sprite->setPosition(position);
+    base_map_->addChild(sprite);
+    base_map_->sprites_.push_back(sprite);
+
+    // 计算淡出开始时间（总时长的80%显示，20%淡出）
+    float fadeStartTime = duration * 0.1f;
+    float fadeDuration = duration - fadeStartTime;
+
+    // 设置定时消失（包含淡出动画）
+    sprite->runAction(Sequence::create(
+        // 第一部分：等待
+        DelayTime::create(fadeStartTime),
+
+        // 第二部分：淡出
+        FadeOut::create(fadeDuration),
+
+        // 第三部分：移除
+        CallFunc::create([this, sprite]() {
+            CCLOG("移除");
+            sprite->setOpacity(0);
+            sprite->setVisible(false);  // 双重保障
+            sprite->setTexture(nullptr);  // 移除纹理
+            sprite->setTextureRect(sprite->getTextureRect());  // 强制更新纹理矩形
+            // 从列表移除
+            if (base_map_) {
+                auto it = std::find(base_map_->sprites_.begin(),
+                    base_map_->sprites_.end(),
+                    sprite);
+                if (it != base_map_->sprites_.end()) {
+                    base_map_->sprites_.erase(it);
+                }
+            }
+
+            // 从父节点移除
+            if (sprite->getParent()) {
+                sprite->removeFromParent();
+            }
+            }),
+        nullptr
+    ));
+
+}
+
+
+
+
+/*应用法术效果到范围内的单位
+void EnemyVillage::applySpellToTroops(const cocos2d::Vec2& position, SpellBase* spell) {
+    if (!spell) return;
+
+    float radius = spell->getRadius();
+    float healAmount = spell->getValue();
+
+    CCLOG("寻找半径 %.1f 内的友方单位", radius);
+
+    // 获取所有友方单位（troop_list_是你存储士兵的数组）
+    for (auto troop : troop_list_) {
+        if (!troop || troop->isDead()) continue;
+
+        // 计算距离
+        cocos2d::Vec2 troopPos = troop->getPixelPosition();
+        float distance = position.distance(troopPos);
+
+        if (distance <= radius) {
+            CCLOG("治疗士兵，距离: %.1f，治疗量: %.1f", distance, healAmount);
+
+            // 调用Troop的heal方法
+            troop->heal(healAmount);
+
+            // 显示治疗数字
+            showHealNumber(troopPos, healAmount);
+
+            // 添加治疗效果视觉反馈
+            addHealEffectToTroop(troop);
+        }
+    }
+}
+
+// 显示治疗数字
+void EnemyVillage::showHealNumber(const cocos2d::Vec2& position, float amount) {
+    auto label = cocos2d::Label::createWithSystemFont(
+        cocos2d::StringUtils::format("+%.0f", amount),
+        "Arial", 20);
+    label->setColor(cocos2d::Color3B::GREEN);
+    label->setPosition(position + cocos2d::Vec2(0, 50));
+
+    // 动画：上浮并淡出
+    auto moveUp = cocos2d::MoveBy::create(1.0f, cocos2d::Vec2(0, 30));
+    auto fadeOut = cocos2d::FadeOut::create(1.0f);
+    auto remove = cocos2d::CallFunc::create([label]() {
+        label->removeFromParent();
+        });
+
+    label->runAction(cocos2d::Sequence::create(
+        cocos2d::Spawn::create(moveUp, fadeOut, nullptr),
+        remove,
+        nullptr
+    ));
+
+    this->addChild(label, 100);
+}
+
+// 给士兵添加治疗效果视觉反馈
+void EnemyVillage::addHealEffectToTroop(Troop* troop) {
+    if (!troop) return;
+
+    // 创建绿色光效
+    auto healEffect = cocos2d::Sprite::create("spell/heal_unit_effect.png");
+    if (healEffect) {
+        healEffect->setPosition(0, 0);
+        healEffect->setScale(1.2f);
+
+        // 淡入淡出动画
+        healEffect->setOpacity(0);
+        auto fadeIn = cocos2d::FadeIn::create(0.2f);
+        auto fadeOut = cocos2d::FadeOut::create(0.5f);
+        auto remove = cocos2d::RemoveSelf::create();
+
+        healEffect->runAction(cocos2d::Sequence::create(fadeIn, fadeOut, remove, nullptr));
+
+        troop->addChild(healEffect, 10);
+    }
+}
+
+*/
