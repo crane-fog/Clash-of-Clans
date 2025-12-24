@@ -66,7 +66,7 @@ struct ArchInfo {
     UI max_capacity_;
     // 生产速率/每分钟（对于存储建筑而言就是0）
     UI produce_speed_;
-    // 生产的的资源类型（0=金币，1=圣水,2=其他）
+    // 生产/存放的的资源类型（0=金币，1=圣水,2=其他）
     UC produce_type_;
 
     // 防御建筑
@@ -133,15 +133,15 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
         {"arch/Wall3.webp", 3, 1, WALLT, GOLD, 5000, 0, 400},
         {"arch/Wall4.webp", 4, 1, WALLT, GOLD, 10000, 0, 800}}},
     {GOLD_STORAGE, {
-        {"arch/Gold_Storage1.webp", 1, 3, RESOURCE, ELIXIR, 300, 10, 150, 1500},
-        {"arch/Gold_Storage2.webp", 2, 3, RESOURCE, ELIXIR, 750, 120, 300, 6000},
-        {"arch/Gold_Storage3.webp", 3, 3, RESOURCE, ELIXIR, 1500, 300, 450, 18000},
-        {"arch/Gold_Storage4.webp", 4, 3, RESOURCE, ELIXIR, 3000, 900, 600, 48000}}},
+        {"arch/Gold_Storage1.webp", 1, 3, RESOURCE, ELIXIR, 300, 10, 150, 1500,0, GOLD},
+        {"arch/Gold_Storage2.webp", 2, 3, RESOURCE, ELIXIR, 750, 120, 300, 6000,0, GOLD},
+        {"arch/Gold_Storage3.webp", 3, 3, RESOURCE, ELIXIR, 1500, 300, 450, 18000,0, GOLD},
+        {"arch/Gold_Storage4.webp", 4, 3, RESOURCE, ELIXIR, 3000, 900, 600, 48000,0, GOLD}}},
     {ELIXIR_STORAGE, {
-        {"arch/Elixir_Storage1.webp", 1, 3, RESOURCE, GOLD, 300, 10, 150, 1500},
-        {"arch/Elixir_Storage2.webp", 2, 3, RESOURCE, GOLD, 750, 120, 300, 6000},
-        {"arch/Elixir_Storage3.webp", 3, 3, RESOURCE, GOLD, 1500, 300, 450, 18000},
-        {"arch/Elixir_Storage4.webp", 4, 3, RESOURCE, GOLD, 3000, 900, 600, 48000}}},
+        {"arch/Elixir_Storage1.webp", 1, 3, RESOURCE, GOLD, 300, 10, 150, 1500,0, ELIXIR},
+        {"arch/Elixir_Storage2.webp", 2, 3, RESOURCE, GOLD, 750, 120, 300, 6000,0, ELIXIR},
+        {"arch/Elixir_Storage3.webp", 3, 3, RESOURCE, GOLD, 1500, 300, 450, 18000,0, ELIXIR},
+        {"arch/Elixir_Storage4.webp", 4, 3, RESOURCE, GOLD, 3000, 900, 600, 48000,0, ELIXIR}}},
     {GOLD_MINE, {
         {"arch/Gold_Mine1.webp", 1, 3, RESOURCE, ELIXIR, 150, 5, 75, 1000, 300, GOLD},
         {"arch/Gold_Mine2.webp", 2, 3, RESOURCE, ELIXIR, 300, 15, 150, 2000, 450, GOLD},
