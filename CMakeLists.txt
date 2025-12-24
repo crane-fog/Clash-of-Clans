@@ -72,6 +72,7 @@ list(APPEND GAME_SOURCE
      Classes/HealthBar.cpp
      Classes/MainVillageScene.cpp
      Classes/ShopPopup.cpp
+     Classes/Spell.cpp
      Classes/Troop.cpp
      Classes/TroopConfig.cpp
      Classes/TroopTargetManager.cpp
@@ -104,6 +105,7 @@ list(APPEND GAME_HEADER
      Classes/MainVillageScene.h
      Classes/ReplayAttack.h
      Classes/ShopPopup.h
+     Classes/Spell.h
      Classes/Troop.h
      Classes/TroopConfig.h
      Classes/TroopTargetManager.h

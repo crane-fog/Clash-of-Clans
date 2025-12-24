@@ -117,7 +117,27 @@ bool ShopPopup::init()
         }
         });
     panelBg->addChild(buildingTab, 10);
+    // 法术选项卡
+    auto SpellTab = ui::Button::create();
 
+    auto SpellTabBg = LayerColor::create(Color4B::WHITE, 150, 60);
+    SpellTabBg->setPosition(Vec2(-40, -20));
+    SpellTab->addChild(SpellTabBg, -1);
+
+    SpellTab->setTitleText("法术");
+    SpellTab->setTitleFontSize(28);
+    SpellTab->setTitleColor(Color3B::WHITE);
+    SpellTab->setContentSize(Size(tabWidth, 60));
+    SpellTab->setPosition(Vec2(tabWidth + 10, tabStartY));
+    SpellTab->setColor(Color3B(100, 150, 200)); // 蓝色
+    SpellTab->setTag(2); // 标记为法术标签
+    SpellTab->addTouchEventListener([this, SpellTab, SpellTabBg](Ref* sender, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->switchToTab(2); // 切换到法术标签
+            SpellTabBg->setColor(Color3B(255, 230, 200));
+        }
+        });
+    panelBg->addChild(SpellTab, 10);
     // 抽卡选项卡
     auto gachaTab = ui::Button::create();
 
@@ -203,7 +223,7 @@ void ShopPopup::switchToTab(int tabIndex) {
                 scrollView->getContentSize().height));
             showItemsInScrollView(buildingItems_, scrollView, tabIndex);
             break;
-        case 2: // 士兵
+        case 2: // 法术
             scrollView->setInnerContainerSize(Size(270 * magicItems_.size(),
                 scrollView->getContentSize().height));
             showItemsInScrollView(kShopItemsInfo.at(2), scrollView, tabIndex);

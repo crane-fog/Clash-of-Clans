@@ -30,8 +30,8 @@ bool AttackStars::init() {
 
     // 创建进度标签
     auto prog_label = Label::createWithSystemFont(
-        StringUtils::format("摧毁进度：%d/%d (%d%%)",
-            lastDeadArch, ArchSum, progress_),
+        StringUtils::format("摧毁进度：%d%%",
+           progress_),
         "Arial", 30);
     prog_label->setPosition(Vec2(230, visibleSize.height - 30));
     prog_label->setName("destoyed_label");
