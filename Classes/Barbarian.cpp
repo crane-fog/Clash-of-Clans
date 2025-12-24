@@ -1,13 +1,20 @@
 #include "Barbarian.h"
 #include "TroopTargetManager.h"
 #include "AudioEngine.h"
+
+//升到level级所需资源花费
+const std::array<int, MAX_TROOP_LEVEL + 1> Barbarian::research_costs_ = { 0,0,10000,50000,130000,300000 };
+
+//升到level级所需时间 单位：小时
+const std::array<float, MAX_TROOP_LEVEL + 1> Barbarian::research_times_ = { 0,0,0.5,1,2,4 };
+
+//升到level级所需实验室等级
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Barbarian::laboratory_level_requireds_ = { 0,1,1,3,5,6 };
+
 Barbarian::Barbarian(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, MELEE_SINGLE_GROUND,1,1,2,1,0.4,
         std::array<float, MAX_TROOP_LEVEL + 1>({0,9,12,15,18,23}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,45,54,65,85,105}), 
-        std::array<int, MAX_TROOP_LEVEL + 1>({0,0,10000,50000,130000,300000}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,0,0.5,1,2,4}),
-        std::array<uchar, MAX_TROOP_LEVEL + 1>({0,1,1,3,5,6})
+        std::array<float, MAX_TROOP_LEVEL + 1>({0,45,54,65,85,105})
         )
 {
 }

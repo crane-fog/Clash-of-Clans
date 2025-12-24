@@ -1,13 +1,20 @@
 #include "Giant.h"
 #include "TroopTargetManager.h"
 #include "AudioEngine.h"
+
+//升到level级所需资源花费
+const std::array<int, MAX_TROOP_LEVEL + 1> Giant::research_costs_ = { 0,0,40000,150000,400000,800000 };
+
+//升到level级所需时间 单位：小时
+const std::array<float, MAX_TROOP_LEVEL + 1> Giant::research_times_ = { 0,0,2,4,6,12 };
+
+//升到level级所需实验室等级
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Giant::laboratory_level_requireds_ = { 0,0,2,4,5,6 };
+
 Giant::Giant(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, DEFENSE, MELEE_SINGLE_GROUND, 5, 3, 1.5f, 2.0f, 1.0f,
         std::array<float, MAX_TROOP_LEVEL + 1>({0,24,30,40,48,62}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,400,500,600,700,900}),
-        std::array<int, MAX_TROOP_LEVEL + 1>({0,0,40000,150000,400000,800000}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,0,2,4,6,12}),
-        std::array<uchar, MAX_TROOP_LEVEL + 1>({0,0,2,4,5,6})
+        std::array<float, MAX_TROOP_LEVEL + 1>({0,400,500,600,700,900})
         )
 {
 }

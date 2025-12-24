@@ -1,13 +1,20 @@
 #include "Dragon.h"
 #include "TroopTargetManager.h"
 #include "AudioEngine.h"
+
+//升到level级所需资源花费
+const std::array<int, MAX_TROOP_LEVEL + 1> Dragon::research_costs_ = { 0,0,1000000,2000000,3000000,3800000 };
+
+//升到level级所需时间 单位：小时
+const std::array<float, MAX_TROOP_LEVEL + 1> Dragon::research_times_ = { 0,0,18,36,72,84 };
+
+//升到level级所需实验室等级
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Dragon::laboratory_level_requireds_ = { 0,1,5,6,7,8 };
+
 Dragon::Dragon(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, RANGED_AOE_AIR_GROUND, 20, 9, 2.0f, 1.25f,0.3f,
         std::array<float, MAX_TROOP_LEVEL + 1>({0,175,200,225,262.5,300}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,1900,2100,2300,2700,3100}),
-        std::array<int, MAX_TROOP_LEVEL + 1>({0,0,1000000,2000000,3000000,3800000}),
-        std::array<float, MAX_TROOP_LEVEL + 1>({0,0,18,36,72,84}),
-        std::array<uchar, MAX_TROOP_LEVEL + 1>({0,1,5,6,7,8})
+        std::array<float, MAX_TROOP_LEVEL + 1>({0,1900,2100,2300,2700,3100})
         )
 {
 }
