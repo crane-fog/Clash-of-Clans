@@ -11,6 +11,8 @@ class GameManager {
 private:
     ULL my_gold_;
     ULL my_elixir_;
+    ULL my_jewel_=10;
+    ULL max_jewel_=10;
     ULL max_gold_;
     ULL max_elixir_;
 
@@ -46,6 +48,18 @@ public:
     ULL getMaxElixir() const
     {
         return max_elixir_;
+    }
+    void setJewel(ULL Jewel);
+    void setMaxJewel(ULL max_jewel);
+
+    ULL getJewel() const
+    {
+        return my_jewel_;
+    }
+
+    ULL getMaxJewel() const
+    {
+        return max_jewel_;
     }
     bool isReplay=0;
 };

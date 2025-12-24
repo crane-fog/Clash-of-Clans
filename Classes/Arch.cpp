@@ -458,7 +458,7 @@ void Arch::archUpgrade() {
         showRefusePopup("当前已是最高等级");
     }
 }
-// 创建显示"当前已是最高等级"的弹窗
+// 创建显示的弹窗
 void Arch::showRefusePopup(std::string text_) {
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
@@ -568,10 +568,12 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice) {
     upgradeLabel->setPosition(Vec2(120, 200));
     upgradeLabel->setTextColor(Color4B::BLACK);
     upgradeLabel->setName("upgrading");
+    upgradeLabel->setTag(998);
     this->addChild(upgradeLabel);
 
     auto timer = CountdownTimer::create();
     timer->setName("upgrade_timer");
+    timer->setTag(997);
     this->addChild(timer);
     timer->start(time,
         [notice, this, upgradeLabel](int remaining) {
@@ -653,6 +655,49 @@ void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, 
         
         if (upgradeTime > 0) {
             arch->startUpgradeAnimation(upgradeTime, Notice_);
+            // 创建一个绿色背景的加速按钮
+            auto label = Label::createWithSystemFont("加速施工", "Arial", 24);
+            label->setTextColor(Color4B::GREEN);
+            label->setPosition(Vec2(0, 0));
+
+            auto speedUpButton = MenuItemLabel::create(label, [=](Ref* sender) {
+                // 扣除一颗宝石
+                if (GameManager::getInstance()->getJewel() >0) {
+                    GameManager::getInstance()->setJewel(GameManager::getInstance()->getJewel() - 1);
+                    arch->remaining_upgrade_time_ = 0; // 立即完成升级
+
+                    // 完成升级
+                    auto newImg = kArchInfo.at(arch->no_)[arch->level_ - 1].image_;
+                    arch->setTexture(newImg);
+                    arch->setOpacity(255);
+                    arch->showArchPanel();
+                    arch->onUpgradeFinished();
+                    isUpgrading = false;
+                    // 移除加速按钮
+                    this->removeChildByName("speedUpButton");
+
+                    // 移除加速动画
+                    this->stopActionByTag(999);
+                    this->removeChildByTag(998);
+                    this->removeChildByTag(997);
+                    
+                    // 显示加速完成的弹窗
+                    showRefusePopup("加速完成！");
+                }
+                else {
+                    // 宝石不足，弹出提示
+                    showRefusePopup("宝石不足，无法加速施工！");
+                }
+                });
+
+            // 设置按钮的背景颜色为绿色
+            speedUpButton->setColor(Color3B::GREEN);
+            speedUpButton->setPosition(Vec2(arch->getContentSize().width / 2,100)); // 按钮位置调整
+
+            auto menu = Menu::create(speedUpButton, nullptr);
+            menu->setPosition(Vec2::ZERO);
+            arch->addChild(menu,1, "speedUpButton");
+
         } else {
             // 立即完成
             auto newImg = kArchInfo.at(no_)[level_ - 1].image_;
