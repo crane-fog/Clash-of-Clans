@@ -5,6 +5,8 @@
 #include "UIcommon.h"
 #include "ui/CocosGUI.h"
 #include "AudioEngine.h"
+#include "MainVillageScene.h"
+
 USING_NS_CC;
 
 std::map<unsigned char, std::function<Arch* (const ArchData&, BaseMap*)>> ArchFactory::creaters_;
@@ -1021,6 +1023,15 @@ void ElixirCollector::createUpgradeComparisonPanel()
     add += "最大容量: " + std::to_string(kArchInfo.at(no_)[level_ - 1].max_capacity_) + " -> " + std::to_string(kArchInfo.at(no_)[level_].max_capacity_) + "\n";
     str.insert(pos + 1, add);
     label->setString(str);
+}
+
+Barracks::Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+{
+    // 建筑对象的构造是在场景init时进行的，因此执行到这里的时候场景还没有切换
+    // 同时由于该游戏中只会有两个场景，因此以下if块中的代码当且仅当MainVillage场景init创建建筑时被执行
+    if (!dynamic_cast<MainVillage*>(cocos2d::Director::getInstance()->getRunningScene())) {
+        TroopConfig::getInstance()->setBarrackLevel(level_);
+    }
 }
 
 void Barracks::showArchPanel()

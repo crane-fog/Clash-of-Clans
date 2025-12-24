@@ -237,10 +237,7 @@ public:
 
 class Barracks : public Arch {
 public:
-    Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
-    {
-        TroopConfig::getInstance()->setBarrackLevel(level_);
-    }
+    Barracks(const ArchData& data, BaseMap* base_map);
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override;
