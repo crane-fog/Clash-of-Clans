@@ -12,6 +12,7 @@
 #include <chrono>
 #include <vector>
 #include "AudioEngine.h"
+#include "TroopConfig.h"
 
 USING_NS_CC;
 
@@ -42,6 +43,18 @@ bool MainVillage::init()
 
     time_t time_diff = current_time - data_time;
     last_exit_time_ = 0;
+
+    ArchFactory::registerCreater(TOWN_HALL, [](const ArchData& data, BaseMap* map) { return new TownHall(data, map); });
+    ArchFactory::registerCreater(WALL, [](const ArchData& data, BaseMap* map) { return new Wall(data, map); });
+    ArchFactory::registerCreater(GOLD_STORAGE, [](const ArchData& data, BaseMap* map) { return new GoldStorage(data, map); });
+    ArchFactory::registerCreater(ELIXIR_STORAGE, [](const ArchData& data, BaseMap* map) { return new ElixirStorage(data, map); });
+    ArchFactory::registerCreater(GOLD_MINE, [](const ArchData& data, BaseMap* map) { return new GoldMine(data, map); });
+    ArchFactory::registerCreater(ELIXIR_COLLECTOR, [](const ArchData& data, BaseMap* map) { return new ElixirCollector(data, map); });
+    ArchFactory::registerCreater(BARRACKS, [](const ArchData& data, BaseMap* map) { return new Barracks(data, map); });
+    ArchFactory::registerCreater(ARMY_CAMP, [](const ArchData& data, BaseMap* map) { return new ArmyCamp(data, map); });
+    ArchFactory::registerCreater(CANNON, [](const ArchData& data, BaseMap* map) { return new Cannon(data, map); });
+    ArchFactory::registerCreater(ARCHER_TOWER, [](const ArchData& data, BaseMap* map) { return new ArcherTower(data, map); });
+    ArchFactory::registerCreater(BOMB, [](const ArchData& data, BaseMap* map) { return new Bomb(data, map); });
 
     for (auto& arch : arch_list) {
         // 更新剩余升级时间
@@ -159,8 +172,8 @@ bool MainVillage::init()
 void MainVillage::onEnter()
 {
     AudioEngine::resume(mainhome_bgm);
-    auto currentScene = Director::getInstance()->getRunningScene();
-    addLoadingLayerToCurrentScene(currentScene, 1.5f);
+    // auto currentScene = Director::getInstance()->getRunningScene();
+    // addLoadingLayerToCurrentScene(currentScene, 1.5f);
     if (last_exit_time_ > 0) {
         time_t current_time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         time_t time_diff = current_time - last_exit_time_;
@@ -230,12 +243,10 @@ void MainVillage::onAttackButtonClick(Ref* sender)
             this->unschedule("stop_audio_key"); // 停止检查
         }
         }, 0.1f, "stop_audio_key");
-    // 创建并显示挑战场景选择面板
-   UICommonHelper attack_panel;
-   bool selected_bg[4] = {0};
-   // stop music.
-   cocos2d::AudioEngine::pause(mainhome_bgm);
-    showChallengeSelectionPanel(this, GameManager::getInstance()->getGold(), GameManager::getInstance()->getElixir());
+    auto u = UICommonHelper::create();
+    // stop music.
+    cocos2d::AudioEngine::pause(mainhome_bgm);
+    u->showChallengeSelectionPanel(this);
 }
 
 void MainVillage::onTroopButtonClick(Ref* sender)
@@ -253,21 +264,152 @@ void MainVillage::onTroopButtonClick(Ref* sender)
     auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));
     addChild(panel, 99999);
 
+    // 吞噬触摸事件，防止点击穿透
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->setSwallowTouches(true);
+    listener->onTouchBegan = [](Touch* touch, Event* event) { return true; };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, panel);
+
+    Size visibleSize = Director::getInstance()->getVisibleSize();
+
     // 面板标题
-    auto titleLabel = cocos2d::Label::createWithSystemFont("还没写好\n这里配置的内容会被保存到单例类TroopConfig", "Arial", 56);
-    titleLabel->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
-        cocos2d::Director::getInstance()->getVisibleSize().height / 2));
-    panel->addChild(titleLabel, 1);
+    auto title_label = cocos2d::Label::createWithSystemFont("兵种配置", "Arial", 56);
+    title_label->setPosition(cocos2d::Vec2(visibleSize.width / 2, visibleSize.height - 50));
+    panel->addChild(title_label, 1);
 
     // 退出按钮
-    auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
-    exitButton->setPosition(cocos2d::Vec2(200, 100));
-    exitButton->setScale(0.8f);
-    exitButton->addClickEventListener([panel, this](cocos2d::Ref* sender) {
-        // 退出面板
+    auto exit_button = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exit_button->setPosition(cocos2d::Vec2(200, 100));
+    exit_button->setScale(0.8f);
+    exit_button->addClickEventListener([panel](cocos2d::Ref* sender) {
         panel->removeFromParent();
         });
-    panel->addChild(exitButton);
+    panel->addChild(exit_button);
+
+    // 人口容量显示
+    auto capacity_label = cocos2d::Label::createWithSystemFont("", "Arial", 36);
+    capacity_label->setPosition(cocos2d::Vec2(visibleSize.width / 2, 100));
+    panel->addChild(capacity_label);
+
+    // 确保TroopConfig有容量，如果没有则设置一个默认值
+    if (TroopConfig::getInstance()->getArmyCampCapacity() == 0) {
+        TroopConfig::getInstance()->setArmyCampCapacity(200); // 默认200
+    }
+
+    // 更新人口显示的lambda
+    auto update_capacity_label = [capacity_label]() {
+        unsigned int current = 0;
+        for (auto it : kTroopTypes) {
+            current += TroopConfig::getInstance()->getTroopCount(it) * kNoHousingSpace.at(it);
+        }
+        unsigned int max = TroopConfig::getInstance()->getArmyCampCapacity();
+        capacity_label->setString(StringUtils::format("人口: %d / %d", current, max));
+        };
+
+    update_capacity_label();
+
+    // 兵种网格布局
+    const float gap_x = 350.0f;
+    const float gap_y = 350.0f;
+    const float icon_size = 200.0f;
+    const int cols = 3;
+    const float start_x = (visibleSize.width - gap_x * (cols - 1)) / 2;
+    const float start_y = visibleSize.height - 300;
+
+    int i = 0;
+    for (const unsigned char it : kTroopTypes) {
+        int row = i / cols;
+        int col = i % cols;
+        float x = start_x + col * gap_x;
+        float y = start_y - row * gap_y;
+
+        // 兵种图标
+        std::string icon_path = kIconPaths.at(it);
+        auto icon = Sprite::create(icon_path);
+        if (icon) {
+            icon->setPosition(Vec2(x, y));
+            Size content_size = icon->getContentSize();
+            float scale = std::min(icon_size / content_size.width, icon_size / content_size.height);
+            icon->setScale(scale);
+            panel->addChild(icon);
+        }
+
+        // 兵种名称
+        auto name_label = Label::createWithSystemFont(Troop::getTroopNameFromEnum(it), "Arial", 32);
+        name_label->setPosition(Vec2(x, y + 150));
+        panel->addChild(name_label);
+
+        // 人口占用提示
+        auto space_label = Label::createWithSystemFont(StringUtils::format("人口占用: %d", kNoHousingSpace.at(it)), "Arial", 24);
+        space_label->setPosition(Vec2(x, y + 120));
+        panel->addChild(space_label);
+
+        // 检查兵种是否解锁
+        bool is_unlocked = i <= TroopConfig::getInstance()->getUnlockedTroopIndex();
+        int required_level = kBarracksTroopUnlock.at(it);
+
+        if (!is_unlocked) {
+            icon->setColor(Color3B::GRAY);
+            auto lock_label = Label::createWithSystemFont(StringUtils::format("需训练营Lv.%d", required_level), "Arial", 36);
+            lock_label->setPosition(Vec2(x, y - 130));
+            lock_label->setColor(Color3B::RED);
+            panel->addChild(lock_label);
+        }
+        else {
+            // 数量显示
+            auto count_label = Label::createWithSystemFont(StringUtils::format("%d", TroopConfig::getInstance()->getTroopCount(it)), "Arial", 40);
+            count_label->setPosition(Vec2(x, y - 130));
+            panel->addChild(count_label);
+
+            // 创建按钮 (- / +)
+            auto create_btn = [&](const std::string& text, float offset_x) {
+                auto btn = ui::Button::create();
+                btn->setTitleText(text);
+                btn->setTitleFontSize(60);
+                btn->setTitleColor(Color3B::WHITE);
+                btn->setPosition(Vec2(x + offset_x, y - 130));
+                panel->addChild(btn);
+                return btn;
+                };
+
+            auto minus_button = create_btn("-", -80);
+            auto plus_button = create_btn("+", 80);
+
+            // 按钮点击事件
+            minus_button->addClickEventListener([it, count_label, update_capacity_label](Ref*) {
+                int count = TroopConfig::getInstance()->getTroopCount(it);
+                if (count > 0) {
+                    TroopConfig::getInstance()->setTroopCount(it, count - 1);
+                    count_label->setString(StringUtils::format("%d", count - 1));
+                    update_capacity_label();
+                }
+                });
+
+            plus_button->addClickEventListener([it, count_label, update_capacity_label](Ref*) {
+                int count = TroopConfig::getInstance()->getTroopCount(it);
+                int space = kNoHousingSpace.at(it);
+
+                // 检查容量
+                unsigned int current_total = 0;
+                for (const unsigned char k : kTroopTypes) {
+                    current_total += TroopConfig::getInstance()->getTroopCount(k) * kNoHousingSpace.at(k);
+                }
+                unsigned int max = TroopConfig::getInstance()->getArmyCampCapacity();
+
+                if (current_total + space <= max) {
+                    TroopConfig::getInstance()->setTroopCount(it, count + 1);
+                    count_label->setString(StringUtils::format("%d", count + 1));
+                    update_capacity_label();
+                }
+                else {
+                    // 容量不足提示
+                    auto seq = Sequence::create(ScaleTo::create(0.1f, 1.5f), ScaleTo::create(0.1f, 1.0f), nullptr);
+                    count_label->runAction(seq);
+                }
+                });
+        }
+        i++;
+    }
 }
 
 void MainVillage::onShopButtonClick(Ref* sender)
@@ -282,10 +424,8 @@ void MainVillage::onShopButtonClick(Ref* sender)
             this->unschedule("stop_audio_key"); // 停止检查
         }
         }, 0.1f, "stop_audio_key");
-    CCLOG("打开商店...");
     // 避免重复打开
     if (this->getChildByTag(100)) {
-        CCLOG("商店已经打开");
         return;
     }
     auto popup = ShopPopup::create();
@@ -498,160 +638,6 @@ void MainVillage::showShopPopupWithDelay(float sec)
         }, sec, "show_shop_popup_key");  // 延迟 2 秒调用
 }
 
-// 显示挑战场景选择面板
- void MainVillage::showChallengeSelectionPanel(cocos2d::Node* parent, int gold_, int elixir_) {
-     // 播放音效
-     auto select_bgm = AudioEngine::play2d("music/choosing_battle.mp3", true);
-    // 创建一个覆盖全屏的面板
-    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));  // 黑色背景
-    parent->addChild(panel, 99999);
-    bool selectedOptions[4] = { false,false,false,false };
-    // 面板标题
-    auto titleLabel = cocos2d::Label::createWithSystemFont("选择挑战场景", "Arial", 56);
-    titleLabel->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
-        cocos2d::Director::getInstance()->getVisibleSize().height - 50));
-    panel->addChild(titleLabel, 1);
-
-    // 创建四个选项
-    std::vector<std::string> sceneNames = { "场景1", "场景2", "场景3", "场景4" };
-    std::vector<std::string> sceneImages = { "attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp", "attack_scene/Scenery3.webp", "attack_scene/Scenery4.webp" };
-    std::vector<std::string> difficultyLevels = { "简单", "中等", "困难", "极难" };
-
-
-    // 确认按钮
-    auto confirmButton = cocos2d::ui::Button::create("attack_scene/yes.png");
-    confirmButton->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width - 200, 100));
-    confirmButton->setScale(0.8f);
-    confirmButton->setEnabled(false);  // 默认不可点击
-    confirmButton->setName("confirm_attack");
-    panel->addChild(confirmButton);
-
-    confirmButton->addClickEventListener([ &selectedOptions, gold_, elixir_, panel, this, select_bgm](cocos2d::Ref* sender) {
-        // 确认后更换场景
-        if (selectedOptions[0] != -1) { // 确保已经选择了一个选项
-            // 播放音效
-            int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
-            // 检查音频的状态，直到播放完成
-            this->schedule([button_hit, this](float dt) {
-                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                    // 停止音效播放并释放资源
-                    cocos2d::AudioEngine::uncache("music/button.mp3");
-                    this->unschedule("stop_audio_key"); // 停止检查
-                }
-                }, 0.1f, "stop_audio_key");
-            CocController::getInstance()->changeScene(1, gold_, elixir_);
-
-            // 点击确认按钮后关闭面板
-            panel->removeFromParent();
-            this->selectedItemBg = nullptr;
-            AudioEngine::stop(select_bgm);
-        }
-        });
-
-    // 退出按钮
-    auto exitButton = cocos2d::ui::Button::create("attack_scene/exit.png");
-    exitButton->setPosition(cocos2d::Vec2(200, 100));
-    exitButton->setScale(0.8f);
-    exitButton->addClickEventListener([panel,this,select_bgm](cocos2d::Ref* sender) {
-        // 播放音效
-        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
-        // 检查音频的状态，直到播放完成
-        this->schedule([button_hit, this](float dt) {
-            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                // 停止音效播放并释放资源
-                cocos2d::AudioEngine::uncache("music/button.mp3");
-                this->unschedule("stop_audio_key"); // 停止检查
-            }
-            }, 0.1f, "stop_audio_key");
-        // 退出面板
-        panel->removeFromParent();
-        selectedItemBg = nullptr;
-        // stop music.
-        AudioEngine::stop(select_bgm);
-        });
-    panel->addChild(exitButton);
-
-    float buttonWidth = 350;
-    float buttonHeight = 400;
-    float padding = 130;
-    int canConfirm[1] = { -1 };
-    for (size_t i = 0; i < sceneNames.size(); i++) {
-        // 选项背景
-        auto itemBg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 255), buttonWidth, buttonHeight);
-        itemBg->setPosition(cocos2d::Vec2((buttonWidth + padding) * i + 50, 350));
-        itemBg->setTag(i);
-        // 选项图片
-        auto itemPic = cocos2d::Sprite::create(sceneImages[i]);
-        float scale = std::min(buttonWidth / itemPic->getContentSize().width, buttonHeight / itemPic->getContentSize().height);
-        itemPic->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight / 2 + 20));
-        itemPic->setScale(scale);
-
-        // 显示场景名称
-        auto nameLabel = cocos2d::Label::createWithSystemFont(sceneNames[i], "Arial", 34);
-        nameLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, 25));  // 名字位置
-        nameLabel->setColor(cocos2d::Color3B::BLACK);
-        itemBg->addChild(nameLabel, 150);
-
-        // 显示难度级别
-        auto difficultyLabel = cocos2d::Label::createWithSystemFont(difficultyLevels[i], "Arial", 25);
-        difficultyLabel->setColor(cocos2d::Color3B::BLACK);
-        difficultyLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight + 20));  // 难度位置
-        itemBg->addChild(difficultyLabel, 150);
-
-        // 将按钮添加到背景层
-        itemBg->addChild(itemPic);
-        panel->addChild(itemBg);
-
-        // 添加触摸事件监听器
-        auto touchListener = cocos2d::EventListenerTouchOneByOne::create();
-        touchListener->onTouchBegan = [parent, itemBg, i, &selectedOptions, panel, confirmButton, &canConfirm,this](cocos2d::Touch* touch, cocos2d::Event* event) {
-            // 获取触摸点并判断是否点击了按钮
-            cocos2d::Rect buttonRect = itemBg->getBoundingBox();
-            if (buttonRect.containsPoint(touch->getLocation())) {
-                onOptionClick(itemBg, confirmButton);
-                return true;  // 阻止事件继续传播
-            }
-            return false;
-            };
-        parent->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, itemBg);  // 为按钮添加触摸事件
-    }
-
-}
-
-// 选项点击事件处理
-void MainVillage::onOptionClick(cocos2d::LayerColor* itemBg, cocos2d::ui::Button* confirmButton) {
-    // 播放音效
-    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
-    // 检查音频的状态，直到播放完成
-    this->schedule([button_hit, this](float dt) {
-        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-            // 停止音效播放并释放资源
-            cocos2d::AudioEngine::uncache("music/button.mp3");
-            this->unschedule("stop_audio_key"); // 停止检查
-        }
-        }, 0.1f, "stop_audio_key");
-    // 如果点击的是同一个按钮，保持选中状态
-    if (selectedItemBg == itemBg) {
-        return;  // 已经是选中的按钮，不做任何改变
-    }
-    // 如果已有按钮被选中，取消选中状态并恢复原始颜色
-    if (selectedItemBg) {
-        selectedItemBg->setColor(cocos2d::Color3B::WHITE);  // 恢复原始颜色
-        remove_border(selectedItemBg);
-    }
-    // 更新当前选中的按钮
-    selectedItemBg = itemBg;
-    if (selectedItemBg) {
-        // 更改选中按钮的颜色
-        selectedItemBg->setColor(cocos2d::Color3B::BLUE);  // 变暗的颜色
-        draw_border(selectedItemBg);
-
-
-        confirmButton->setEnabled(true);
-    }
-
-}
-
 void MainVillage::onExit()
 {
     last_exit_time_ = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -680,7 +666,7 @@ int MainVillage::getBuildingCount(unsigned char archNo)
     return count;
 }
 
-void MainVillage::onReplayButtonClick(cocos2d::Ref* sender,int gold_,int elixir_,bool isReplay) {
-
-    CocController::getInstance()->changeScene(1, gold_, elixir_);
-}
+//void MainVillage::onReplayButtonClick(cocos2d::Ref* sender,int gold_,int elixir_,bool isReplay) {
+//
+//    CocController::getInstance()->changeScene(1, gold_, elixir_);
+//}

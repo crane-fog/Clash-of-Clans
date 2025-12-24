@@ -184,3 +184,159 @@ void CountdownTimer::updateTimer(float dt) {
     }
 }
 
+void UICommonHelper::showChallengeSelectionPanel(cocos2d::Node* parent)
+{
+    // 播放音效
+    auto select_bgm = AudioEngine::play2d("music/choosing_battle.mp3", true);
+    
+    // 创建一个覆盖全屏的面板
+    auto visible_size = cocos2d::Director::getInstance()->getVisibleSize();
+    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));  // 黑色背景
+    parent->addChild(panel, 99999);
+    
+    // 将 helper 实例添加到 panel 中，确保其生命周期跟随 panel
+    panel->addChild(this);
+    
+    // 重置选择状态
+    can_confirm_ = -1;
+    selected_item_bg_ = nullptr;
+
+    // 面板标题
+    auto title_label = cocos2d::Label::createWithSystemFont("选择挑战场景", "Arial", 56);
+    title_label->setPosition(cocos2d::Vec2(visible_size.width / 2, visible_size.height - 50));
+    panel->addChild(title_label, 1);
+
+    // 确认按钮
+    auto confirm_button = cocos2d::ui::Button::create("attack_scene/yes.png");
+    confirm_button->setPosition(cocos2d::Vec2(visible_size.width - 200, 100));
+    confirm_button->setScale(0.8f);
+    confirm_button->setEnabled(false);  // 默认不可点击
+    confirm_button->setName("confirm_attack");
+    panel->addChild(confirm_button);
+
+    confirm_button->addClickEventListener([panel, this, select_bgm](cocos2d::Ref* sender) {
+        if (can_confirm_ != -1) {
+            // 播放音效
+            int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+            // 检查音频的状态，直到播放完成
+            this->schedule([button_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/button.mp3");
+                    this->unschedule("stop_audio_key"); // 停止检查
+                }
+                }, 0.1f, "stop_audio_key");
+
+            CocController::getInstance()->changeScene(can_confirm_ + 1);
+            panel->removeFromParent();
+            this->selected_item_bg_ = nullptr;
+            AudioEngine::stop(select_bgm);
+        }
+    });
+
+    // 退出按钮
+    auto exit_button = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exit_button->setPosition(cocos2d::Vec2(200, 100));
+    exit_button->setScale(0.8f);
+    exit_button->addClickEventListener([panel, this, select_bgm](cocos2d::Ref* sender) {
+        // 播放音效
+        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule([button_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/button.mp3");
+                this->unschedule("stop_audio_key"); // 停止检查
+            }
+            }, 0.1f, "stop_audio_key");
+
+        panel->removeFromParent();
+        selected_item_bg_ = nullptr;
+        AudioEngine::stop(select_bgm);
+    });
+    panel->addChild(exit_button);
+
+    // 创建选项
+    const std::array<std::string, 4> scene_names = { "关卡1", "关卡2", "关卡3", "关卡4" };
+    const std::array<std::string, 4> scene_images = { "attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp", "attack_scene/Scenery3.webp", "attack_scene/Scenery4.webp" };
+
+    for (size_t i = 0; i < scene_names.size(); i++) {
+        createOptionItem(panel, i, scene_names[i], scene_images[i], confirm_button);
+    }
+}
+
+void UICommonHelper::createOptionItem(cocos2d::Node* panel, int index, const std::string& name, const std::string& image_path, cocos2d::ui::Button* confirm_button)
+{
+    float button_width = 350;
+    float button_height = 400;
+    float padding = 130;
+
+    // 选项背景
+    auto item_bg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 255), button_width, button_height);
+    item_bg->setPosition(cocos2d::Vec2((button_width + padding) * index + 50, 350));
+    item_bg->setTag(index);
+
+    // 选项图片
+    auto item_pic = cocos2d::Sprite::create(image_path);
+    if (item_pic) {
+        float scale = std::min(button_width / item_pic->getContentSize().width, button_height / item_pic->getContentSize().height);
+        item_pic->setPosition(cocos2d::Vec2(button_width / 2, button_height / 2 + 20));
+        item_pic->setScale(scale);
+        item_bg->addChild(item_pic);
+    }
+
+    // 显示场景名称
+    auto name_label = cocos2d::Label::createWithSystemFont(name, "Arial", 34);
+    name_label->setPosition(cocos2d::Vec2(button_width / 2, 25));
+    name_label->setColor(cocos2d::Color3B::BLACK);
+    item_bg->addChild(name_label, 150);
+
+    panel->addChild(item_bg);
+
+    // 添加触摸事件监听器
+    auto touch_listener = cocos2d::EventListenerTouchOneByOne::create();
+    touch_listener->setSwallowTouches(true); // 吞噬触摸，防止穿透
+    touch_listener->onTouchBegan = [item_bg, index, confirm_button, this](cocos2d::Touch* touch, cocos2d::Event* event) {
+        cocos2d::Rect button_rect = item_bg->getBoundingBox();
+        // 将触摸点转换为父节点坐标系（因为getBoundingBox是相对于父节点的）
+        cocos2d::Vec2 touch_location = item_bg->getParent()->convertTouchToNodeSpace(touch);
+        
+        if (button_rect.containsPoint(touch_location)) {
+            onOptionClick(item_bg, index, confirm_button);
+            return true;
+        }
+        return false;
+    };
+    panel->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touch_listener, item_bg);
+}
+
+void UICommonHelper::onOptionClick(cocos2d::LayerColor* item_bg, int index, cocos2d::ui::Button* confirm_button)
+{
+    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule([button_hit, this](float dt) {
+        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+            // 停止音效播放并释放资源
+            cocos2d::AudioEngine::uncache("music/button.mp3");
+            this->unschedule("stop_audio_key"); // 停止检查
+        }
+        }, 0.1f, "stop_audio_key");
+
+    if (selected_item_bg_ == item_bg) return;
+
+    // 取消之前的选中状态
+    if (selected_item_bg_) {
+        selected_item_bg_->setColor(cocos2d::Color3B::WHITE);
+        remove_border(selected_item_bg_);
+    }
+
+    // 设置新的选中状态
+    selected_item_bg_ = item_bg;
+    if (selected_item_bg_) {
+        selected_item_bg_->setColor(cocos2d::Color3B::BLUE);
+        draw_border(selected_item_bg_);
+        confirm_button->setEnabled(true);
+        can_confirm_ = index;
+    }
+}

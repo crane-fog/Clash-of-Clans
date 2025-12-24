@@ -54,7 +54,7 @@ protected:
     const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
 
 public:
-    enum TroopType : unsigned char {
+    enum TroopType : uchar {
         BARBARIAN = 0,
         ARCHER = 1,
         GIANT = 2,

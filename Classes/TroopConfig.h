@@ -4,14 +4,44 @@
 #include "ArchInfo.h"
 #include <vector>
 
-// Íæ¼Ò±øÖÖÅäÖÃ
+// todo: å‘ç°æ²¡æœ‰äººå£å ç”¨çš„å¸¸é‡ï¼Œä¸´æ—¶å†™äº†ä¸€ä¸ªï¼Œå¾…æ•´åˆè¿›å…·ä½“å…µç§çš„æ„é€ å‡½æ•°
+const std::map<unsigned char, unsigned char> kNoHousingSpace = {
+    {Troop::BARBARIAN, 1},
+    {Troop::ARCHER, 1},
+    {Troop::GIANT, 5},
+    {Troop::WALL_BREAKER, 2},
+    {Troop::DRAGON, 20},
+    {Troop::BALLOON, 5}
+};
+
+// åŒä¸Šï¼Œè¿™ä¸ªä¸»è¦ä¸ºäº†è§£å†³é¡ºåºå’Œité—®é¢˜
+const std::vector<unsigned char> kTroopTypes = {
+    Troop::BARBARIAN,
+    Troop::ARCHER,
+    Troop::GIANT,
+    Troop::WALL_BREAKER,
+    Troop::BALLOON,
+    Troop::DRAGON
+};
+
+// å…µç§å›¾æ ‡è·¯å¾„æ˜ å°„
+static const std::map<unsigned char, std::string> kIconPaths = {
+    { Troop::BARBARIAN, "troop/babarian_icon.png"},
+    { Troop::ARCHER, "troop/archer_icon.png" },
+    { Troop::GIANT, "troop/Giant_icon.png" },
+    { Troop::WALL_BREAKER, "troop/bomb_icon.png" },
+    { Troop::DRAGON, "troop/dragon_icon.png" },
+    { Troop::BALLOON, "troop/balloon_icon.png" }
+};
+
+// ç©å®¶å…µç§é…ç½®
 class TroopConfig {
 private:
     unsigned int capacity_;
     unsigned char unlocked_troop_type_;
-    std::vector<unsigned int> config_;
+    std::map<unsigned char, unsigned int> config_;
 
-    TroopConfig() : capacity_(0), unlocked_troop_type_(0), config_(TROOP_TYPE_NUM, 0) {}
+    TroopConfig() : capacity_(0), unlocked_troop_type_(0) { for (auto it : kTroopTypes) config_.emplace(it, 0); }
     TroopConfig(const TroopConfig&) = delete;
     TroopConfig& operator= (const TroopConfig&) = delete;
 
@@ -22,39 +52,39 @@ public:
         return &instance;
     }
     
-    // ÉèÖÃÑµÁ·ÓªµÈ¼¶
+    // è®¾ç½®è®­ç»ƒè¥ç­‰çº§
     void setBarrackLevel(unsigned char level);
 
-    // ÉèÖÃÈË¿ÚÈİÁ¿
+    // è®¾ç½®äººå£å®¹é‡
     void setArmyCampCapacity(unsigned int capacity)
     {
         capacity_ = capacity;
     }
 
-    // ÅäÖÃ±øÖÖÊıÁ¿
+    // é…ç½®å…µç§æ•°é‡
     void setTroopCount(unsigned char troop_type, unsigned int count)
     {
         if (troop_type <= unlocked_troop_type_) {
-            config_[troop_type] = count;
+            config_.at(troop_type) = count;
         }
     }
 
-    // »ñÈ¡ÈË¿ÚÈİÁ¿
+    // è·å–äººå£å®¹é‡
     unsigned int getArmyCampCapacity() const
     {
         return capacity_;
     }
 
-    // »ñÈ¡ÒÑ½âËøµÄ±øÖÖ½ø¶ÈË÷Òı
-    unsigned char getUnlockedTroops() const
+    // è·å–å·²è§£é”çš„å…µç§è¿›åº¦çš„ kTroopTypes ç´¢å¼•
+    unsigned char getUnlockedTroopIndex() const
     {
         return unlocked_troop_type_;
     }
 
-    // »ñÈ¡µ±Ç°ÒÑÅäÖÃµÄ±øÖÖÊıÁ¿
+    // è·å–å½“å‰å·²é…ç½®çš„å…µç§æ•°é‡
     unsigned int getTroopCount(unsigned char troop_type) const
     {
-        return config_[troop_type];
+        return config_.at(troop_type);
     }
 };
 

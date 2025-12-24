@@ -7,39 +7,14 @@
 #include "AudioEngine.h"
 USING_NS_CC;
 
+std::map<unsigned char, std::function<Arch* (const ArchData&, BaseMap*)>> ArchFactory::creaters_;
 
 ArchData::ArchData(Arch* a) : no_(a->no_), level_(a->level_), x_(a->x_), y_(a->y_),
 remaining_upgrade_time_(a->remaining_upgrade_time_), current_hp_(a->current_hp_), current_capacity_(a->current_capacity_) {}
 
 Arch* Arch::create(const ArchData& data, BaseMap* base_map, bool is_mine)
 {
-    Arch* pRet;
-    switch (data.no_) {
-        case WALL:
-            pRet = new(std::nothrow) Wall(data, base_map);
-            break;
-        case GOLD_STORAGE:
-            pRet = new(std::nothrow) GoldStorage(data, base_map);
-            break;
-        case ELIXIR_STORAGE:
-            pRet = new(std::nothrow) ElixirStorage(data, base_map);
-            break;
-        case GOLD_MINE:
-            pRet = new(std::nothrow) GoldMine(data, base_map);
-            break;
-        case ELIXIR_COLLECTOR:
-            pRet = new(std::nothrow) ElixirCollector(data, base_map);
-            break;
-        case BARRACKS:
-            pRet = new(std::nothrow) Barracks(data, base_map);
-            break;
-        case ARMY_CAMP:
-            pRet = new(std::nothrow) ArmyCamp(data, base_map);
-            break;
-        default:
-            pRet = new(std::nothrow) Arch(data, base_map);
-            break;
-    }
+    Arch* pRet = ArchFactory::createArch(data, base_map);
     if (pRet) {
         pRet->is_mine_ = is_mine;
         if (pRet->initWithFile(kArchInfo.at(data.no_)[data.level_ - 1].image_)) {
@@ -443,14 +418,38 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
         case ARMY_CAMP: return "兵营";
         case CANNON: return "加农炮";
         case ARCHER_TOWER: return "箭塔";
+        case BOMB: return "隐形炸弹";
         default: return "未知建筑";
     }
 }
 
 void Arch::archUpgrade() {
     
-    unsigned char max_ = 4;
+    unsigned char max_ = kArchInfo.at(no_).size();
     if (level_ < max_) {
+        // 获取大本营等级
+        unsigned char townHallLevel = 1;
+        if (base_map_) {
+            for (auto arch : base_map_->archs_) {
+                if (arch->getNo() == TOWN_HALL) {
+                    townHallLevel = arch->getLevel();
+                    break;
+                }
+            }
+        }
+
+        // 检查是否受大本营等级限制
+        if (kArchTownHallLevelLimit.find(no_) != kArchTownHallLevelLimit.end()) {
+            const auto& limits = kArchTownHallLevelLimit.at(no_);
+            if (level_ < limits.size()) {
+                unsigned char requiredTH = limits[level_];
+                if (townHallLevel < requiredTH) {
+                    showRefusePopup("需大本营等级 " + std::to_string(requiredTH));
+                    return;
+                }
+            }
+        }
+
         // 创建一个新的面板显示升级前后的数据和金币提示
         createUpgradeComparisonPanel();
     }
@@ -756,6 +755,13 @@ void Arch::updateBuildingDisplay()
 
 
 /* 具体建筑的虚函数重写 */
+void TownHall::onDeath()
+{
+    // todo: 发布事件，加星
+    /*******************************/
+    Arch::onDeath();
+}
+
 void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
 {
     for (auto arch : base_map_->archs_) {
@@ -974,11 +980,10 @@ void Barracks::showArchPanel()
     std::string str = label->getString();
     str += "当前可用的兵种：\n";
     int extraLines = 0;
-    for (const auto& troop : kBarracksTroopUnlock) {
-        if (troop.first <= level_) {
-            str += Troop::getTroopNameFromEnum(troop.second) + "\n";
-            extraLines++;
-        }
+    int index = TroopConfig::getInstance()->getUnlockedTroopIndex();
+    for (int i = 0; i < index; ++i) {
+        str += Troop::getTroopNameFromEnum(kTroopTypes[i]) + "\n";
+        extraLines++;
     }
     label->setString(str);
 
@@ -1057,4 +1062,48 @@ void ArmyCamp::createUpgradeComparisonPanel()
 void ArmyCamp::onUpgradeFinished()
 {
     TroopConfig::getInstance()->setArmyCampCapacity(kArmyCampCapacity[level_ - 1]);
+}
+
+void Cannon::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "每秒伤害: " + std::to_string(static_cast<int>(kArchInfo.at(CANNON)[level_ - 1].damage_ / (kArchInfo.at(CANNON)[level_ - 1].attack_interval_ / 1000.0))) + "\n";
+    label->setString(str);
+}
+
+void ArcherTower::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str += "每秒伤害: " + std::to_string(static_cast<int>(kArchInfo.at(ARCHER_TOWER)[level_ - 1].damage_ / (kArchInfo.at(ARCHER_TOWER)[level_ - 1].attack_interval_ / 1000.0))) + "\n";
+    label->setString(str);
+}
+
+void Bomb::showArchPanel()
+{
+    if (getChildByName("ARCH_PANEL")) {
+        return;
+    }
+    Arch::showArchPanel();
+    auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
+    auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
+    std::string str = label->getString();
+    str.pop_back();
+    auto pos = str.find_last_of('\n');
+    if (pos != std::string::npos) {
+        str.erase(pos);
+    }
+    str += "\n爆炸伤害: " + std::to_string(kArchInfo.at(BOMB)[level_ - 1].damage_) + "\n";
+    label->setString(str);
 }

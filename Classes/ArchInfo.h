@@ -21,14 +21,16 @@ enum ArchName : unsigned char {
     BARRACKS = 20, // 训练营
     ARMY_CAMP = 21, // 兵营
     CANNON = 30, // 加农炮
-    ARCHER_TOWER = 31 // 箭塔
+    ARCHER_TOWER = 31, // 箭塔
+    BOMB = 40 // 隐形炸弹
 };
 
 enum ArchType : unsigned char {
     OTHER = 0, // 其它
     RESOURCE = 1, // 资源
     DEFENSE = 2, // 防御
-    WALLT = 3 // 城墙
+    WALLT = 3, // 城墙
+    TRAP = 4 // 陷阱
 };
 
 enum ResourceType : unsigned char {
@@ -100,7 +102,22 @@ const std::map<unsigned char, std::vector<unsigned char>> kArchCount = {
     {BARRACKS, {1, 1, 1, 1}},
     {ARMY_CAMP, {1, 1, 1, 1}},
     {CANNON, {1, 2, 2, 2}},
-    {ARCHER_TOWER, {0, 1, 1, 2}}
+    {ARCHER_TOWER, {0, 1, 1, 2}},
+    {BOMB, {1, 2, 3, 4}}
+};
+
+// 建筑物等级所需要的大本营等级
+const std::map<unsigned char, std::vector<unsigned char>> kArchTownHallLevelLimit = {
+    {WALL, {1, 2, 3, 4}},
+    {GOLD_STORAGE, {1, 2, 2, 3}},
+    {ELIXIR_STORAGE, {1, 2, 2, 3}},
+    {GOLD_MINE, {1, 1, 2, 2}},
+    {ELIXIR_COLLECTOR, {1, 1, 2, 2}},
+    {BARRACKS, {1, 2, 3, 4}},
+    {ARMY_CAMP, {1, 2, 3, 4}},
+    {CANNON, {1, 1, 2, 3}},
+    {ARCHER_TOWER, {2, 3, 3, 4}},
+    {BOMB, {1, 1, 2, 3}}
 };
 
 // 建筑物信息数据
@@ -117,14 +134,14 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
         {"arch/Wall4.webp", 4, 1, WALLT, GOLD, 10000, 0, 800}}},
     {GOLD_STORAGE, {
         {"arch/Gold_Storage1.webp", 1, 3, RESOURCE, ELIXIR, 300, 10, 150, 1500},
-        {"arch/Gold_Storage2.webp", 2, 3, RESOURCE, ELIXIR, 750, 120, 300, 3000},
-        {"arch/Gold_Storage3.webp", 3, 3, RESOURCE, ELIXIR, 1500, 300, 450, 6000},
-        {"arch/Gold_Storage4.webp", 4, 3, RESOURCE, ELIXIR, 3000, 900, 600, 12000}}},
+        {"arch/Gold_Storage2.webp", 2, 3, RESOURCE, ELIXIR, 750, 120, 300, 6000},
+        {"arch/Gold_Storage3.webp", 3, 3, RESOURCE, ELIXIR, 1500, 300, 450, 18000},
+        {"arch/Gold_Storage4.webp", 4, 3, RESOURCE, ELIXIR, 3000, 900, 600, 48000}}},
     {ELIXIR_STORAGE, {
         {"arch/Elixir_Storage1.webp", 1, 3, RESOURCE, GOLD, 300, 10, 150, 1500},
-        {"arch/Elixir_Storage2.webp", 2, 3, RESOURCE, GOLD, 750, 120, 300, 3000},
-        {"arch/Elixir_Storage3.webp", 3, 3, RESOURCE, GOLD, 1500, 300, 450, 6000},
-        {"arch/Elixir_Storage4.webp", 4, 3, RESOURCE, GOLD, 3000, 900, 600, 12000}}},
+        {"arch/Elixir_Storage2.webp", 2, 3, RESOURCE, GOLD, 750, 120, 300, 6000},
+        {"arch/Elixir_Storage3.webp", 3, 3, RESOURCE, GOLD, 1500, 300, 450, 18000},
+        {"arch/Elixir_Storage4.webp", 4, 3, RESOURCE, GOLD, 3000, 900, 600, 48000}}},
     {GOLD_MINE, {
         {"arch/Gold_Mine1.webp", 1, 3, RESOURCE, ELIXIR, 150, 5, 75, 1000, 300, GOLD},
         {"arch/Gold_Mine2.webp", 2, 3, RESOURCE, ELIXIR, 300, 15, 150, 2000, 450, GOLD},
@@ -144,7 +161,7 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
         {"arch/Army_Camp1.webp", 1, 4, OTHER, ELIXIR, 200, 60, 100},
         {"arch/Army_Camp2.webp", 2, 4, OTHER, ELIXIR, 2000, 300, 150},
         {"arch/Army_Camp3.webp", 3, 4, OTHER, ELIXIR, 10000, 1800, 200},
-        {"arch/Army_Camp4.webp", 4, 4, OTHER, ELIXIR, 100000, 7200, 250}}},
+        {"arch/Army_Camp4.webp", 4, 4, OTHER, ELIXIR, 40000, 7200, 250}}},
     {CANNON, {
         {"arch/Cannon1.webp", 1, 3, DEFENSE, GOLD, 250, 5, 300, 0, 0, NOTRESOURCE, 5, 800, 90},
         {"arch/Cannon2.webp", 2, 3, DEFENSE, GOLD, 1000, 30, 360, 0, 0, NOTRESOURCE, 8, 800, 90},
@@ -154,18 +171,23 @@ const std::map<unsigned char, std::vector<ArchInfo>> kArchInfo = {
         {"arch/Archer_Tower1.webp", 1, 3, DEFENSE, GOLD, 1000, 15, 380, 0, 0, NOTRESOURCE, 5, 500, 100, 2},
         {"arch/Archer_Tower2.webp", 2, 3, DEFENSE, GOLD, 2000, 120, 420, 0, 0, NOTRESOURCE, 7, 500, 100, 2},
         {"arch/Archer_Tower3.webp", 3, 3, DEFENSE, GOLD, 5000, 1200, 460, 0, 0, NOTRESOURCE, 9, 500, 100, 2},
-        {"arch/Archer_Tower4.webp", 4, 3, DEFENSE, GOLD, 20000, 3600, 500, 0, 0, NOTRESOURCE, 12, 500, 100, 2}}}
+        {"arch/Archer_Tower4.webp", 4, 3, DEFENSE, GOLD, 20000, 3600, 500, 0, 0, NOTRESOURCE, 12, 500, 100, 2}}},
+    {BOMB, {
+        {"arch/Bomb1.webp", 1, 1, TRAP, GOLD, 400, 0, 1, 0, 0, NOTRESOURCE, 20, UINT_MAX, 15, 0, 1, 3.0f},
+        {"arch/Bomb2.webp", 2, 1, TRAP, GOLD, 1000, 360, 1, 0, 0, NOTRESOURCE, 24, UINT_MAX, 15, 0, 1, 3.0f},
+        {"arch/Bomb3.webp", 3, 1, TRAP, GOLD, 10000, 1200, 1, 0, 0, NOTRESOURCE, 29, UINT_MAX, 15, 0, 1, 3.0f},
+        {"arch/Bomb4.webp", 4, 1, TRAP, GOLD, 40000, 2400, 1, 0, 0, NOTRESOURCE, 35, UINT_MAX, 15, 0, 1, 3.0f}}}
 };
 
 const std::vector<unsigned int> kArmyCampCapacity = { 20, 30, 35, 40 };
 
-const std::pair<unsigned char, unsigned char> kBarracksTroopUnlock[] = {
-    {1, Troop::BARBARIAN},
-    {1, Troop::ARCHER},
-    {2, Troop::GIANT},
-    {2, Troop::WALL_BREAKER},
-    {3, Troop::BALLOON},
-    {4, Troop::DRAGON}
+const std::map<unsigned char, unsigned char> kBarracksTroopUnlock = {
+    {Troop::BARBARIAN, 1},
+    {Troop::ARCHER, 1},
+    {Troop::GIANT, 2},
+    {Troop::WALL_BREAKER, 2},
+    {Troop::BALLOON, 3},
+    {Troop::DRAGON, 4}
 };
 
 #endif // __ARCH_INFO_H__

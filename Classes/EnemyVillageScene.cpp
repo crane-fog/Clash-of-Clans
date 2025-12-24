@@ -13,12 +13,11 @@
 #include "Balloon.h"
 #include "Dragon.h"
 #include "WallBreaker.h"
-#include"UIcommon.h"
+#include "UIcommon.h"
 #include "AudioEngine.h"
 #include"AttackStars.h"
 #include"ReplayAttack.h"
 USING_NS_CC;
-int selectedTroopType = 0;  // -1表示未选择任何兵种 todo: 最好不要全局变量
 
 EnemyVillage* EnemyVillage::create(int level)
 {
@@ -54,9 +53,13 @@ bool EnemyVillage::myInit(int level)
         int nowArch = TroopTargetManager::getInstance()->getlivingsum();
         if (arch.no_ != WALL)TroopTargetManager::getInstance()->setlivingsum(nowArch+1);
     }
-    /*auto barbarian = Barbarian::create(base_map_, 1, cocos2d::Vec2(40, 20));
-    if (!barbarian)return false;
-	troop_list_.push_back(barbarian);*/
+    
+    troop_factories_[Troop::BARBARIAN] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Barbarian::create(map, lvl, pos); };
+    troop_factories_[Troop::ARCHER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Archer::create(map, lvl, pos); };
+    troop_factories_[Troop::GIANT] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Giant::create(map, lvl, pos); };
+    troop_factories_[Troop::WALL_BREAKER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return WallBreaker::create(map, lvl, pos); };
+    troop_factories_[Troop::BALLOON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Balloon::create(map, lvl, pos); };
+    troop_factories_[Troop::DRAGON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Dragon::create(map, lvl, pos); };
 
     /*auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
     if (!dragon)return false;
@@ -80,7 +83,7 @@ bool EnemyVillage::myInit(int level)
     
     // 显示红色底色（我方不可下兵范围）
     // 包裹的范围是所有地方建筑向外延伸1格
-    std::set<std::pair<int, int>> occupied_cells;
+    occupied_cells_.clear();
     for (auto arch : base_map_->archs_) {
         float size_f;
         arch->getCellPosition(size_f);
@@ -91,7 +94,7 @@ bool EnemyVillage::myInit(int level)
         for (int i = x - 1; i < x + size + 1; ++i) {
             for (int j = y - 1; j < y + size + 1; ++j) {
                 if (i >= 0 && i < MAP_SIZE && j >= 0 && j < MAP_SIZE) {
-                    occupied_cells.insert({ i, j });
+                    occupied_cells_.insert({ i, j });
                 }
             }
         }
@@ -100,7 +103,7 @@ bool EnemyVillage::myInit(int level)
     auto red_layer = cocos2d::Node::create();
     base_map_->addChild(red_layer, 0);
 
-    for (const auto& cell : occupied_cells) {
+    for (const auto& cell : occupied_cells_) {
         auto sprite = cocos2d::Sprite::create("SingleCellAlphaRed.png");
         if (sprite) {
             cocos2d::Vec2 pos = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(cell.first + 0.5f, cell.second + 0.5f));
@@ -121,7 +124,7 @@ bool EnemyVillage::myInit(int level)
 
     // 添加触摸监听器来检测玩家点击的位置
     auto touchListener = cocos2d::EventListenerTouchOneByOne::create();
-    touchListener->onTouchBegan = CC_CALLBACK_2(EnemyVillage::onTouchBegan, this, occupied_cells);
+    touchListener->onTouchBegan = CC_CALLBACK_2(EnemyVillage::onTouchBegan, this);
     //touchListener->onTouchMoved = CC_CALLBACK_2(EnemyVillage::onTouchMoved, this);
     //touchListener->onTouchEnded = CC_CALLBACK_2(EnemyVillage::onTouchEnded, this);
     // touchListener->onTouchCancelled = CC_CALLBACK_2(EnemyVillage::onTouchCancelled, this);
@@ -145,16 +148,16 @@ bool EnemyVillage::myInit(int level)
         cocos2d::Label::createWithSystemFont("退出", "Arial", 72),
         CC_CALLBACK_1(EnemyVillage::onExitButtonClick, this));
 
-    auto replayItem = cocos2d::MenuItemLabel::create(
-        cocos2d::Label::createWithSystemFont("回放战斗", "Arial",50),
-        CC_CALLBACK_1(EnemyVillage::onReplayButtonClick, this, currentGold, currentElixir));
+    //auto replayItem = cocos2d::MenuItemLabel::create(
+    //    cocos2d::Label::createWithSystemFont("回放战斗", "Arial",50),
+    //    CC_CALLBACK_1(EnemyVillage::onReplayButtonClick, this, currentGold, currentElixir));
 
     float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2 - 20;
     float y = origin.y + closeItem->getContentSize().height / 2 + 20;
     closeItem->setPosition(cocos2d::Vec2(x, y));
-    replayItem->setPosition(cocos2d::Vec2(x, y + 150));
+    //replayItem->setPosition(cocos2d::Vec2(x, y + 150));
 
-    auto menu = cocos2d::Menu::create(closeItem, replayItem, NULL);
+    auto menu = cocos2d::Menu::create(closeItem, NULL);
     menu->setPosition(cocos2d::Vec2::ZERO);
     this->addChild(menu, 100);
 
@@ -168,6 +171,8 @@ bool EnemyVillage::myInit(int level)
 
     auto Attacking_progress=AttackStars::create();
     this->addChild(Attacking_progress,100);
+
+    selected_troop_type_ = 0;
     //UnitManager::getInstance()->clearUnits();
     return true;
 }
@@ -178,96 +183,47 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
     
     for(auto troop : troop_list_) {
         troop->setDead();
-	}
+    }
     TroopTargetManager::getInstance()->clear();
     CocController::getInstance()->changeScene();
 
 }
 
-bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event, std::set<std::pair<int, int>> occupied_cells)
+bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
 {
     if (GameManager::getInstance()->isReplay)return false;
-    // 获取触摸位置（屏幕坐标）
-    cocos2d::Vec2 touchLocation = touch->getLocation();
-
-    // 转换为本地坐标（考虑Y轴翻转）
-    //touchLocation.y = cocos2d::Director::getInstance()->getWinSize().height - touchLocation.y;
-    touchLocation = this->convertToNodeSpace(touchLocation); // 转换为当前节点的本地坐标
-
-    // 获取当前BaseMap的缩放因子
-    float scale = base_map_->getScale();  
-    bool isValidLocation = true;
-
-    // 将像素坐标转换为格子坐标
-    touchLocation = CoordAdaptor::pixelToCell(base_map_, touchLocation);
-    touchLocation.x = (touchLocation.x-10)*2;
-    touchLocation.y =(touchLocation.y+20)*2;
-    if (touchLocation.x < 0)touchLocation.x = 0;
-    if (touchLocation.x > 44)touchLocation.x = 43.9;
-    if (touchLocation.y < 0)touchLocation.y = 0;
-    if (touchLocation.y > 44)touchLocation.y = 43.9;
-    // 检查触摸位置是否在红色区域之外
-    for (const auto& cell : occupied_cells) {
-        // 将格子坐标转为像素坐标
-        cocos2d::Vec2 cellPosition =cocos2d::Vec2(cell.first , cell.second );
-
-        // 检查触摸位置是否接近该单元格
-        if (touchLocation.distance(cellPosition) < 0.5) { // 如果触摸位置接近红色范围
-            isValidLocation = false;  // 如果触摸位置在红色范围内，则不允许生成
-            break;
-        }
-    }
-    // 如果位置有效（不在红色区域），生成士兵
-    if (isValidLocation) {
-        int index = selectedTroopType - 1;
-        if (index < 0)return 1;
-        // 检查是否达到上限
-        if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
-            showInvalidSpawnMessage(troopNames_[index] + "已达到上限！");
-            return true;
-        }
-
-        // 生成士兵
-        bool spawnSuccess = false;
-        if (selectedItemBg) {
-            if (selectedTroopType == 1) {
-                spawnSuccess = spawnBarbarian(touchLocation);
-                //在回放中记录
-                UnitManager::getInstance()->addUnit(0, touchLocation);
-            }
-            else if (selectedTroopType == 2) {
-                spawnSuccess = spawnArcher(touchLocation);
-            }
-            else if (selectedTroopType == 3) {
-                spawnSuccess = spawnGiant(touchLocation);
-            }
-            else if (selectedTroopType == 4) {
-                spawnSuccess = spawnBomb(touchLocation);
-            }
-            else if (selectedTroopType == 5) {
-                spawnSuccess = spawnBalloon(touchLocation);
-            }
-            else if (selectedTroopType == 6) {
-                spawnSuccess = spawnDragon(touchLocation);
-            }
-        }
-        // 如果生成成功，更新计数
-        if (spawnSuccess) {
-            troopPlacedCounts_[index]++;
-            updateTroopCountLabel(index);
-
-            // 如果达到上限，禁用按钮
-            if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
-                disableTroopButton(index);
-                showInvalidSpawnMessage(troopNames_[index] + "已全部放置完成");
-            }
-        }
-
-        
-    }
-    else {
-        // 位置无效，显示相应的提示
+    cocos2d::Vec2 cellPos = CoordAdaptor::pixelToCell(base_map_, base_map_->convertToNodeSpace(touch->getLocation()));
+    
+    // 边界检查
+    if (cellPos.x < 0 || cellPos.x >= MAP_SIZE || cellPos.y < 0 || cellPos.y >= MAP_SIZE) {
         showInvalidSpawnMessage();
+        return true;
+    }
+
+    // 检查触摸位置是否在红色区域（不可下兵区域）
+    // 红色区域是基于整数格子坐标存储的
+    int tx = static_cast<int>(std::floor(cellPos.x));
+    int ty = static_cast<int>(std::floor(cellPos.y));
+    
+    if (occupied_cells_.count({tx, ty})) {
+        showInvalidSpawnMessage();
+        return true;
+    }
+
+    // 如果位置有效（不在红色区域），生成士兵
+    int index = selected_troop_type_ - 1;
+    if (index < 0) return true;
+
+    // 如果生成成功，更新计数
+    if (spawnTroop(kTroopTypes[index], 1, cellPos)) {
+        troopPlacedCounts_[index]++;
+        updateTroopCountLabel(index);
+
+        // 如果达到上限，禁用按钮
+        if (troopPlacedCounts_[index] >= TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])) {
+            disableTroopButton(index);
+            showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已全部放置完成");
+        }
     }
 
     return true; // 返回true表示已处理触摸事件
@@ -278,15 +234,7 @@ void EnemyVillage::updateTroopCountLabel(int index) {
     if (index >= 0 && index < troopCountLabels_.size()) {
         auto label = troopCountLabels_[index];
         label->setString(std::to_string(troopPlacedCounts_[index]) + "/" +
-            std::to_string(troopMaxCounts_[index]));
-
-        // 如果达到上限，改变文字颜色
-        if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
-            label->setColor(cocos2d::Color3B::RED);
-        }
-        else {
-            label->setColor(cocos2d::Color3B::WHITE);
-        }
+            std::to_string(TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])));
     }
 }
 
@@ -295,85 +243,31 @@ void EnemyVillage::disableTroopButton(int index) {
     if (index >= 0 && index < troopButtons_.size()) {
         auto button = troopButtons_[index];
         button->setColor(cocos2d::Color3B(100, 100, 100)); // 灰色表示禁用
-
+        auto label = troopCountLabels_[index];
+        label->setColor(cocos2d::Color3B::RED);
         // 如果这个按钮当前被选中，取消选中
         if (selectedItemBg == button) {
             remove_border(selectedItemBg);
             selectedItemBg = nullptr;
-            selectedTroopType = 0;
+            selected_troop_type_ = 0;
         }
     }
 }
 
-bool EnemyVillage::spawnBarbarian(cocos2d::Vec2 position)
+bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Vec2 position)
 {
-    // 在触摸位置生成士兵
-    auto barbarian = Barbarian::create(base_map_, 1, position);
-    if (barbarian) {
-        troop_list_.push_back(barbarian);
-        base_map_->sprites_.push_back(barbarian);
+    auto it = troop_factories_.find(type);
+    if (it != troop_factories_.end()) {
+        Troop* troop = it->second(base_map_, lvl, position);
+        if (troop) {
+            troop_list_.push_back(troop);
+            base_map_->sprites_.push_back(troop);
+            return true;
+        }
+    }
+    return false;
+}
 
-        return true;
-        
-    }
-    return false;
-    
-}
-bool EnemyVillage::spawnArcher(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto archer = Archer::create(base_map_, 1, position);
-    if (archer) {
-        troop_list_.push_back(archer);
-        base_map_->sprites_.push_back(archer);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnGiant(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto Giant = Giant::create(base_map_, 1, position);
-    if (Giant) {
-        troop_list_.push_back(Giant);
-        base_map_->sprites_.push_back(Giant);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnDragon(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto Dragon = Dragon::create(base_map_, 1, position);
-    if (Dragon) {
-        troop_list_.push_back(Dragon);
-        base_map_->sprites_.push_back(Dragon);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnBomb(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto wall_breaker = WallBreaker::create(base_map_, 1, position);
-    if (wall_breaker) {
-        troop_list_.push_back(wall_breaker);
-        base_map_->sprites_.push_back(wall_breaker);
-        return true;
-    }
-    return false;
-}
-bool EnemyVillage::spawnBalloon(cocos2d::Vec2 position)
-{
-    // 在触摸位置生成士兵
-    auto Balloon = Balloon::create(base_map_, 1, position);
-    if (Balloon) {
-        troop_list_.push_back(Balloon);
-        base_map_->sprites_.push_back(Balloon);
-        return true;
-    }
-    return false;
-}
 void EnemyVillage::showInvalidSpawnMessage(std::string text)
 {
     // 显示消息提示玩家不能在该位置生成士兵（可以使用弹窗或标签）
@@ -392,10 +286,7 @@ void EnemyVillage::showInvalidSpawnMessage(std::string text)
 
 void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 {
-    std::vector<std::string> troopNames = { "野蛮人", "弓箭手", "巨人","炸弹人","气球兵","飞龙" };
-    std::vector<std::string> troopImages = { "troop/babarian_icon.png","troop/archer_icon.png","troop/Giant_icon.png","troop/bomb_icon.png" ,"troop/balloon_icon.png" ,"troop/dragonBaby_icon.png" };
-    troopMaxCounts_ = { 5, 10, 3 ,10,4,1 };  // 兵种最大数量
-    troopPlacedCounts_ = { 0, 0, 0 ,0,0,0 };  // 已放置数量（成员变量）
+    troopPlacedCounts_ = { 0, 0, 0, 0, 0, 0 };  // 已放置数量（成员变量）
 
     auto panelSwallowListener = cocos2d::EventListenerTouchOneByOne::create();
     panelSwallowListener->setSwallowTouches(true);
@@ -418,7 +309,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
     troopButtons_.clear();
     troopCountLabels_.clear();
 
-    for (size_t i = 0; i < troopNames.size(); ++i) {
+    for (size_t i = 0; i < TROOP_TYPE_NUM; ++i) {
         // 商品背景
         auto itemBg = cocos2d::LayerColor::create(cocos2d::Color4B(140, 150, 200, 255), buttonWidth, buttonHeight);
         itemBg->setPosition(cocos2d::Vec2((buttonWidth + padding) * i + buttonWidth, 30));
@@ -427,22 +318,17 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
         troopButtons_.push_back(itemBg);
 
         float maxSize = 200.0f;
-        auto itemPic = cocos2d::Sprite::create(troopImages[i]);
+        auto itemPic = cocos2d::Sprite::create(kIconPaths.at(kTroopTypes[i]));
         float scale = std::min(maxSize / itemPic->getContentSize().width,
             maxSize / itemPic->getContentSize().height);
         itemPic->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight / 2));
         itemPic->setScale(scale);
 
-        // 显示兵种名称
-        auto nameLabel = cocos2d::Label::createWithSystemFont(troopNames[i], "Arial", 30);
-        nameLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, 15));
-        itemBg->addChild(nameLabel, 150);
-
         // 显示数量标签（已放置/最大数量）
         auto countLabel = cocos2d::Label::createWithSystemFont(
-            std::to_string(troopPlacedCounts_[i]) + "/" + std::to_string(troopMaxCounts_[i]),
-            "Arial", 25);
-        countLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight - 10));
+            std::to_string(troopPlacedCounts_[i]) + "/" + std::to_string(TroopConfig::getInstance()->getTroopCount(kTroopTypes[i])),
+            "Arial", 32);
+        countLabel->setPosition(cocos2d::Vec2(buttonWidth / 2, buttonHeight + 20));
         countLabel->setTag(1000); // 设置tag以便后续更新
         itemBg->addChild(countLabel, 150);
 
@@ -452,6 +338,10 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
         // 将按钮添加到背景层
         itemBg->addChild(itemPic);
         bg->addChild(itemBg);
+
+        if (TroopConfig::getInstance()->getTroopCount(kTroopTypes[i]) == 0) {
+            disableTroopButton(i);
+        }
 
         // 添加触摸事件监听器
         auto touchListener = cocos2d::EventListenerTouchOneByOne::create();
@@ -483,109 +373,109 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index) {
             remove_border(selectedItemBg);
         }
         // 检查是否已达到上限
-        if (troopPlacedCounts_[index] >= troopMaxCounts_[index]) {
-            showInvalidSpawnMessage(troopNames_[index] + "已达到上限！");
+        if (troopPlacedCounts_[index] >= TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])) {
+            showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已达到上限！");
             return;
         }
         // 更新当前选中的按钮
         selectedItemBg = itemBg;
-        selectedTroopType = index + 1;
+        selected_troop_type_ = index + 1;
         // 更改选中按钮的颜色
         selectedItemBg->setColor(cocos2d::Color3B(100, 100, 150));  // 变暗的颜色
         draw_border(selectedItemBg);
     }
 }
 
-bool EnemyVillage::onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_) {
-    AudioEngine::stopAll();
-    if (GameManager::getInstance()->isReplay)return false;
-    for (auto troop : troop_list_) {
-        troop->setDead();
-    }
-    TroopTargetManager::getInstance()->clear();
-    CocController::getInstance()->changeScene();
-    CocController::getInstance()->changeScene(1, gold_, elixir_);
-    GameManager::getInstance()->isReplay = true;
-    // 在UI层之后添加回放检查
-    /*if (GameManager::getInstance()->isReplay) {
-        CCLOG("检测到回放模式，准备回放");
-
-        // 使用scheduleOnce确保场景完全初始化
-        this->scheduleOnce([=](float dt) {
-            this->startReplaySequence();
-            }, 0.0f, "init_replay");
-    }*/
-    return true;
-}
-void EnemyVillage::ReplayBegin() {
-    bool isR = GameManager::getInstance()->isReplay;
-    if (isR) {
-        int sum = UnitManager::getInstance()->units.size();
-        int maxSpawnCount = sum; // 设置上限
-
-
-        // 定义一个定时器，每隔1秒执行一次
-        this->schedule([=](float dt) {
-            static int currentSpawnCount = 0;
-            CCLOG("投放士兵");
-            if (currentSpawnCount < maxSpawnCount) {
-                Unit unit = UnitManager::getInstance()->units[currentSpawnCount];
-                if (unit.type == 0) {
-                    spawnBarbarian(unit.position);
-                }
-                currentSpawnCount++;
-            }
-
-            }, 1.0f, "spawnUnitsWithInterval"); // 每隔1秒调用一次
-    }
-    //GameManager::getInstance()->isReplay = false;
-}
-
-void EnemyVillage::startReplaySequence() {
-    CCLOG("启动回放序列");
-
-    auto& units = UnitManager::getInstance()->units;
-    CCLOG("回放单位数量: %zu", units.size());
-
-    if (units.empty()) {
-        CCLOG("没有单位需要回放");
-        return;
-    }
-
-    // 创建序列动作：逐个生成士兵
-    Vector<FiniteTimeAction*> actions;
-
-    for (size_t i = 0; i < units.size(); ++i) {
-        // 延迟
-        auto delay = DelayTime::create(1.0f);
-
-        // 生成士兵的动作
-        auto spawn = CallFunc::create([this, i, &units]() {
-            Unit unit = units[i];
-            CCLOG("回放生成士兵 %zu: type=%d", i, unit.type);
-
-            switch (unit.type) {
-                case 0: spawnBarbarian(unit.position); break;
-                case 1: spawnArcher(unit.position); break;
-                case 2: spawnGiant(unit.position); break;
-                case 3: spawnBomb(unit.position); break;
-                case 4: spawnBalloon(unit.position); break;
-                case 5: spawnDragon(unit.position); break;
-            }
-            });
-
-        actions.pushBack(delay);
-        actions.pushBack(spawn);
-    }
-
-    // 添加完成回调
-    auto finish = CallFunc::create([this]() {
-        CCLOG("回放完成");
-        GameManager::getInstance()->isReplay = false;
-        });
-    actions.pushBack(finish);
-
-    // 运行序列
-    auto sequence = Sequence::create(actions);
-    this->runAction(sequence);
-}
+//bool EnemyVillage::onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_) {
+//    AudioEngine::stopAll();
+//    if (GameManager::getInstance()->isReplay)return false;
+//    for (auto troop : troop_list_) {
+//        troop->setDead();
+//    }
+//    TroopTargetManager::getInstance()->clear();
+//    CocController::getInstance()->changeScene();
+//    CocController::getInstance()->changeScene(1, gold_, elixir_);
+//    GameManager::getInstance()->isReplay = true;
+//    // 在UI层之后添加回放检查
+//    /*if (GameManager::getInstance()->isReplay) {
+//        CCLOG("检测到回放模式，准备回放");
+//
+//        // 使用scheduleOnce确保场景完全初始化
+//        this->scheduleOnce([=](float dt) {
+//            this->startReplaySequence();
+//            }, 0.0f, "init_replay");
+//    }*/
+//    return true;
+//}
+//void EnemyVillage::ReplayBegin() {
+//    bool isR = GameManager::getInstance()->isReplay;
+//    if (isR) {
+//        int sum = UnitManager::getInstance()->units.size();
+//        int maxSpawnCount = sum; // 设置上限
+//
+//
+//        // 定义一个定时器，每隔1秒执行一次
+//        this->schedule([=](float dt) {
+//            static int currentSpawnCount = 0;
+//            CCLOG("投放士兵");
+//            if (currentSpawnCount < maxSpawnCount) {
+//                Unit unit = UnitManager::getInstance()->units[currentSpawnCount];
+//                if (unit.type == 0) {
+//                    spawnBarbarian(unit.position);
+//                }
+//                currentSpawnCount++;
+//            }
+//
+//            }, 1.0f, "spawnUnitsWithInterval"); // 每隔1秒调用一次
+//    }
+//    //GameManager::getInstance()->isReplay = false;
+//}
+//
+//void EnemyVillage::startReplaySequence() {
+//    CCLOG("启动回放序列");
+//
+//    auto& units = UnitManager::getInstance()->units;
+//    CCLOG("回放单位数量: %zu", units.size());
+//
+//    if (units.empty()) {
+//        CCLOG("没有单位需要回放");
+//        return;
+//    }
+//
+//    // 创建序列动作：逐个生成士兵
+//    Vector<FiniteTimeAction*> actions;
+//
+//    for (size_t i = 0; i < units.size(); ++i) {
+//        // 延迟
+//        auto delay = DelayTime::create(1.0f);
+//
+//        // 生成士兵的动作
+//        auto spawn = CallFunc::create([this, i, &units]() {
+//            Unit unit = units[i];
+//            CCLOG("回放生成士兵 %zu: type=%d", i, unit.type);
+//
+//            switch (unit.type) {
+//                case 0: spawnBarbarian(unit.position); break;
+//                case 1: spawnArcher(unit.position); break;
+//                case 2: spawnGiant(unit.position); break;
+//                case 3: spawnBomb(unit.position); break;
+//                case 4: spawnBalloon(unit.position); break;
+//                case 5: spawnDragon(unit.position); break;
+//            }
+//            });
+//
+//        actions.pushBack(delay);
+//        actions.pushBack(spawn);
+//    }
+//
+//    // 添加完成回调
+//    auto finish = CallFunc::create([this]() {
+//        CCLOG("回放完成");
+//        GameManager::getInstance()->isReplay = false;
+//        });
+//    actions.pushBack(finish);
+//
+//    // 运行序列
+//    auto sequence = Sequence::create(actions);
+//    this->runAction(sequence);
+//}

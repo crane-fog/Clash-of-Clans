@@ -111,7 +111,7 @@ public:
 
     // ITroopTarget 接口实现
     //我先改了调试用，你到时候调整一下
-    void onDeath() {
+    virtual void onDeath() {
         health_bar_->setVisible(false);
         TroopTargetManager::getInstance()->unregisterTroopTarget(this);
         this->setTexture("arch/Arch_Destroyed.png");
@@ -187,6 +187,12 @@ public:
     friend struct ArchData;
 };
 
+class TownHall : public Arch {
+public:
+    TownHall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void onDeath() override;
+};
+
 class Wall : public Arch {
 private:
     std::vector<cocos2d::Node*> connection_nodes_;
@@ -254,4 +260,40 @@ public:
     virtual void onUpgradeFinished() override;
 };
 
+class Cannon : public Arch {
+public:
+    Cannon(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+};
+
+class ArcherTower : public Arch {
+public:
+    ArcherTower(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+};
+
+class Bomb : public Arch {
+public:
+    Bomb(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    virtual void showArchPanel() override;
+};
+
+class ArchFactory {
+    using Creater = std::function<Arch* (const ArchData&, BaseMap*)>;
+private:
+    static std::map<unsigned char, Creater> creaters_;
+public:
+    static void registerCreater(unsigned char no, const Creater& creater)
+    {
+        creaters_[no] = creater;
+    }
+    static Arch* createArch(const ArchData& data, BaseMap* base_map)
+    {
+        auto it = creaters_.find(data.no_);
+        if (it != creaters_.end()) {
+            return it->second(data, base_map);
+        }
+        return nullptr;
+    }
+};
 #endif // __ARCH_H__
