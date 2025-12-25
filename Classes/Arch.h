@@ -5,7 +5,7 @@
 
 #include "ArchInfo.h"
 #include "cocos2d.h"
-#include "GameManager.h"
+#include "ResourceManager.h"
 #include "HealthBar.h"
 #include "ITroopTarget.h"
 #include "TroopConfig.h"
@@ -60,7 +60,7 @@ protected:
     UI remaining_upgrade_time_;
 
     // 资源建筑
-    // 当前容量（仅适用于生产建筑，储存建筑的容量在游戏中由GameManager类管理）
+    // 当前容量（仅适用于生产建筑，储存建筑的容量在游戏中由ResourceManager类管理）
     UI current_capacity_;
 
     // 所在的地图指针
@@ -144,9 +144,9 @@ public:
             float p = damage / kArchInfo.at(no_)[level_ - 1].hp_;
             unsigned long long resource_get = current_capacity_ * static_cast<unsigned long long>(p);
             if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
-                GameManager::getInstance()->setGold(GameManager::getInstance()->getGold() + resource_get);
+                ResourceManager::getInstance()->setGold(ResourceManager::getInstance()->getGold() + resource_get);
             else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
-                GameManager::getInstance()->setElixir(GameManager::getInstance()->getElixir() + resource_get);
+                ResourceManager::getInstance()->setElixir(ResourceManager::getInstance()->getElixir() + resource_get);
             ;
         }
         health_bar_->takeDamage(damage);
@@ -216,7 +216,7 @@ class GoldStorage : public Arch {
 public:
     GoldStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
     {
-        GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+        ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
     }
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
@@ -227,7 +227,7 @@ class ElixirStorage : public Arch {
 public:
     ElixirStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
     {
-        GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+        ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
     }
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;

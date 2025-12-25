@@ -1,8 +1,8 @@
-#include "GameManager.h"
+#include "ResourceManager.h"
 
 #include "cocos2d.h"
 
-void GameManager::setGold(ULL gold)
+void ResourceManager::setGold(ULL gold)
 {
     this->my_gold_ = gold;
     // 发布金币更新事件
@@ -11,7 +11,7 @@ void GameManager::setGold(ULL gold)
     cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
 }
 
-void GameManager::setMaxGold(ULL max_gold)
+void ResourceManager::setMaxGold(ULL max_gold)
 {
     max_gold_ = max_gold;
     cocos2d::EventCustom event("update_max_gold_event");
@@ -19,7 +19,7 @@ void GameManager::setMaxGold(ULL max_gold)
     cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
 }
 
-void GameManager::setElixir(ULL Elixir)
+void ResourceManager::setElixir(ULL Elixir)
 {
     this->my_elixir_ = Elixir;
     // 发布圣水更新事件
@@ -28,7 +28,7 @@ void GameManager::setElixir(ULL Elixir)
     cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
 }
 
-void GameManager::setMaxElixir(ULL max_elixir)
+void ResourceManager::setMaxElixir(ULL max_elixir)
 {
     max_elixir_ = max_elixir;
     cocos2d::EventCustom event("update_max_elixir_event");
@@ -36,7 +36,7 @@ void GameManager::setMaxElixir(ULL max_elixir)
     cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
 }
 
-void GameManager::setJewel(ULL Jewel)
+void ResourceManager::setJewel(ULL Jewel)
 {
     this->my_jewel_ = Jewel;
     // 发布宝石更新事件

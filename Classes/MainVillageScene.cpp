@@ -31,9 +31,9 @@ bool MainVillage::init()
     if (!DataHelper::readSourceData(kSourceDataFile, gold, elixir, jewel)) {
         return false;
     }
-    GameManager::getInstance()->setGold(gold);
-    GameManager::getInstance()->setElixir(elixir);
-    GameManager::getInstance()->setJewel(jewel);
+    ResourceManager::getInstance()->setGold(gold);
+    ResourceManager::getInstance()->setElixir(elixir);
+    ResourceManager::getInstance()->setJewel(jewel);
 
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time =
@@ -266,8 +266,8 @@ void MainVillage::cleanup()
         arch_list.push_back(ArchData(a));
     }
     DataHelper::listToMap(arch_list, arch_status_);
-    DataHelper::writeSourceData(kSourceDataFile, GameManager::getInstance()->getGold(),
-                                GameManager::getInstance()->getElixir(), GameManager::getInstance()->getJewel());
+    DataHelper::writeSourceData(kSourceDataFile, ResourceManager::getInstance()->getGold(),
+                                ResourceManager::getInstance()->getElixir(), ResourceManager::getInstance()->getJewel());
     DataHelper::writeArchData(
         kMainVillageDataFile,
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
@@ -570,8 +570,8 @@ void MainVillage::onLabButtonClick(Ref* sender)
         int required_level = kBarracksTroopUnlock.at(kIt);
 
         // 获取金币
-        unsigned long long current_gold = GameManager::getInstance()->getGold();
-        unsigned long long current_elixir = GameManager::getInstance()->getElixir();
+        unsigned long long current_gold = ResourceManager::getInstance()->getGold();
+        unsigned long long current_elixir = ResourceManager::getInstance()->getElixir();
 
         // 商品价格图标
         auto gold_icon = Sprite::create("Elixir.png");
@@ -652,7 +652,7 @@ void MainVillage::onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, u
             0.1f, "stop_audio_key");
 
         // 获取金币
-        unsigned long long current_elixir = GameManager::getInstance()->getElixir();
+        unsigned long long current_elixir = ResourceManager::getInstance()->getElixir();
         // 升级
         TroopConfig::getInstance()->upgradeTroopLevel(it);
 
@@ -674,8 +674,8 @@ void MainVillage::onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, u
         else if (it == Troop::DRAGON)
             p = Dragon::kResearchCosts[l];
 
-        GameManager::getInstance()->setElixir(current_elixir - l);
-        current_elixir = GameManager::getInstance()->getElixir();
+        ResourceManager::getInstance()->setElixir(current_elixir - l);
+        current_elixir = ResourceManager::getInstance()->getElixir();
         auto label = dynamic_cast<Label*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "level_name"));
         label->setString("当前等级：" + std::to_string(l) + "级");
 
@@ -826,8 +826,8 @@ void MainVillage::createConfirmButton(Arch* pendingArch_, int price, bool type_)
     confirm_button->setPosition(Vec2(200, 10));
     confirm_button->setColor(Color3B::BLACK);
     confirm_button->setName("CONFIRM_BUTTON");
-    unsigned long long current_gold = GameManager::getInstance()->getGold();
-    unsigned long long current_exilir = GameManager::getInstance()->getElixir();
+    unsigned long long current_gold = ResourceManager::getInstance()->getGold();
+    unsigned long long current_exilir = ResourceManager::getInstance()->getElixir();
     confirm_button->addTouchEventListener(
         [this, pendingArch_, current_gold, current_exilir, price, type_](Ref* sender, ui::Widget::TouchEventType type) {
             if (type == ui::Widget::TouchEventType::ENDED) {

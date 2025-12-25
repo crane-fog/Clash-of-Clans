@@ -151,9 +151,9 @@ bool EnemyVillage::myInit(int level)
     // UI层直接添加到场景，不受base_map变换影响
     this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
     // 获取并修改金币
-    unsigned long long current_gold = GameManager::getInstance()->getGold();
-    unsigned long long current_elixir = GameManager::getInstance()->getElixir();
-    GameManager::getInstance()->setGold(current_gold);
+    unsigned long long current_gold = ResourceManager::getInstance()->getGold();
+    unsigned long long current_elixir = ResourceManager::getInstance()->getElixir();
+    ResourceManager::getInstance()->setGold(current_gold);
 
     auto visible_size = cocos2d::Director::getInstance()->getVisibleSize();
     auto origin = cocos2d::Director::getInstance()->getVisibleOrigin();
@@ -205,7 +205,7 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
 
 bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
 {
-    // if (GameManager::getInstance()->is_replay_) return false;
+    // if (ResourceManager::getInstance()->is_replay_) return false;
     cocos2d::Vec2 cell_pos = CoordAdaptor::pixelToCell(base_map_, base_map_->convertToNodeSpace(touch->getLocation()));
 
     // 边界检查
@@ -376,7 +376,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 // 点击按钮时的处理函数
 void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
 {
-    // bool is_c = GameManager::getInstance()->is_replay_;
+    // bool is_c = ResourceManager::getInstance()->is_replay_;
     if (1) {
         // 如果点击的是同一个按钮，取消选中状态
         if (selected_item_bg_ == itemBg) {
@@ -406,16 +406,16 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
 
 // bool EnemyVillage::onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_) {
 //     AudioEngine::stopAll();
-//     if (GameManager::getInstance()->isReplay)return false;
+//     if (ResourceManager::getInstance()->isReplay)return false;
 //     for (auto troop : troop_list_) {
 //         troop->setDead();
 //     }
 //     TroopTargetManager::getInstance()->clear();
 //     CocController::getInstance()->changeScene();
 //     CocController::getInstance()->changeScene(1, gold_, elixir_);
-//     GameManager::getInstance()->isReplay = true;
+//     ResourceManager::getInstance()->isReplay = true;
 //     // 在UI层之后添加回放检查
-//     /*if (GameManager::getInstance()->isReplay) {
+//     /*if (ResourceManager::getInstance()->isReplay) {
 //         CCLOG("检测到回放模式，准备回放");
 //
 //         // 使用scheduleOnce确保场景完全初始化
@@ -426,7 +426,7 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
 //     return true;
 // }
 // void EnemyVillage::ReplayBegin() {
-//     bool isR = GameManager::getInstance()->isReplay;
+//     bool isR = ResourceManager::getInstance()->isReplay;
 //     if (isR) {
 //         int sum = UnitManager::getInstance()->units.size();
 //         int maxSpawnCount = sum; // 设置上限
@@ -446,7 +446,7 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
 //
 //             }, 1.0f, "spawnUnitsWithInterval"); // 每隔1秒调用一次
 //     }
-//     //GameManager::getInstance()->isReplay = false;
+//     //ResourceManager::getInstance()->isReplay = false;
 // }
 //
 // void EnemyVillage::startReplaySequence() {
@@ -489,7 +489,7 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
 //     // 添加完成回调
 //     auto finish = CallFunc::create([this]() {
 //         CCLOG("回放完成");
-//         GameManager::getInstance()->isReplay = false;
+//         ResourceManager::getInstance()->isReplay = false;
 //         });
 //     actions.pushBack(finish);
 //

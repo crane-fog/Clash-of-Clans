@@ -16,12 +16,12 @@ bool UIBars::init()
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    unsigned long long gold = GameManager::getInstance()->getGold();
-    unsigned long long elixir = GameManager::getInstance()->getElixir();
-    unsigned long long max_gold = GameManager::getInstance()->getMaxGold();
-    unsigned long long max_elixir = GameManager::getInstance()->getMaxElixir();
-    unsigned long long jewel = GameManager::getInstance()->getJewel();
-    unsigned long long max_jewel = GameManager::getInstance()->getMaxJewel();
+    unsigned long long gold = ResourceManager::getInstance()->getGold();
+    unsigned long long elixir = ResourceManager::getInstance()->getElixir();
+    unsigned long long max_gold = ResourceManager::getInstance()->getMaxGold();
+    unsigned long long max_elixir = ResourceManager::getInstance()->getMaxElixir();
+    unsigned long long jewel = ResourceManager::getInstance()->getJewel();
+    unsigned long long max_jewel = ResourceManager::getInstance()->getMaxJewel();
 
     // 创建多个进度条:金币和圣水
     createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visible_size.width - 500,
@@ -154,13 +154,13 @@ void UIBars::updateProgressBar(const std::string& title, unsigned long long nowA
 void UIBars::onGoldUpdated(cocos2d::EventCustom* event)
 {
     unsigned long long gold = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long max_gold = GameManager::getInstance()->getMaxGold();
+    unsigned long long max_gold = ResourceManager::getInstance()->getMaxGold();
     updateProgressBar("金币", gold, max_gold);
 }
 void UIBars::onElixirUpdated(cocos2d::EventCustom* event)
 {
     unsigned long long elixir = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long max_elixir = GameManager::getInstance()->getMaxElixir();
+    unsigned long long max_elixir = ResourceManager::getInstance()->getMaxElixir();
     updateProgressBar("圣水", elixir, max_elixir);
 }
 void UIBars::onJewelUpdated(cocos2d::EventCustom* event)
@@ -171,14 +171,14 @@ void UIBars::onJewelUpdated(cocos2d::EventCustom* event)
 void UIBars::onMaxGoldUpdated(cocos2d::EventCustom* event)
 {
     unsigned long long max_gold = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long gold = GameManager::getInstance()->getGold();
+    unsigned long long gold = ResourceManager::getInstance()->getGold();
     updateProgressBar("金币", gold, max_gold);
 }
 
 void UIBars::onMaxElixirUpdated(cocos2d::EventCustom* event)
 {
     unsigned long long max_elixir = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long elixir = GameManager::getInstance()->getElixir();
+    unsigned long long elixir = ResourceManager::getInstance()->getElixir();
     updateProgressBar("圣水", elixir, max_elixir);
 }
 

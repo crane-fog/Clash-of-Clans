@@ -4,9 +4,9 @@
 
 // 把资源单独出来一个类单例
 // 使用例子：
-//  unsigned long long currentGold = GameManager::getInstance()->getGold();
-// GameManager::getInstance()->setGold(currentGold - item.price);
-class GameManager {
+//  unsigned long long currentGold = ResourceManager::getInstance()->getGold();
+// ResourceManager::getInstance()->setGold(currentGold - item.price);
+class ResourceManager {
     typedef unsigned long long ULL;
 
 private:
@@ -18,9 +18,9 @@ private:
     ULL max_jewel_ = 0;
 
 public:
-    static GameManager* getInstance()
+    static ResourceManager* getInstance()
     {
-        static GameManager instance;
+        static ResourceManager instance;
         return &instance;
     }
 

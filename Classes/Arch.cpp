@@ -536,10 +536,10 @@ void Arch::createUpgradeComparisonPanel()
     unsigned int cost = kArchInfo.at(no_)[level_].upgrade_cost_amount_;
     unsigned long long current = 0;
     if (kArchInfo.at(no_)[level_].upgrade_cost_type_ == GOLD) {
-        current = GameManager::getInstance()->getGold();
+        current = ResourceManager::getInstance()->getGold();
     }
     else {
-        current = GameManager::getInstance()->getElixir();
+        current = ResourceManager::getInstance()->getElixir();
         unsigned long long current = 0;
     }
     // 创建取消按钮
@@ -647,10 +647,10 @@ void Arch::buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, 
         // 如果金币足够，进行升级操作
         is_upgrading_ = true;
         if (type == GOLD) {
-            GameManager::getInstance()->setGold(currentGold - cost);  // 减少金币
+            ResourceManager::getInstance()->setGold(currentGold - cost);  // 减少金币
         }
         else {
-            GameManager::getInstance()->setElixir(currentGold - cost);  // 减少圣水
+            ResourceManager::getInstance()->setElixir(currentGold - cost);  // 减少圣水
         }
         std::string notice;
         // 执行升级逻辑
@@ -681,8 +681,8 @@ void Arch::buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, 
 
             auto speed_up_button = MenuItemLabel::create(label, [=](Ref* sender) {
                 // 扣除一颗宝石
-                if (GameManager::getInstance()->getJewel() > 0) {
-                    GameManager::getInstance()->setJewel(GameManager::getInstance()->getJewel() - 1);
+                if (ResourceManager::getInstance()->getJewel() > 0) {
+                    ResourceManager::getInstance()->setJewel(ResourceManager::getInstance()->getJewel() - 1);
                     arch->remaining_upgrade_time_ = 0;  // 立即完成升级
 
                     // 完成升级
@@ -808,8 +808,8 @@ void Arch::updateBuildingDisplay()
             const ArchInfo& arch_info = kArchInfo.at(no_)[level_ - 1];
 
             if (arch_info.produce_type_ == GOLD) {
-                unsigned long long current_gold = GameManager::getInstance()->getGold();
-                unsigned long long max_gold_storage = GameManager::getInstance()->getMaxGold();
+                unsigned long long current_gold = ResourceManager::getInstance()->getGold();
+                unsigned long long max_gold_storage = ResourceManager::getInstance()->getMaxGold();
 
                 unsigned long long can_add = (max_gold_storage > current_gold) ? (max_gold_storage - current_gold) : 0;
                 if (can_add >= current_capacity_) {
@@ -819,11 +819,11 @@ void Arch::updateBuildingDisplay()
                     collected = static_cast<unsigned int>(can_add);
                 }
 
-                GameManager::getInstance()->setGold(current_gold + collected);
+                ResourceManager::getInstance()->setGold(current_gold + collected);
             }
             else {
-                unsigned long long current_elixir = GameManager::getInstance()->getElixir();
-                unsigned long long max_elixir_storage = GameManager::getInstance()->getMaxElixir();
+                unsigned long long current_elixir = ResourceManager::getInstance()->getElixir();
+                unsigned long long max_elixir_storage = ResourceManager::getInstance()->getMaxElixir();
 
                 unsigned long long can_add = (max_elixir_storage > current_elixir) ? (max_elixir_storage - current_elixir) : 0;
                 if (can_add >= current_capacity_) {
@@ -833,7 +833,7 @@ void Arch::updateBuildingDisplay()
                     collected = static_cast<unsigned int>(can_add);
                 }
 
-                GameManager::getInstance()->setElixir(current_elixir + collected);
+                ResourceManager::getInstance()->setElixir(current_elixir + collected);
             }
 
             current_capacity_ -= collected;
@@ -953,7 +953,7 @@ void GoldStorage::showArchPanel()
     auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
     auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
     std::string str = label->getString();
-    str += "储量: " + std::to_string(GameManager::getInstance()->getGold()) + "/" +
+    str += "储量: " + std::to_string(ResourceManager::getInstance()->getGold()) + "/" +
            std::to_string(kArchInfo.at(GOLD_STORAGE)[level_ - 1].max_capacity_) + "\n";
     label->setString(str);
 }
@@ -974,7 +974,7 @@ void GoldStorage::createUpgradeComparisonPanel()
 
 void GoldStorage::onUpgradeFinished()
 {
-    GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
 }
 
 void ElixirStorage::showArchPanel()
@@ -986,7 +986,7 @@ void ElixirStorage::showArchPanel()
     auto panel = getChildByName("ARCH_PANEL")->getChildByName("CONTENT_PANEL");
     auto label = dynamic_cast<Label*>(panel->getChildByName("INFO_LABEL"));
     std::string str = label->getString();
-    str += "储量: " + std::to_string(GameManager::getInstance()->getElixir()) + "/" +
+    str += "储量: " + std::to_string(ResourceManager::getInstance()->getElixir()) + "/" +
            std::to_string(kArchInfo.at(ELIXIR_STORAGE)[level_ - 1].max_capacity_) + "\n";
     label->setString(str);
 }
@@ -1007,7 +1007,7 @@ void ElixirStorage::createUpgradeComparisonPanel()
 
 void ElixirStorage::onUpgradeFinished()
 {
-    GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
 }
 
 void GoldMine::showArchPanel()

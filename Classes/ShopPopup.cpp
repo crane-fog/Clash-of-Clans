@@ -287,8 +287,8 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         }
 
         // 获取并修改金币
-        unsigned long long current_gold = GameManager::getInstance()->getGold();
-        unsigned long long current_elixir = GameManager::getInstance()->getElixir();
+        unsigned long long current_gold = ResourceManager::getInstance()->getGold();
+        unsigned long long current_elixir = ResourceManager::getInstance()->getElixir();
 
         // 检查建筑数量限制
         bool is_limit_reached = false;
