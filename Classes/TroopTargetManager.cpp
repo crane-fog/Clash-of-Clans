@@ -8,7 +8,7 @@
 #include <queue>
 #include <typeinfo>
 
-#include "CalculateHelper.h"
+#include "CocUtility.h"
 
 int TroopTargetManager::posToIndex(const cocos2d::Vec2& pos) const
 {

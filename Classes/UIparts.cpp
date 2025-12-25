@@ -1,7 +1,6 @@
 #include "UIparts.h"
 
 #include "cocos/ui/CocosGUI.h"
-#include "DataHelper.h"
 #include "MainVillageScene.h"
 USING_NS_CC;
 using namespace ui;
@@ -262,7 +261,7 @@ void UICommonHelper::showChallengeSelectionPanel(cocos2d::Node* parent)
                 },
                 0.1f, "stop_audio_key");
 
-            CocController::getInstance()->changeScene(can_confirm_ + 1);
+            CocManager::getInstance()->changeScene(can_confirm_ + 1);
             panel->removeFromParent();
             this->selected_item_bg_ = nullptr;
             AudioEngine::stop(select_bgm);
@@ -301,7 +300,7 @@ void UICommonHelper::showChallengeSelectionPanel(cocos2d::Node* parent)
     for (unsigned int i = 0; i < kSceneNames.size(); i++) {
         int progress = 0;
         // 查找对应关卡的进度 (Level ID 1-based)
-        for (const auto& info : CocController::getInstance()->level_info_list_) {
+        for (const auto& info : CocManager::getInstance()->level_info_list_) {
             if (info.level_ == i + 1) {
                 progress = info.progress_;
                 break;

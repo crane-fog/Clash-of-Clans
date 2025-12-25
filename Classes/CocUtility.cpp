@@ -1,9 +1,85 @@
-#include "DataHelper.h"
+#include "CocUtility.h"
 
 #include <fstream>
 
 #include "ArchInfo.h"
-// todo：改用cocos2d::FileUtils
+
+float CalculateHelper::calculateDistanceToSquare(const cocos2d::Vec2& point, const cocos2d::Vec2& square_center,
+                                                 float square_size)
+{
+    float half_size = square_size / 2.0f;
+
+    // 计算方形的边界
+    float left = square_center.x - half_size;
+    float right = square_center.x + half_size;
+    float top = square_center.y + half_size;
+    float bottom = square_center.y - half_size;
+
+    // 计算点到方形的距离
+    float dx = 0.0f;
+    float dy = 0.0f;
+
+    if (point.x < left) {
+        dx = left - point.x;
+    }
+    else if (point.x > right) {
+        dx = point.x - right;
+    }
+
+    if (point.y < bottom) {
+        dy = bottom - point.y;
+    }
+    else if (point.y > top) {
+        dy = point.y - top;
+    }
+
+    // 如果点在方形内部，距离为0
+    if (dx == 0.0f && dy == 0.0f) {
+        return 0.0f;
+    }
+
+    // 计算欧几里得距离
+    return sqrtf(dx * dx + dy * dy);
+}
+
+cocos2d::Vec2 CoordAdaptor::cellToPixel(const cocos2d::Node* const kBaseMap, const cocos2d::Vec2& original)
+{
+    float cell_width_zero = kBaseMap->getContentSize().width * 0.17813765f;
+    float cell_height_zero = kBaseMap->getContentSize().height * 0.53831041f;
+    float cell_width = kBaseMap->getContentSize().width * 0.00757575f;
+    float cell_height = kBaseMap->getContentSize().height * 0.00826040f;
+    return cocos2d::Vec2((original.x + original.y) * cell_width + cell_width_zero,
+                         (original.y - original.x) * cell_height + cell_height_zero);
+}
+
+cocos2d::Vec2 CoordAdaptor::cellDeltaToPixelDelta(const cocos2d::Node* const kBaseMap, const cocos2d::Vec2& delta)
+{
+    float cell_width = kBaseMap->getContentSize().width * 0.00757575f;
+    float cell_height = kBaseMap->getContentSize().height * 0.00826040f;
+    return cocos2d::Vec2((delta.x + delta.y) * cell_width, (delta.y - delta.x) * cell_height);
+}
+
+cocos2d::Vec2 CoordAdaptor::pixelToCell(const cocos2d::Node* const kBaseMap, const cocos2d::Vec2& pixelPos)
+{
+    float cell_width_zero = kBaseMap->getContentSize().width * 0.17813765f;
+    float cell_height_zero = kBaseMap->getContentSize().height * 0.53831041f;
+    float cell_width = kBaseMap->getContentSize().width * 0.00757575f;
+    float cell_height = kBaseMap->getContentSize().height * 0.00826040f;
+
+    float x_prime = (pixelPos.x - cell_width_zero) / cell_width;
+    float y_prime = (pixelPos.y - cell_height_zero) / cell_height;
+
+    float cx = (x_prime - y_prime) / 2.0f;
+    float cy = (x_prime + y_prime) / 2.0f;
+
+    return cocos2d::Vec2(cx, cy);
+}
+
+int CoordAdaptor::calcOrder(const cocos2d::Vec2& middle_pos)
+{
+    return static_cast<int>(middle_pos.x - middle_pos.y) + 50;
+}
+
 
 void DataHelper::mapToList(const ArchData source[kMapSize][kMapSize], std::vector<ArchData>& target)
 {
@@ -120,7 +196,8 @@ bool DataHelper::writeArchData(const std::string& file_name, time_t time, const 
     return true;
 }
 
-bool DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir, unsigned long long& jewel)
+bool DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
+                                unsigned long long& jewel)
 {
     std::ifstream infile(file_name, std::ios::binary);
     if (!infile) {

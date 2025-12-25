@@ -2,6 +2,7 @@
 
 #include "AudioEngine.h"
 #include "TroopTargetManager.h"
+#include "CocUtility.h"
 
 // 升到level级所需资源花费
 const std::array<int, MAX_TROOP_LEVEL + 1> Barbarian::kResearchCosts = {0, 0, 10000, 50000, 130000, 300000};

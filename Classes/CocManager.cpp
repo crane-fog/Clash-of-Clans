@@ -1,31 +1,31 @@
-#include "CocController.h"
+#include "CocManager.h"
 
 #include "EnemyVillageScene.h"
 #include "MainVillageScene.h"
 
 USING_NS_CC;
 
-CocController::CocController()
+CocManager::CocManager()
 {
     current_scene_ = 0;  // 0=MainVillage
 }
 
-void CocController::run()
+void CocManager::run()
 {
     // 创建并运行主村庄场景
     auto scene = MainVillage::create();
     Director::getInstance()->runWithScene(scene);
 }
 
-CocController* CocController::getInstance()
+CocManager* CocManager::getInstance()
 {
-    static CocController instance;
+    static CocManager instance;
     return &instance;
 }
 
-void CocController::endGame() { Director::getInstance()->end(); }
+void CocManager::endGame() { Director::getInstance()->end(); }
 
-void CocController::changeScene(int level_no)
+void CocManager::changeScene(int level_no)
 {
     // 在自己的村庄时
     if (current_scene_ == 0) {

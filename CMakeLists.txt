@@ -64,8 +64,8 @@ list(APPEND GAME_SOURCE
      Classes/Balloon.cpp
      Classes/Barbarian.cpp
      Classes/BaseMap.cpp
-     Classes/CocController.cpp
-     Classes/DataHelper.cpp
+     Classes/CocManager.cpp
+     Classes/CocUtility.cpp
      Classes/Dragon.cpp
      Classes/EnemyVillageScene.cpp
      Classes/ResourceManager.cpp
@@ -91,10 +91,8 @@ list(APPEND GAME_HEADER
      Classes/Balloon.h
      Classes/Barbarian.h
      Classes/BaseMap.h
-     Classes/CalculateHelper.h
-     Classes/CocController.h
-     Classes/CoordAdaptor.h
-     Classes/DataHelper.h
+     Classes/CocManager.h
+     Classes/CocUtility.h
      Classes/Dragon.h
      Classes/EnemyVillageScene.h
      Classes/ResourceManager.h
@@ -103,7 +101,6 @@ list(APPEND GAME_HEADER
      Classes/IArchTarget.h
      Classes/ITroopTarget.h
      Classes/MainVillageScene.h
-     Classes/ReplayAttack.h
      Classes/ShopPopup.h
      Classes/Troop.h
      Classes/TroopConfig.h

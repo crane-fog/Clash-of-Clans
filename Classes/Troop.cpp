@@ -1,8 +1,9 @@
 #include "Troop.h"
 
 #include "BaseMap.h"
-#include "CalculateHelper.h"
+#include "CocUtility.h"
 #include "TroopTargetManager.h"
+
 Troop::Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarget preferred_target,
              AttackType attack_type, uchar housing_space, uchar barracks_level_required, float movement_speed,
              float attack_speed, float range, const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
@@ -303,4 +304,9 @@ std::string Troop::getTroopNameFromEnum(uchar troop_no)
         default:
             return "Unknown";
     }
+}
+
+cocos2d::Vec2 Troop::getPixelPosition() const
+{
+    return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
 }

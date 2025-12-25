@@ -10,13 +10,11 @@
 #include "AudioEngine.h"
 #include "Balloon.h"
 #include "Barbarian.h"
-#include "CocController.h"
-#include "CoordAdaptor.h"
-#include "DataHelper.h"
+#include "CocManager.h"
+#include "CocUtility.h"
 #include "Dragon.h"
 #include "Giant.h"
 #include "MainVillageScene.h"
-#include "ReplayAttack.h"
 #include "TroopTargetManager.h"
 #include "UIcommon.h"
 #include "WallBreaker.h"
@@ -181,7 +179,7 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
     }
     TroopTargetManager::getInstance()->clear();
     ArchTargetManager::getInstance()->clear();
-    CocController::getInstance()->changeScene();
+    CocManager::getInstance()->changeScene();
 }
 
 bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
@@ -391,8 +389,8 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
 //         troop->setDead();
 //     }
 //     TroopTargetManager::getInstance()->clear();
-//     CocController::getInstance()->changeScene();
-//     CocController::getInstance()->changeScene(1, gold_, elixir_);
+//     CocManager::getInstance()->changeScene();
+//     CocManager::getInstance()->changeScene(1, gold_, elixir_);
 //     ResourceManager::getInstance()->isReplay = true;
 //     // 在UI层之后添加回放检查
 //     /*if (ResourceManager::getInstance()->isReplay) {

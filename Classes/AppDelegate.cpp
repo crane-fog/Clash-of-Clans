@@ -24,7 +24,7 @@
 
 #include "AppDelegate.h"
 
-#include "CocController.h"
+#include "CocManager.h"
 
 // #define USE_AUDIO_ENGINE 1
 
@@ -119,7 +119,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     //// run
     // director->runWithScene(scene);
 
-    CocController::getInstance()->run();
+    CocManager::getInstance()->run();
 
     return true;
 }

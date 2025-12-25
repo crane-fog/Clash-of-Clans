@@ -8,9 +8,9 @@
 #include "AudioEngine.h"
 #include "Balloon.h"
 #include "Barbarian.h"
-#include "CocController.h"
+#include "CocManager.h"
 #include "cocos/ui/CocosGUI.h"
-#include "CoordAdaptor.h"
+#include "CocUtility.h"
 #include "Dragon.h"
 #include "Giant.h"
 #include "ShopPopup.h"
@@ -34,7 +34,7 @@ bool MainVillage::init()
     ResourceManager::getInstance()->setElixir(elixir);
     ResourceManager::getInstance()->setJewel(jewel);
     // 从数据文件中读取关卡数据
-    if (!DataHelper::readLevelData(kOfflineDataFile[0], CocController::getInstance()->level_info_list_)) {
+    if (!DataHelper::readLevelData(kOfflineDataFile[0], CocManager::getInstance()->level_info_list_)) {
         return false;
     }
 
@@ -275,7 +275,7 @@ void MainVillage::cleanup()
         kMainVillageDataFile,
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
         arch_status_);
-    DataHelper::writeLevelData(kOfflineDataFile[0], CocController::getInstance()->level_info_list_);
+    DataHelper::writeLevelData(kOfflineDataFile[0], CocManager::getInstance()->level_info_list_);
     Village::cleanup();
 }
 
@@ -965,5 +965,5 @@ int MainVillage::getBuildingCount(unsigned char archNo)
 
 // void MainVillage::onReplayButtonClick(cocos2d::Ref* sender,int gold_,int elixir_,bool isReplay) {
 //
-//     CocController::getInstance()->changeScene(1, gold_, elixir_);
+//     CocManager::getInstance()->changeScene(1, gold_, elixir_);
 // }

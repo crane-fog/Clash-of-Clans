@@ -2,20 +2,20 @@
 #define __COCCONTROLLER_H__
 
 #include <vector>
-#include "DataHelper.h"
+#include "CocUtility.h"
 
 // 控制程序运行流程的单例类（实际上相当于对 Director 又做了一层封装？）
-class CocController {
+class CocManager {
 private:
-    CocController();
-    CocController(const CocController&) = delete;
+    CocManager();
+    CocManager(const CocManager&) = delete;
 
     // 一个记录当前正在运行的场景的变量，0=MainVillage，n=当前level
     int current_scene_;
 
 public:
     // 获取单例实例，第一次调用时创建
-    static CocController* getInstance();
+    static CocManager* getInstance();
 
     // 启动游戏
     void run();

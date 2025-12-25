@@ -5,7 +5,7 @@
 #include "ArchTargetManager.h"
 #include "AudioEngine.h"
 #include "BaseMap.h"
-#include "CoordAdaptor.h"
+#include "CocUtility.h"
 #include "MainVillageScene.h"
 #include "ui/CocosGUI.h"
 #include "UIcommon.h"

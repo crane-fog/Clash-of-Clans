@@ -5,7 +5,7 @@
 
 #include "Arch.h"
 #include "BaseMap.h"
-#include "CocController.h"
+#include "CocManager.h"
 #include "TroopTargetManager.h"
 #include "ui/CocosGUI.h"
 
