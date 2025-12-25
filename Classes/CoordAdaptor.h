@@ -13,7 +13,8 @@ public:
         float cell_height_zero = base_map->getContentSize().height * 0.53831041f;
         float cell_width = base_map->getContentSize().width * 0.00757575f;
         float cell_height = base_map->getContentSize().height * 0.00826040f;
-        return cocos2d::Vec2((original.x + original.y) * cell_width + cell_width_zero, (original.y - original.x) * cell_height + cell_height_zero);
+        return cocos2d::Vec2((original.x + original.y) * cell_width + cell_width_zero,
+                             (original.y - original.x) * cell_height + cell_height_zero);
     }
 
     // 格子坐标移动量转像素坐标移动量
@@ -48,4 +49,4 @@ public:
     }
 };
 
-#endif // __COORD_ADAPTOR_H__
+#endif  // __COORD_ADAPTOR_H__

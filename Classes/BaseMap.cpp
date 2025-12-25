@@ -1,6 +1,8 @@
 #include "BaseMap.h"
-#include "Arch.h"
+
 #include <algorithm>
+
+#include "Arch.h"
 
 USING_NS_CC;
 
@@ -35,7 +37,7 @@ bool BaseMap::init()
     sprites_.back()->setAnchorPoint(Vec2::ZERO);
     sprites_.back()->setPosition(Vec2::ZERO);
     this->addChild(sprites_.back(), -1);
-    sprites_.back()->setVisible(false); // 默认隐藏线框图
+    sprites_.back()->setVisible(false);  // 默认隐藏线框图
 
     // 初始化变量
     is_dragging_ = false;
@@ -139,11 +141,10 @@ void BaseMap::onMouseScroll(Event* event)
     if (scroll_y == 0) return;
 
     Vec2 mouse_location = e->getLocation();
-    mouse_location.y = Director::getInstance()->getWinSize().height - mouse_location.y; // 转换Y轴坐标
+    mouse_location.y = Director::getInstance()->getWinSize().height - mouse_location.y;  // 转换Y轴坐标
 
     // 将屏幕坐标转换成 BaseMap 内部坐标
     Vec2 location_in_map = this->convertToNodeSpace(mouse_location);
-
 
     float old_scale = this->getScale();
     float factor = 1.1f;
@@ -173,7 +174,7 @@ void BaseMap::onMouseDown(Event* event)
     if (e->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
         is_dragging_ = true;
         last_mouse_pos_ = e->getLocation();
-        last_mouse_pos_.y = Director::getInstance()->getWinSize().height - last_mouse_pos_.y; // 转换Y轴坐标
+        last_mouse_pos_.y = Director::getInstance()->getWinSize().height - last_mouse_pos_.y;  // 转换Y轴坐标
     }
 }
 
@@ -191,7 +192,7 @@ void BaseMap::onMouseMove(Event* event)
 
     EventMouse* e = (EventMouse*)event;
     Vec2 currentMousePos = e->getLocation();
-    currentMousePos.y = Director::getInstance()->getWinSize().height - currentMousePos.y; // 转换Y轴坐标
+    currentMousePos.y = Director::getInstance()->getWinSize().height - currentMousePos.y;  // 转换Y轴坐标
     Vec2 delta = currentMousePos - last_mouse_pos_;
 
     this->setPosition(this->getPosition() + delta);
@@ -201,6 +202,5 @@ void BaseMap::onMouseMove(Event* event)
 }
 void BaseMap::setInputEnabled(bool enabled)
 {
-    if (mouse_listener_)
-        mouse_listener_->setEnabled(enabled);
+    if (mouse_listener_) mouse_listener_->setEnabled(enabled);
 }

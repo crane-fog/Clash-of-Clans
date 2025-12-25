@@ -1,12 +1,15 @@
 #ifndef __CALCULATE_HELPER_H__
 #define __CALCULATE_HELPER_H__
-#include<cmath>
-#include"cocos2d.h"
+#include <cmath>
+
+#include "cocos2d.h"
 
 class CalculateHelper {
 public:
     // 计算点到方形的最小距离
-    static float calculateDistanceToSquare(const cocos2d::Vec2& point, const cocos2d::Vec2& square_center, float square_size) {
+    static float calculateDistanceToSquare(const cocos2d::Vec2& point, const cocos2d::Vec2& square_center,
+                                           float square_size)
+    {
         float half_size = square_size / 2.0f;
 
         // 计算方形的边界
@@ -41,7 +44,6 @@ public:
         // 计算欧几里得距离
         return sqrtf(dx * dx + dy * dy);
     }
-
 };
 
-#endif // __CALCULATE_HELPER_H__
+#endif  // __CALCULATE_HELPER_H__

@@ -42,9 +42,9 @@ public:
     // 存储地图上所有建筑的容器
     std::vector<Arch*> archs_;
 
-    void setInputEnabled(bool enabled);//禁用鼠标调用
+    void setInputEnabled(bool enabled);  // 禁用鼠标调用
 
     cocos2d::Node* currentArchPanel_ = nullptr;  // 当前打开的建筑面板
 };
 
-#endif // __BASE_MAP_H__
+#endif  // __BASE_MAP_H__

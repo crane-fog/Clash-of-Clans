@@ -1,11 +1,11 @@
 #include "VillageScene.h"
+
 #include "UIparts.h"
 USING_NS_CC;
 
 bool Village::init()
 {
-    if (!Scene::init())
-    {
+    if (!Scene::init()) {
         return false;
     }
 

@@ -3,14 +3,15 @@
 #ifndef __UI_PARTS_H__
 #define __UI_PARTS_H__
 
-#include "cocos2d.h"
+#include <string.h>
+
+#include "Arch.h"
 #include "BaseMap.h"
-#include "cocos/ui/CocosGUI.h"
-#include"Arch.h"
-#include<string.h>
 #include "CocController.h"
-#include"UIcommon.h"
-#include"TroopTargetManager.h"
+#include "cocos/ui/CocosGUI.h"
+#include "cocos2d.h"
+#include "TroopTargetManager.h"
+#include "UIcommon.h"
 // 进度条结构体
 struct ProgressBarData {
     cocos2d::ui::LoadingBar* loadingBar;
@@ -23,26 +24,24 @@ struct ProgressBarData {
 // UI部分基类
 class UIBars : public cocos2d::Node {
 private:
-
-
-    std::vector<ProgressBarData> progressBars_;  // 存储多个进度条
-    cocos2d::EventListenerCustom* goldUpdateListener;  // 存储监听器
-    cocos2d::EventListenerCustom* elixirUpdateListener;  // 存储监听器
-    cocos2d::EventListenerCustom* maxGoldUpdateListener;  // 存储监听器
+    std::vector<ProgressBarData> progressBars_;             // 存储多个进度条
+    cocos2d::EventListenerCustom* goldUpdateListener;       // 存储监听器
+    cocos2d::EventListenerCustom* elixirUpdateListener;     // 存储监听器
+    cocos2d::EventListenerCustom* maxGoldUpdateListener;    // 存储监听器
     cocos2d::EventListenerCustom* maxElixirUpdateListener;  // 存储监听器
-    cocos2d::EventListenerCustom* jewelUpdateListener;  // 存储监听器
-    cocos2d::EventListenerCustom* maxJewelUpdateListener;  // 存储监听器
+    cocos2d::EventListenerCustom* jewelUpdateListener;      // 存储监听器
+    cocos2d::EventListenerCustom* maxJewelUpdateListener;   // 存储监听器
 
 public:
-
-
-
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
 
     // 创建带背景的进度条
-    //title:进度条左边文字标签， barcolor:进度条颜色， iconPath：图标文件路径，nowAmount：当前数量，x,y位置，UpperLimit:上限
-    void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor, const std::string& iconPath, unsigned long long nowAmount, float x, float y, unsigned long long UpperLimit);
+    // title:进度条左边文字标签， barcolor:进度条颜色，
+    // iconPath：图标文件路径，nowAmount：当前数量，x,y位置，UpperLimit:上限
+    void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor,
+                                         const std::string& iconPath, unsigned long long nowAmount, float x, float y,
+                                         unsigned long long UpperLimit);
     // 更新指定进度条
     void updateProgressBar(const std::string& title, unsigned long long nowAmount, unsigned long long maxAmount);
 
@@ -61,16 +60,13 @@ public:
     CREATE_FUNC(UIBars);
 };
 
-
-
-//倒计时
+// 倒计时
 class CountdownTimer : public cocos2d::Node {
 public:
     CREATE_FUNC(CountdownTimer);
 
-    void start(unsigned int seconds,
-        std::function<void(int remaining)> onTick = nullptr,
-        std::function<void()> onComplete = nullptr);
+    void start(unsigned int seconds, std::function<void(int remaining)> onTick = nullptr,
+               std::function<void()> onComplete = nullptr);
 
 private:
     unsigned int remainingTime_;
@@ -82,10 +78,7 @@ private:
     void updateTimer(float dt);
 };
 
-enum Buidlingtype : bool{
-    NEW_BUIDING = 0,
-    UPGRADING = 1
-};
+enum Buidlingtype : bool { NEW_BUIDING = 0, UPGRADING = 1 };
 
 class UICommonHelper : public cocos2d::Node {
 private:
@@ -102,9 +95,8 @@ public:
 
 private:
     // 创建单个选项
-    void createOptionItem(cocos2d::Node* panel, int index, const std::string& name, const std::string& image_path, cocos2d::ui::Button* confirm_button);
+    void createOptionItem(cocos2d::Node* panel, int index, const std::string& name, const std::string& image_path,
+                          cocos2d::ui::Button* confirm_button);
 };
 
-
-
-#endif // __UI_PARTS_H__
+#endif  // __UI_PARTS_H__

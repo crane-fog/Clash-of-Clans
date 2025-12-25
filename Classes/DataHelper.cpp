@@ -1,5 +1,7 @@
-#include <fstream>
 #include "DataHelper.h"
+
+#include <fstream>
+
 #include "ArchInfo.h"
 // todo：改用cocos2d::FileUtils
 
@@ -7,7 +9,7 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
 {
     unsigned char size = 0;
     ArchData temp;
-    bool visited[MAP_SIZE][MAP_SIZE] = { false };
+    bool visited[MAP_SIZE][MAP_SIZE] = {false};
     for (int x = 0; x < MAP_SIZE; x++) {
         for (int y = 0; y < MAP_SIZE; y++) {
             if (visited[x][y]) {
@@ -25,7 +27,7 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
             temp.level_ = current.level_;
             temp.x_ = static_cast<unsigned char>(x);
             temp.y_ = static_cast<unsigned char>(y);
-            temp.current_hp_ = 0; // 存储时不保存当前生命值，读取时根据等级自动填充满血
+            temp.current_hp_ = 0;  // 存储时不保存当前生命值，读取时根据等级自动填充满血
             temp.remaining_upgrade_time_ = current.remaining_upgrade_time_;
             temp.current_capacity_ = current.current_capacity_;
             target.push_back(temp);
@@ -57,8 +59,8 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[
         y = source[i].y_;
         target[x][y].no_ = source[i].no_;
         target[x][y].level_ = source[i].level_;
-        target[x][y].x_ = source[i].x_; // 此处填充的x统一为min(x)
-        target[x][y].y_ = source[i].y_; // min(y)
+        target[x][y].x_ = source[i].x_;  // 此处填充的x统一为min(x)
+        target[x][y].y_ = source[i].y_;  // min(y)
         target[x][y].current_hp_ = kArchInfo.at(source[i].no_)[source[i].level_ - 1].hp_;
         target[x][y].remaining_upgrade_time_ = source[i].remaining_upgrade_time_;
         target[x][y].current_capacity_ = source[i].current_capacity_;
@@ -130,7 +132,8 @@ bool DataHelper::readSourceData(const std::string& file_name, unsigned long long
     return true;
 }
 
-bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir)
+bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
+                                 const unsigned long long elixir)
 {
     std::ofstream outfile(file_name, std::ios::binary);
     if (!outfile) {

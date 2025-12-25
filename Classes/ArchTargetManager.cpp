@@ -1,4 +1,5 @@
 #include "ArchTargetManager.h"
+
 #include <algorithm>
 #include <limits>
 
@@ -8,10 +9,7 @@ ArchTargetManager* ArchTargetManager::getInstance()
     return &instance;
 }
 
-void ArchTargetManager::clear()
-{
-    targets_.clear();
-}
+void ArchTargetManager::clear() { targets_.clear(); }
 
 void ArchTargetManager::registerArchTarget(IArchTarget* target)
 {
@@ -30,10 +28,9 @@ void ArchTargetManager::unregisterArchTarget(IArchTarget* target)
     }
 }
 
-IArchTarget* ArchTargetManager::getNearestArchTarget(
-    const cocos2d::Vec2& center, float radius, unsigned char target_type)
+IArchTarget* ArchTargetManager::getNearestArchTarget(const cocos2d::Vec2& center, float radius,
+                                                     unsigned char target_type)
 {
-
     IArchTarget* nearest_target = nullptr;
     float min_dist_sq = std::numeric_limits<float>::max();
     float radius_sq = radius * radius;

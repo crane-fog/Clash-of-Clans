@@ -3,17 +3,14 @@
 
 #include <string>
 #include <vector>
+
 #include "Arch.h"
 #include "BaseMap.h"
 
 const std::string kSourceDataFile = "data/SourceData.dat";
 const std::string kMainVillageDataFile = "data/MainVillageData.dat";
 const std::string kOfflineDataFile[] = {
-    "data/LevelInfo.dat",
-    "data/Level1.dat",
-    "data/Level2.dat",
-    "data/Level3.dat",
-    "data/Level4.dat",
+    "data/LevelInfo.dat", "data/Level1.dat", "data/Level2.dat", "data/Level3.dat", "data/Level4.dat",
 };
 
 struct LevelInfo {
@@ -46,7 +43,8 @@ public:
 
     // 写数据文件
     static bool writeArchData(const std::string& file_name, time_t time, const ArchData source[MAP_SIZE][MAP_SIZE]);
-    static bool writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir);
+    static bool writeSourceData(const std::string& file_name, const unsigned long long gold,
+                                const unsigned long long elixir);
     static bool writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list);
 };
-#endif // __DATA_HELPER_H__
+#endif  // __DATA_HELPER_H__

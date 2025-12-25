@@ -1,20 +1,19 @@
 #ifndef __ARCH_H__
 #define __ARCH_H__
 
-#include "cocos2d.h"
-#include "ArchInfo.h"
-#include "ITroopTarget.h"
-#include "UIparts.h"
 #include <string.h>
-#include "HealthBar.h"
+
+#include "ArchInfo.h"
+#include "cocos2d.h"
 #include "GameManager.h"
+#include "HealthBar.h"
+#include "ITroopTarget.h"
 #include "TroopConfig.h"
 #include "TroopTargetManager.h"
+#include "UIparts.h"
 
 class BaseMap;
 class Arch;
-
-
 
 // 建筑数据
 struct ArchData {
@@ -45,6 +44,7 @@ struct ArchData {
 class Arch : public cocos2d::Sprite, public ITroopTarget {
     typedef unsigned int UI;
     typedef unsigned char UC;
+
 protected:
     // 建筑种类的编号
     UC no_;
@@ -79,8 +79,9 @@ protected:
 
     virtual void update(float dt) override;
     void tryAttack(float dt);
+
 public:
-    //建筑是否被摧毁
+    // 建筑是否被摧毁
     bool is_Destroyed = false;
     // 拖动相关
     bool is_dragging_ = false;
@@ -103,8 +104,16 @@ public:
     void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
 
-    Arch(const ArchData& data, BaseMap* base_map) : no_(data.no_), level_(data.level_), x_(data.x_), y_(data.y_),
-        current_hp_(kArchInfo.at(no_)[level_ - 1].hp_), remaining_upgrade_time_(data.remaining_upgrade_time_), current_capacity_(data.current_capacity_), base_map_(base_map) {}
+    Arch(const ArchData& data, BaseMap* base_map)
+        : no_(data.no_),
+          level_(data.level_),
+          x_(data.x_),
+          y_(data.y_),
+          current_hp_(kArchInfo.at(no_)[level_ - 1].hp_),
+          remaining_upgrade_time_(data.remaining_upgrade_time_),
+          current_capacity_(data.current_capacity_),
+          base_map_(base_map)
+    {}
     static Arch* create(const ArchData& data, BaseMap* base_map, bool is_mine = true);
     virtual bool initWithFile(const std::string& filename) override;
     virtual void onEnter() override;
@@ -117,8 +126,9 @@ public:
     virtual void onUpgradeFinished() {}
 
     // ITroopTarget 接口实现
-    //我先改了调试用，你到时候调整一下
-    virtual void onDeath() {
+    // 我先改了调试用，你到时候调整一下
+    virtual void onDeath()
+    {
         is_Destroyed = true;
         health_bar_->setVisible(false);
         TroopTargetManager::getInstance()->unregisterTroopTarget(this);
@@ -126,22 +136,24 @@ public:
 
         this->setLocalZOrder(5);
     }
-    virtual void takeDamage(float damage) override { 
-        if (current_hp_ <= 0)
-            return;
+    virtual void takeDamage(float damage) override
+    {
+        if (current_hp_ <= 0) return;
         if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE && !is_mine_) {
             float p_ = damage / kArchInfo.at(no_)[level_ - 1].hp_;
             unsigned long long resource_get = current_capacity_ * p_;
-            if(kArchInfo.at(no_)[level_ - 1].produce_type_==GOLD)GameManager::getInstance()->setGold(GameManager::getInstance()->getGold() + resource_get);
-            else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)GameManager::getInstance()->setElixir(GameManager::getInstance()->getElixir() + resource_get);;
+            if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
+                GameManager::getInstance()->setGold(GameManager::getInstance()->getGold() + resource_get);
+            else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
+                GameManager::getInstance()->setElixir(GameManager::getInstance()->getElixir() + resource_get);
+            ;
         }
         health_bar_->takeDamage(damage);
-        current_hp_ -= static_cast<UI>(damage); 
-        if(current_hp_<=0)
-            onDeath();
+        current_hp_ -= static_cast<UI>(damage);
+        if (current_hp_ <= 0) onDeath();
     }
     virtual cocos2d::Vec2 getCellPosition(float& size) const override
-    { 
+    {
         size = static_cast<float>(kArchInfo.at(no_)[level_ - 1].size_);
         return cocos2d::Vec2(x_ + size / 2.0f, y_ + size / 2.0f);
     }
@@ -151,40 +163,32 @@ public:
     // 建筑面板UI相关
     virtual void showArchPanel();
     bool isUpgrading = false;
-    //关闭建筑信息面板
+    // 关闭建筑信息面板
     void closeArchPanel();
-    //升级按钮
+    // 升级按钮
     void Arch::archUpgrade();
     // 创建显示的弹窗
     void Arch::showRefusePopup(std::string text_);
     static std::string getArchNameFromEnum(unsigned char archNo);
     virtual void Arch::createUpgradeComparisonPanel();
     void Arch::onUpgradeCancel(Ref* sender);
-    void Arch::Buiding_Upgrading(Ref* sender, Arch* arch,bool a, unsigned int cost, unsigned long long currentGold, bool type);
-    //资源生产
+    void Arch::Buiding_Upgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
+                                 bool type);
+    // 资源生产
     void Arch::startResourceProduction();
     // 更新建筑的显示
     void Arch::updateBuildingDisplay();
 
     // 开始升级动画
     void startUpgradeAnimation(unsigned int time, const std::string& notice);
-    
+
     // 更新剩余升级时间
     void updateUpgradeTime(long long elapsed);
 
-    UI getx() const {
-        return this->x_;
-    }
-    UI gety() const {
-        return this->y_;
-    }
-    UC getNo() const { 
-        return no_; 
-    }
-    UC getLevel() const {
-        return level_;
-    }
-
+    UI getx() const { return this->x_; }
+    UI gety() const { return this->y_; }
+    UC getNo() const { return no_; }
+    UC getLevel() const { return level_; }
 
     friend class ShopPopup;
 
@@ -200,6 +204,7 @@ public:
 class Wall : public Arch {
 private:
     std::vector<cocos2d::Node*> connection_nodes_;
+
 public:
     Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
@@ -215,7 +220,6 @@ public:
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override;
-
 };
 
 class ElixirStorage : public Arch {
@@ -282,14 +286,13 @@ public:
 };
 
 class ArchFactory {
-    using Creater = std::function<Arch* (const ArchData&, BaseMap*)>;
+    using Creater = std::function<Arch*(const ArchData&, BaseMap*)>;
+
 private:
     static std::map<unsigned char, Creater> creaters_;
+
 public:
-    static void registerCreater(unsigned char no, const Creater& creater)
-    {
-        creaters_[no] = creater;
-    }
+    static void registerCreater(unsigned char no, const Creater& creater) { creaters_[no] = creater; }
     static Arch* createArch(const ArchData& data, BaseMap* base_map)
     {
         auto it = creaters_.find(data.no_);
@@ -299,4 +302,4 @@ public:
         return nullptr;
     }
 };
-#endif // __ARCH_H__
+#endif  // __ARCH_H__

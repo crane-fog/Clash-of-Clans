@@ -1,18 +1,19 @@
+#include "ShopPopup.h"
+
 #include <fstream>
 #include <vector>
 
-#include "ShopPopup.h"
-#include"UIparts.h"
-#include"UIcommon.h"
-#include"Arch.h"
-#include"ArchInfo.h"
-#include"MainVillageScene.h"
+#include "Arch.h"
+#include "ArchInfo.h"
 #include "AudioEngine.h"
+#include "MainVillageScene.h"
+#include "UIcommon.h"
+#include "UIparts.h"
 USING_NS_CC;
 using namespace ui;
 
-
-void ShopPopup::setupBackground() {
+void ShopPopup::setupBackground()
+{
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     // 创建背景层（继承自 Layer，可以接收触摸）
@@ -20,24 +21,24 @@ void ShopPopup::setupBackground() {
     background->setContentSize(visibleSize);
 
     // 添加半透明黑色背景
-    auto colorBg = LayerColor::create(Color4B(0, 0, 0, 180)); // 深色半透明
+    auto colorBg = LayerColor::create(Color4B(0, 0, 0, 180));  // 深色半透明
     colorBg->setContentSize(visibleSize);
     background->addChild(colorBg);
 
     // 添加触摸监听器 - 拦截所有触摸事件
     auto touchListener = EventListenerTouchOneByOne::create();
-    touchListener->setSwallowTouches(true); // 吞噬触摸，不传递到下层
+    touchListener->setSwallowTouches(true);  // 吞噬触摸，不传递到下层
 
     touchListener->onTouchBegan = [](cocos2d::Touch* touch, cocos2d::Event* event) {
         // 点击背景的任何位置都返回 true，表示处理这个事件
         return true;
-        };
+    };
 
     touchListener->onTouchEnded = [this](cocos2d::Touch* touch, cocos2d::Event* event) {
         // 可以添加点击背景关闭的功能（可选）
         // auto location = touch->getLocation();
         // 检查是否点击在面板外
-        };
+    };
 
     // 注意：监听器要附加到 background（Layer），不是 colorBg（LayerColor）
     background->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, background);
@@ -55,9 +56,7 @@ bool ShopPopup::init()
     setupBackground();
 
     // 面板背景
-    auto panelBg = LayerColor::create(Color4B(255, 204, 153, 255),
-        visibleSize.width * 0.8f,
-        visibleSize.height * 0.6f);
+    auto panelBg = LayerColor::create(Color4B(255, 204, 153, 255), visibleSize.width * 0.8f, visibleSize.height * 0.6f);
     panelBg->setPosition(Vec2(visibleSize.width * 0.1f, visibleSize.height * 0.2f));
     this->addChild(panelBg);
 
@@ -67,8 +66,7 @@ bool ShopPopup::init()
     // 标题
     auto title = Label::createWithSystemFont("商店", "Arial", 70);
     title->setColor(Color3B(0, 0, 0));
-    title->setPosition(Vec2(panelBg->getContentSize().width / 2,
-        panelBg->getContentSize().height - 50));
+    title->setPosition(Vec2(panelBg->getContentSize().width / 2, panelBg->getContentSize().height - 50));
     panelBg->addChild(title);
 
     // 计算相对于panelBg的位置
@@ -99,22 +97,23 @@ bool ShopPopup::init()
     // 建筑选项卡
     auto buildingTab = ui::Button::create();
 
-    auto buildingTabBg = LayerColor::create(Color4B::WHITE,150,60);
+    auto buildingTabBg = LayerColor::create(Color4B::WHITE, 150, 60);
     buildingTabBg->setPosition(Vec2(-40, -20));
-    buildingTab->addChild(buildingTabBg,-1);
+    buildingTab->addChild(buildingTabBg, -1);
 
     buildingTab->setTitleText("建筑");
     buildingTab->setTitleFontSize(28);
     buildingTab->setTitleColor(Color3B::WHITE);
     buildingTab->setContentSize(Size(tabWidth, 60));
     buildingTab->setPosition(Vec2(tabWidth / 2 + 10, tabStartY));
-    buildingTab->setColor(Color3B(100, 150, 200)); // 蓝色
-    buildingTab->setTag(1); // 标记为建筑标签
-    buildingTab->addTouchEventListener([this, buildingTab, buildingTabBg](Ref* sender, ui::Widget::TouchEventType type) {
-        if (type == ui::Widget::TouchEventType::ENDED) {
-            this->switchToTab(1); // 切换到建筑标签
-            buildingTabBg->setColor(Color3B(255, 230, 200));
-        }
+    buildingTab->setColor(Color3B(100, 150, 200));  // 蓝色
+    buildingTab->setTag(1);                         // 标记为建筑标签
+    buildingTab->addTouchEventListener(
+        [this, buildingTab, buildingTabBg](Ref* sender, ui::Widget::TouchEventType type) {
+            if (type == ui::Widget::TouchEventType::ENDED) {
+                this->switchToTab(1);  // 切换到建筑标签
+                buildingTabBg->setColor(Color3B(255, 230, 200));
+            }
         });
     panelBg->addChild(buildingTab, 10);
     // 法术选项卡
@@ -129,14 +128,14 @@ bool ShopPopup::init()
     SpellTab->setTitleColor(Color3B::WHITE);
     SpellTab->setContentSize(Size(tabWidth, 60));
     SpellTab->setPosition(Vec2(tabWidth + 10, tabStartY));
-    SpellTab->setColor(Color3B(100, 150, 200)); // 蓝色
-    SpellTab->setTag(2); // 标记为法术标签
+    SpellTab->setColor(Color3B(100, 150, 200));  // 蓝色
+    SpellTab->setTag(2);                         // 标记为法术标签
     SpellTab->addTouchEventListener([this, SpellTab, SpellTabBg](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
-            this->switchToTab(2); // 切换到法术标签
+            this->switchToTab(2);  // 切换到法术标签
             SpellTabBg->setColor(Color3B(255, 230, 200));
         }
-        });
+    });
     panelBg->addChild(SpellTab, 10);
     // 抽卡选项卡
     auto gachaTab = ui::Button::create();
@@ -150,38 +149,36 @@ bool ShopPopup::init()
     gachaTab->setTitleColor(Color3B::WHITE);
     gachaTab->setContentSize(Size(tabWidth, 60));
     gachaTab->setPosition(Vec2(tabWidth * 1.5 + 20, tabStartY));
-    gachaTab->setColor(Color3B(200, 150, 100)); // 橙色
-    gachaTab->setTag(3); // 标记为抽卡标签
+    gachaTab->setColor(Color3B(200, 150, 100));  // 橙色
+    gachaTab->setTag(3);                         // 标记为抽卡标签
     gachaTab->addTouchEventListener([this, gachaTab, gachaTabBg](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
-            this->switchToTab(3); // 切换到抽卡标签
+            this->switchToTab(3);  // 切换到抽卡标签
             gachaTabBg->setColor(Color3B(255, 230, 200));
         }
-        });
+    });
     panelBg->addChild(gachaTab, 10);
 
     // 创建滚动容器（初始显示建筑）
     auto scrollView = ui::ScrollView::create();
-    scrollView->setContentSize(Size(panelBg->getContentSize().width - 40,
-        panelBg->getContentSize().height)); 
+    scrollView->setContentSize(Size(panelBg->getContentSize().width - 40, panelBg->getContentSize().height));
 
-    scrollView->setInnerContainerSize(Size(270 * kShopItemsInfo.at(1).size(),
-        panelBg->getContentSize().height));
+    scrollView->setInnerContainerSize(Size(270 * kShopItemsInfo.at(1).size(), panelBg->getContentSize().height));
     scrollView->setDirection(ui::ScrollView::Direction::HORIZONTAL);
     scrollView->setPosition(Vec2(20, 100));
     scrollView->setScrollBarEnabled(true);
     scrollView->setScrollBarPositionFromCorner(Vec2(2, 2));
     scrollView->setScrollBarWidth(20);
     scrollView->setScrollBarColor(Color3B::BLACK);
-    scrollView->setTag(100); // 给滚动容器设置tag以便后续查找
+    scrollView->setTag(100);  // 给滚动容器设置tag以便后续查找
     panelBg->addChild(scrollView);
 
     // 保存商品数据供切换使用
-    currentTab_ = 1; // 默认显示建筑
+    currentTab_ = 1;  // 默认显示建筑
     buildingItems_ = kShopItemsInfo.at(1);
     magicItems_ = kShopItemsInfo.at(2);
     gachaItems_ = kShopItemsInfo.at(3);
-    scrollView_ = scrollView; // 保存滚动容器引用
+    scrollView_ = scrollView;  // 保存滚动容器引用
 
     // 初始显示建筑商品
     showItemsInScrollView(buildingItems_, scrollView);
@@ -190,19 +187,22 @@ bool ShopPopup::init()
     return true;
 }
 // 切换到指定标签的函数
-void ShopPopup::switchToTab(int tabIndex) {
+void ShopPopup::switchToTab(int tabIndex)
+{
     // 播放音效
     int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
     // 检查音频的状态，直到播放完成
-    this->schedule([button_hit, this](float dt) {
-        if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-            // 停止音效播放并释放资源
-            cocos2d::AudioEngine::uncache("music/button.mp3");
-            this->unschedule("stop_audio_key"); // 停止检查
-        }
-        }, 0.1f, "stop_audio_key");
+    this->schedule(
+        [button_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/button.mp3");
+                this->unschedule("stop_audio_key");  // 停止检查
+            }
+        },
+        0.1f, "stop_audio_key");
     if (currentTab_ == tabIndex) {
-        return; // 已经是当前标签，不切换
+        return;  // 已经是当前标签，不切换
     }
 
     // 更新当前标签
@@ -215,24 +215,21 @@ void ShopPopup::switchToTab(int tabIndex) {
     // 清空滚动容器
     scrollView->removeAllChildren();
 
-
     // 根据标签显示不同的商品
     switch (tabIndex) {
-        case 1: // 建筑
-            scrollView->setInnerContainerSize(Size(270 * buildingItems_.size(),
-                scrollView->getContentSize().height));
+        case 1:  // 建筑
+            scrollView->setInnerContainerSize(Size(270 * buildingItems_.size(), scrollView->getContentSize().height));
             showItemsInScrollView(buildingItems_, scrollView, tabIndex);
             break;
-        case 2: // 法术
-            scrollView->setInnerContainerSize(Size(270 * magicItems_.size(),
-                scrollView->getContentSize().height));
+        case 2:  // 法术
+            scrollView->setInnerContainerSize(Size(270 * magicItems_.size(), scrollView->getContentSize().height));
             showItemsInScrollView(kShopItemsInfo.at(2), scrollView, tabIndex);
             break;
-        case 3: // 抽卡
-            //scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),
-                //scrollView->getContentSize().height));
-            //showItemsInScrollView(gachaItems_, scrollView, tabIndex);
-            // 抽卡界面特殊处理
+        case 3:  // 抽卡
+            // scrollView->setInnerContainerSize(Size(270 * gachaItems_.size(),
+            // scrollView->getContentSize().height));
+            // showItemsInScrollView(gachaItems_, scrollView, tabIndex);
+            //  抽卡界面特殊处理
             createGachaItem();
             break;
     }
@@ -241,12 +238,12 @@ void ShopPopup::switchToTab(int tabIndex) {
     scrollView->scrollToPercentHorizontal(0, 0.3f, true);
 }
 // 在滚动容器中显示商品的辅助函数
-void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::ScrollView* scrollView, int tabIndex) {
-
+void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::ScrollView* scrollView, int tabIndex)
+{
     auto scrollBg = LayerColor::create(Color4B(255, 230, 200, 255), 270 * buildingItems_.size(),
-                scrollView->getContentSize().height-240);
+                                       scrollView->getContentSize().height - 240);
     scrollBg->setPosition(Vec2::ZERO);
-    scrollBg->setLocalZOrder(-1); // 放在最底层
+    scrollBg->setLocalZOrder(-1);  // 放在最底层
     // 将背景添加到滚动视图
     scrollView->addChild(scrollBg);
     for (int i = 0; i < items.size(); i++) {
@@ -259,22 +256,40 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         unsigned char archNo = INVALID_ARCH_NO;
         if (tabIndex == 1) {
             switch (item.id) {
-                case 1: archNo = ARMY_CAMP; break;
-                case 2: archNo = WALL; break;
-                case 3: archNo = GOLD_STORAGE; break;
-                case 4: archNo = ELIXIR_STORAGE; break;
-                case 5: archNo = GOLD_MINE; break;
-                case 6: archNo = ELIXIR_COLLECTOR; break;
-                case 7: archNo = ARCHER_TOWER; break;
-                case 8: archNo = CANNON; break;
-                case 9: archNo = BARRACKS; break;
+                case 1:
+                    archNo = ARMY_CAMP;
+                    break;
+                case 2:
+                    archNo = WALL;
+                    break;
+                case 3:
+                    archNo = GOLD_STORAGE;
+                    break;
+                case 4:
+                    archNo = ELIXIR_STORAGE;
+                    break;
+                case 5:
+                    archNo = GOLD_MINE;
+                    break;
+                case 6:
+                    archNo = ELIXIR_COLLECTOR;
+                    break;
+                case 7:
+                    archNo = ARCHER_TOWER;
+                    break;
+                case 8:
+                    archNo = CANNON;
+                    break;
+                case 9:
+                    archNo = BARRACKS;
+                    break;
             }
         }
 
         // 获取并修改金币
         unsigned long long currentGold = GameManager::getInstance()->getGold();
         unsigned long long currentElixir = GameManager::getInstance()->getElixir();
-        
+
         // 检查建筑数量限制
         bool isLimitReached = false;
         if (tabIndex == 1) {
@@ -288,21 +303,24 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         // 设置触摸事件
         auto listener = EventListenerTouchOneByOne::create();
         listener->setSwallowTouches(true);
-        listener->onTouchBegan = [this, itemBg, item, scrollView, archNo, currentGold, currentElixir, isLimitReached, tabIndex](Touch* touch, Event* event) -> bool {
+        listener->onTouchBegan = [this, itemBg, item, scrollView, archNo, currentGold, currentElixir, isLimitReached,
+                                  tabIndex](Touch* touch, Event* event) -> bool {
             // 播放音效
             int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
             // 检查音频的状态，直到播放完成
-            this->schedule([button_hit, this](float dt) {
-                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                    // 停止音效播放并释放资源
-                    cocos2d::AudioEngine::uncache("music/button.mp3");
-                    this->unschedule("stop_audio_key"); // 停止检查
-                }
-                }, 0.1f, "stop_audio_key");
+            this->schedule(
+                [button_hit, this](float dt) {
+                    if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                        // 停止音效播放并释放资源
+                        cocos2d::AudioEngine::uncache("music/button.mp3");
+                        this->unschedule("stop_audio_key");  // 停止检查
+                    }
+                },
+                0.1f, "stop_audio_key");
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
             Rect rect = Rect(0, 0, size.width, size.height);
-            auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());  
+            auto scene = dynamic_cast<MainVillage*>(Director::getInstance()->getRunningScene());
 
             if (rect.containsPoint(locationInNode)) {
                 if (tabIndex == 1) {
@@ -311,7 +329,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
                         this->showUnavailableBubble(item, itemBg, scrollView, "建筑数量已达上限");
                         return true;
                     }
-                    
+
                     bool canAfford = false;
                     if (item.p_type == GOLD) {
                         canAfford = currentGold >= item.price;
@@ -333,7 +351,7 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
                     // 其他物品
                     if (item.p_type == GOLD) {
                         if (item.isAvailable && currentGold >= item.price) {
-                            itemBg->setColor(Color3B(120, 140, 180)); 
+                            itemBg->setColor(Color3B(120, 140, 180));
                             scene->addBuildingByNO(archNo, item.price);
                             this->close();
                             itemBg->runAction(ScaleTo::create(0.1f, 0.95f));
@@ -342,12 +360,13 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
                             if (currentGold < item.price) {
                                 this->showUnavailableBubble(item, itemBg, scrollView, "金币不足");
                             }
-                            else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                            else
+                                this->showUnavailableBubble(item, itemBg, scrollView, "");
                         }
                     }
                     else {
                         if (item.isAvailable && currentElixir >= item.price) {
-                            itemBg->setColor(Color3B(120, 140, 180)); 
+                            itemBg->setColor(Color3B(120, 140, 180));
                             scene->addBuildingByNO(archNo, item.price);
                             this->close();
                             itemBg->runAction(ScaleTo::create(0.1f, 0.95f));
@@ -356,17 +375,18 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
                             if (currentElixir < item.price) {
                                 this->showUnavailableBubble(item, itemBg, scrollView, "圣水不足");
                             }
-                            else this->showUnavailableBubble(item, itemBg, scrollView, "");
+                            else
+                                this->showUnavailableBubble(item, itemBg, scrollView, "");
                         }
                     }
                 }
                 return true;
             }
             return false;
-            };
+        };
 
-        listener->onTouchEnded = [itemBg, i, item,this](Touch* touch, Event* event) {
-            itemBg->setColor(Color3B(160, 180, 230)); // 恢复颜色
+        listener->onTouchEnded = [itemBg, i, item, this](Touch* touch, Event* event) {
+            itemBg->setColor(Color3B(160, 180, 230));  // 恢复颜色
 
             Vec2 locationInNode = itemBg->convertToNodeSpace(touch->getLocation());
             Size size = itemBg->getContentSize();
@@ -374,13 +394,10 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
 
             if (rect.containsPoint(locationInNode)) {
                 CCLOG("Item %d clicked: %s", i + 1, item.name.c_str());
-
             }
-            };
+        };
 
-        listener->onTouchCancelled = [itemBg](Touch* touch, Event* event) {
-            itemBg->setColor(Color3B(160, 180, 230));
-            };
+        listener->onTouchCancelled = [itemBg](Touch* touch, Event* event) { itemBg->setColor(Color3B(160, 180, 230)); };
 
         _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, itemBg);
 
@@ -388,13 +405,14 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         bool showMask = false;
         if (tabIndex == 1) {
             // 建筑
-            bool resourceInsufficient = (item.p_type == GOLD && currentGold < item.price) || 
-                                      (item.p_type == ELIXIR && currentElixir < item.price);
+            bool resourceInsufficient = (item.p_type == GOLD && currentGold < item.price) ||
+                                        (item.p_type == ELIXIR && currentElixir < item.price);
             showMask = isLimitReached || resourceInsufficient;
-        } else {
+        }
+        else {
             // 其他
-            bool resourceInsufficient = (item.p_type == GOLD && currentGold < item.price) || 
-                                      (item.p_type == ELIXIR && currentElixir < item.price);
+            bool resourceInsufficient = (item.p_type == GOLD && currentGold < item.price) ||
+                                        (item.p_type == ELIXIR && currentElixir < item.price);
             showMask = !item.isAvailable || resourceInsufficient;
         }
 
@@ -410,27 +428,24 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
         if (!item.imagePath.empty()) {
             itemImage = Sprite::create(item.imagePath);
             if (itemImage) {
-                float maxSize = 220.0f; // 调整图片大小
-                float scale = std::min(maxSize / itemImage->getContentSize().width,
-                    maxSize / itemImage->getContentSize().height);
+                float maxSize = 220.0f;  // 调整图片大小
+                float scale =
+                    std::min(maxSize / itemImage->getContentSize().width, maxSize / itemImage->getContentSize().height);
                 itemImage->setScale(scale);
-                itemImage->setPosition(Vec2(itemBg->getContentSize().width / 2,
-                    itemBg->getContentSize().height - 140));
+                itemImage->setPosition(Vec2(itemBg->getContentSize().width / 2, itemBg->getContentSize().height - 140));
                 itemBg->addChild(itemImage);
             }
             else {
                 itemImage = Sprite::create("ui/placeholder.png");
                 itemImage->setScale(0.5f);
-                itemImage->setPosition(Vec2(itemBg->getContentSize().width / 2,
-                    itemBg->getContentSize().height - 100));
+                itemImage->setPosition(Vec2(itemBg->getContentSize().width / 2, itemBg->getContentSize().height - 100));
                 itemBg->addChild(itemImage);
             }
         }
 
         // 商品标签
         auto itemLabel = Label::createWithSystemFont(item.name, "Arial", 26);
-        itemLabel->setPosition(Vec2(itemBg->getContentSize().width / 2,
-            itemBg->getContentSize().height - 30));
+        itemLabel->setPosition(Vec2(itemBg->getContentSize().width / 2, itemBg->getContentSize().height - 30));
         itemLabel->setColor(Color3B::BLACK);
         itemBg->addChild(itemLabel);
         if (item.p_type == ELIXIR) {
@@ -459,13 +474,12 @@ void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::Sc
             priceLabel->setColor(Color3B::YELLOW);
             itemBg->addChild(priceLabel);
         }
-
     }
-}   
+}
 
 // 在ShopPopup::close()函数中，确保清理放置状态
-void ShopPopup::close() {
-
+void ShopPopup::close()
+{
     // 关闭逻辑...
     auto scaleTo = ScaleTo::create(0.2f, 0.1f);
     auto easeIn = EaseBackIn::create(scaleTo);
@@ -473,7 +487,7 @@ void ShopPopup::close() {
     auto sequence = Sequence::create(easeIn, remove, nullptr);
     this->runAction(sequence);
 
-    // 重新启用地图输入 
+    // 重新启用地图输入
     auto parent = this->getParent();
     auto map = parent->getChildByName("BaseMap");
     if (map) ((BaseMap*)map)->setInputEnabled(true);
@@ -501,45 +515,45 @@ void ShopPopup::onClose(Ref* sender, Widget::TouchEventType type)
         // 播放音效
         int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
         // 检查音频的状态，直到播放完成
-        this->schedule([button_hit, this](float dt) {
-            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                // 停止音效播放并释放资源
-                cocos2d::AudioEngine::uncache("music/button.mp3");
-                this->unschedule("stop_audio_key"); // 停止检查
-            }
-            }, 0.1f, "stop_audio_key");
+        this->schedule(
+            [button_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/button.mp3");
+                    this->unschedule("stop_audio_key");  // 停止检查
+                }
+            },
+            0.1f, "stop_audio_key");
     }
 }
-void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode, cocos2d::ui::ScrollView* scrollView,std::string reason) {
-
+void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode,
+                                      cocos2d::ui::ScrollView* scrollView, std::string reason)
+{
     // 创建提示气泡（相对于商品背景的本地坐标）
     auto bubble = Node::create();
     bubble->setPosition(Vec2(targetNode->getContentSize().width / 2,
-        targetNode->getContentSize().height + 10)); // 在商品上方显示
+                             targetNode->getContentSize().height + 10));  // 在商品上方显示
     bubble->setTag(8888);
-    targetNode->addChild(bubble, 999); // 添加到商品背景，而不是this
+    targetNode->addChild(bubble, 999);  // 添加到商品背景，而不是this
 
     // 气泡背景
-    auto bubbleBg = LayerColor::create(Color4B(70, 70,70, 2020), 200, 80);
-    bubbleBg->setPosition(Vec2(-100, 0)); // 居中
+    auto bubbleBg = LayerColor::create(Color4B(70, 70, 70, 2020), 200, 80);
+    bubbleBg->setPosition(Vec2(-100, 0));  // 居中
     bubble->addChild(bubbleBg);
 
     // 三角形箭头（指向商品）
     auto arrow = DrawNode::create();
     Vec2 arrowPoints[] = {
-        Vec2(90, 80),    // 左下
-        Vec2(100, 90),   // 顶点
-        Vec2(110, 80)    // 右下
+        Vec2(90, 80),   // 左下
+        Vec2(100, 90),  // 顶点
+        Vec2(110, 80)   // 右下
     };
     arrow->drawSolidPoly(arrowPoints, 3, Color4F(0.7f, 0.5f, 0.5f, 0.9f));
     arrow->setPosition(Vec2(0, -10));
     bubble->addChild(arrow);
 
     // 原因文本
-    auto reasonLabel = Label::createWithSystemFont(
-        reason,
-        "Arial", 25
-    );
+    auto reasonLabel = Label::createWithSystemFont(reason, "Arial", 25);
     if (reason.empty()) {
         reasonLabel->setString(item.unavailableReason);
     }
@@ -551,17 +565,9 @@ void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor*
 
     // 初始缩放动画
     bubble->setScale(0.1f);
-    bubble->runAction(Sequence::create(
-        ScaleTo::create(0.2f, 1.0f),
-        DelayTime::create(5.0f),
-        Spawn::create(
-            FadeOut::create(0.3f),
-            ScaleTo::create(0.3f, 0.5f),
-            nullptr
-        ),
-        RemoveSelf::create(),
-        nullptr
-    ));
+    bubble->runAction(Sequence::create(ScaleTo::create(0.2f, 1.0f), DelayTime::create(5.0f),
+                                       Spawn::create(FadeOut::create(0.3f), ScaleTo::create(0.3f, 0.5f), nullptr),
+                                       RemoveSelf::create(), nullptr));
 }
 // 在按钮点击事件中
 void ShopPopup::onShopButtonClick(Ref* sender)
@@ -570,27 +576,24 @@ void ShopPopup::onShopButtonClick(Ref* sender)
     popup->show(this);
 }
 // 初始化抽卡池
-void ShopPopup::initGachaPool() {
-    gachaPool_ = kGachaItemsInfo.at(1);
-}
+void ShopPopup::initGachaPool() { gachaPool_ = kGachaItemsInfo.at(1); }
 
 // 创建抽卡界面
-void ShopPopup::createGachaItem() {
+void ShopPopup::createGachaItem()
+{
     if (!scrollView_) return;
 
     scrollView_->removeAllChildren();
 
     // 抽卡界面背景
     auto gachaBg = LayerColor::create(Color4B(50, 30, 70, 255), 350, 450);
-    gachaBg->setPosition(Vec2(
-        scrollView_->getContentSize().width / 2 - 175,
-        scrollView_->getContentSize().height / 2 - 400
-    ));
+    gachaBg->setPosition(
+        Vec2(scrollView_->getContentSize().width / 2 - 175, scrollView_->getContentSize().height / 2 - 400));
     scrollView_->addChild(gachaBg);
 
     // 标题
     auto title = Label::createWithSystemFont("神秘抽卡", "fonts/Marker Felt.ttf", 48);
-    title->setColor(Color3B(255, 215, 0)); // 金色
+    title->setColor(Color3B(255, 215, 0));  // 金色
     title->enableShadow(Color4B::BLACK, Size(2, -2), 0);
     title->setPosition(Vec2(175, 400));
     gachaBg->addChild(title);
@@ -602,9 +605,9 @@ void ShopPopup::createGachaItem() {
     gachaBg->addChild(desc);
 
     // 抽卡展示区域
-    auto cardArea = LayerColor::create(Color4B(30, 20, 40, 255), 300,200);
+    auto cardArea = LayerColor::create(Color4B(30, 20, 40, 255), 300, 200);
     cardArea->setPosition(Vec2(25, 120));
-    cardArea->setTag(1001); // 用于后续查找
+    cardArea->setTag(1001);  // 用于后续查找
     gachaBg->addChild(cardArea);
 
     // 问号图标（初始状态）
@@ -619,7 +622,7 @@ void ShopPopup::createGachaItem() {
     }
     questionMark->setScale(0.1f);
     questionMark->setPosition(Vec2(150, 100));
-    questionMark->setTag(1002); // 用于后续替换
+    questionMark->setTag(1002);  // 用于后续替换
     cardArea->addChild(questionMark);
 
     // 抽卡按钮
@@ -640,17 +643,13 @@ void ShopPopup::createGachaItem() {
     tenGachaButton->setPosition(Vec2(250, 150));
     tenGachaButton->setColor(Color3B(180, 100, 50));
 
-    tenGachaButton->addTouchEventListener(
-        [this](Ref*, ui::Widget::TouchEventType type) {
-            if (type == ui::Widget::TouchEventType::ENDED) {
-                this->startTenGacha();
-            }
+    tenGachaButton->addTouchEventListener([this](Ref*, ui::Widget::TouchEventType type) {
+        if (type == ui::Widget::TouchEventType::ENDED) {
+            this->startTenGacha();
         }
-    );
+    });
 
     gachaBg->addChild(tenGachaButton);
-
-
 
     // 按钮发光效果
     auto buttonGlow = Sprite::create("ui/glow_circle.png");
@@ -658,72 +657,70 @@ void ShopPopup::createGachaItem() {
         buttonGlow->setScale(1.2f);
         buttonGlow->setPosition(Vec2(100, 35));
         buttonGlow->setOpacity(150);
-        buttonGlow->runAction(RepeatForever::create(
-            Sequence::create(
-                FadeTo::create(0.8f, 200),
-                FadeTo::create(0.8f, 100),
-                nullptr
-            )
-        ));
+        buttonGlow->runAction(
+            RepeatForever::create(Sequence::create(FadeTo::create(0.8f, 200), FadeTo::create(0.8f, 100), nullptr)));
         gachaButton->addChild(buttonGlow, -1);
     }
 
     gachaButton->addTouchEventListener([this](Ref* sender, ui::Widget::TouchEventType type) {
         if (type == ui::Widget::TouchEventType::ENDED) {
-            this->performSingleGacha(nullptr);;
+            this->performSingleGacha(nullptr);
+            ;
         }
-        });
+    });
     gachaBg->addChild(gachaButton);
 
     // 概率说明
-    auto probability = Label::createWithSystemFont(
-        "概率: SSR 5% | SR 15% | R 30% | N 50%",
-        "Arial", 18
-    );
+    auto probability = Label::createWithSystemFont("概率: SSR 5% | SR 15% | R 30% | N 50%", "Arial", 18);
     probability->setColor(Color3B(200, 200, 200));
     probability->setPosition(Vec2(175, 100));
     gachaBg->addChild(probability);
 }
 
 // 执行抽卡
-void ShopPopup::performSingleGacha(
-    const std::function<void(ShopItem)>& onFinished
-) {
+void ShopPopup::performSingleGacha(const std::function<void(ShopItem)>& onFinished)
+{
     int randomValue = rand() % 100;
     Rarity rarity = RARITY_N;
 
-    if (randomValue < 5) rarity = RARITY_SSR;
-    else if (randomValue < 20) rarity = RARITY_SR;
-    else if (randomValue < 50) rarity = RARITY_R;
-    else { // 50% N
-        rarity = RARITY_N; }
+    if (randomValue < 5)
+        rarity = RARITY_SSR;
+    else if (randomValue < 20)
+        rarity = RARITY_SR;
+    else if (randomValue < 50)
+        rarity = RARITY_R;
+    else {  // 50% N
+        rarity = RARITY_N;
+    }
 
     showGachaAnimation(rarity);
 
-    this->scheduleOnce([this, rarity, onFinished](float) {
-        std::vector<ShopItem*> items;
+    this->scheduleOnce(
+        [this, rarity, onFinished](float) {
+            std::vector<ShopItem*> items;
 
-        for (auto& item : gachaPool_) {
-            if (item.rarity == rarity) {
-                items.push_back(&item);
+            for (auto& item : gachaPool_) {
+                if (item.rarity == rarity) {
+                    items.push_back(&item);
+                }
             }
-        }
 
-        if (items.empty()) return;
+            if (items.empty()) return;
 
-        ShopItem result = *items[rand() % items.size()];
+            ShopItem result = *items[rand() % items.size()];
 
-        showGachaResult(result);
+            showGachaResult(result);
 
-        if (onFinished) {
-            onFinished(result);
-        }
-
-        }, 2.5f, "single_gacha_result");
+            if (onFinished) {
+                onFinished(result);
+            }
+        },
+        2.5f, "single_gacha_result");
 }
 
 // 显示抽卡动画
-void ShopPopup::showGachaAnimation(int rarity) {
+void ShopPopup::showGachaAnimation(int rarity)
+{
     // 创建全屏黑色遮罩
     auto mask = LayerColor::create(Color4B(0, 0, 0, 180));
     mask->setContentSize(Director::getInstance()->getVisibleSize());
@@ -736,40 +733,26 @@ void ShopPopup::showGachaAnimation(int rarity) {
     // 创建闪光效果
     auto flash = Sprite::create("flash.png");
     if (rarity == RARITY_SSR) {
-
     }
     else if (rarity == RARITY_SR) {
-        flash->setTexture("SRflash.png"); 
+        flash->setTexture("SRflash.png");
     }
-    else  if (rarity == RARITY_R) {
+    else if (rarity == RARITY_R) {
         flash->setTexture("Rflash.png");
     }
     else {
         flash->setTexture("Nflash.png");
     }
-    flash->setPosition(Vec2(
-        Director::getInstance()->getVisibleSize().width / 2,
-        Director::getInstance()->getVisibleSize().height / 2
-    ));
+    flash->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2,
+                            Director::getInstance()->getVisibleSize().height / 2));
     flash->setScale(0.1f);
     flash->setOpacity(0);
     mask->addChild(flash);
 
     // 闪光动画序列
     flash->runAction(Sequence::create(
-        Spawn::create(
-            ScaleTo::create(0.5f, 3.0f),
-            FadeIn::create(0.3f),
-            nullptr
-        ),
-        DelayTime::create(0.5f),
-        Spawn::create(
-            ScaleTo::create(0.5f, 0.5f),
-            FadeOut::create(0.5f),
-            nullptr
-        ),
-        nullptr
-    ));
+        Spawn::create(ScaleTo::create(0.5f, 3.0f), FadeIn::create(0.3f), nullptr), DelayTime::create(0.5f),
+        Spawn::create(ScaleTo::create(0.5f, 0.5f), FadeOut::create(0.5f), nullptr), nullptr));
 
     // 创建旋转光效
     auto rotatingGlow = Node::create();
@@ -781,7 +764,7 @@ void ShopPopup::showGachaAnimation(int rarity) {
         else if (rarity == RARITY_SR) {
             ray->setTexture("SRflash.png");
         }
-        else  if (rarity == RARITY_R) {
+        else if (rarity == RARITY_R) {
             ray->setTexture("Rflash.png");
         }
         else {
@@ -793,55 +776,34 @@ void ShopPopup::showGachaAnimation(int rarity) {
         rotatingGlow->addChild(ray);
 
         // 每个光线的淡入淡出动画
-        ray->runAction(Sequence::create(
-            DelayTime::create(i * 0.1f),
-            FadeIn::create(0.3f),
-            DelayTime::create(0.5f),
-            FadeOut::create(0.3f),
-            nullptr
-        ));
+        ray->runAction(Sequence::create(DelayTime::create(i * 0.1f), FadeIn::create(0.3f), DelayTime::create(0.5f),
+                                        FadeOut::create(0.3f), nullptr));
     }
-    rotatingGlow->setPosition(Vec2(
-        Director::getInstance()->getVisibleSize().width / 2,
-        Director::getInstance()->getVisibleSize().height / 2
-    ));
-    rotatingGlow->runAction(Repeat::create(
-        RotateBy::create(2.0f, 360),
-        1
-    ));
+    rotatingGlow->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2,
+                                   Director::getInstance()->getVisibleSize().height / 2));
+    rotatingGlow->runAction(Repeat::create(RotateBy::create(2.0f, 360), 1));
     mask->addChild(rotatingGlow);
 
     // 抽卡中文字
     auto gachaText = Label::createWithSystemFont("抽卡中...", "fonts/Marker Felt.ttf", 60);
     gachaText->setColor(Color3B(255, 255, 100));
     gachaText->enableGlow(Color4B::YELLOW);
-    gachaText->setPosition(Vec2(
-        Director::getInstance()->getVisibleSize().width / 2,
-        Director::getInstance()->getVisibleSize().height / 2 - 200
-    ));
+    gachaText->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2,
+                                Director::getInstance()->getVisibleSize().height / 2 - 200));
     gachaText->setOpacity(0);
     mask->addChild(gachaText);
 
     // 文字动画
-    gachaText->runAction(Sequence::create(
-        DelayTime::create(0.5f),
-        FadeIn::create(0.3f),
-        DelayTime::create(1.5f),
-        FadeOut::create(0.3f),
-        nullptr
-    ));
+    gachaText->runAction(Sequence::create(DelayTime::create(0.5f), FadeIn::create(0.3f), DelayTime::create(1.5f),
+                                          FadeOut::create(0.3f), nullptr));
 
     // 2.5秒后移除遮罩
-    mask->runAction(Sequence::create(
-        DelayTime::create(2.5f),
-        FadeOut::create(0.3f),
-        RemoveSelf::create(),
-        nullptr
-    ));
+    mask->runAction(Sequence::create(DelayTime::create(2.5f), FadeOut::create(0.3f), RemoveSelf::create(), nullptr));
 }
 
 // 显示抽卡结果
-void ShopPopup::showGachaResult(const ShopItem& item) {
+void ShopPopup::showGachaResult(const ShopItem& item)
+{
     // 移除之前的抽卡结果
     if (gachaResultNode_) {
         gachaResultNode_->removeFromParent();
@@ -862,10 +824,8 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
 
     // 结果卡片
     auto card = LayerColor::create(Color4B(50, 50, 80, 255), 400, 500);
-    card->setPosition(Vec2(
-        Director::getInstance()->getVisibleSize().width / 2 - 200,
-        Director::getInstance()->getVisibleSize().height / 2 - 250
-    ));
+    card->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2 - 200,
+                           Director::getInstance()->getVisibleSize().height / 2 - 250));
     gachaResultNode_->addChild(card);
 
     // 根据稀有度设置卡片边框颜色和光效
@@ -874,23 +834,23 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
     float glowIntensity = 1.0f;
 
     // 根据物品rarity判断稀有度
-    if (item.rarity ==RARITY_SSR) { // SSR
-        borderColor = Color3B(255, 215, 0); // 金色
+    if (item.rarity == RARITY_SSR) {         // SSR
+        borderColor = Color3B(255, 215, 0);  // 金色
         rarityText = "SSR";
         glowIntensity = 3.0f;
     }
-    else if (item.rarity == RARITY_SR) { // SR
-        borderColor = Color3B(255, 100, 255); // 紫色
+    else if (item.rarity == RARITY_SR) {       // SR
+        borderColor = Color3B(255, 100, 255);  // 紫色
         rarityText = "SR";
         glowIntensity = 2.0f;
     }
-    else if (item.rarity == RARITY_R) { // R
-        borderColor = Color3B(100, 200, 255); // 蓝色
+    else if (item.rarity == RARITY_R) {        // R
+        borderColor = Color3B(100, 200, 255);  // 蓝色
         rarityText = "R";
         glowIntensity = 1.5f;
     }
-    else { // N
-        borderColor = Color3B(150, 150, 150); // 灰色
+    else {                                     // N
+        borderColor = Color3B(150, 150, 150);  // 灰色
         rarityText = "N";
         glowIntensity = 1.0f;
     }
@@ -909,13 +869,8 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
             glow->setPosition(Vec2(200, 250));
             glow->setColor(borderColor);
             glow->setOpacity(150);
-            glow->runAction(RepeatForever::create(
-                Sequence::create(
-                    FadeTo::create(0.8f, 200),
-                    FadeTo::create(0.8f, 100),
-                    nullptr
-                )
-            ));
+            glow->runAction(
+                RepeatForever::create(Sequence::create(FadeTo::create(0.8f, 200), FadeTo::create(0.8f, 100), nullptr)));
             card->addChild(glow, -1);
         }
     }
@@ -943,10 +898,7 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
     card->addChild(nameLabel);
 
     // 物品描述
-    auto descLabel = Label::createWithSystemFont(
-        "恭喜获得！" + item.unavailableReason,
-        "Arial", 24
-    );
+    auto descLabel = Label::createWithSystemFont("恭喜获得！" + item.unavailableReason, "Arial", 24);
     descLabel->setColor(Color3B(200, 200, 200));
     descLabel->setPosition(Vec2(200, 80));
     descLabel->setWidth(350);
@@ -968,24 +920,22 @@ void ShopPopup::showGachaResult(const ShopItem& item) {
                 gachaResultNode_ = nullptr;
             }
         }
-        });
+    });
     card->addChild(okButton);
 
     // 5秒后自动关闭
-    gachaResultNode_->runAction(Sequence::create(
-        DelayTime::create(5.0f),
-        CallFunc::create([this]() {
-            if (gachaResultNode_) {
-                gachaResultNode_->removeFromParent();
-                gachaResultNode_ = nullptr;
-            }
-            }),
-        nullptr
-    ));
+    gachaResultNode_->runAction(Sequence::create(DelayTime::create(5.0f), CallFunc::create([this]() {
+                                                     if (gachaResultNode_) {
+                                                         gachaResultNode_->removeFromParent();
+                                                         gachaResultNode_ = nullptr;
+                                                     }
+                                                 }),
+                                                 nullptr));
 }
 
-void ShopPopup::startTenGacha() {
-    if (isTenGachaRunning_) return; // 防止重复点击
+void ShopPopup::startTenGacha()
+{
+    if (isTenGachaRunning_) return;  // 防止重复点击
 
     isTenGachaRunning_ = true;
     currentTenIndex_ = 0;
@@ -993,7 +943,8 @@ void ShopPopup::startTenGacha() {
 
     runNextTenGacha();
 }
-void ShopPopup::runNextTenGacha() {
+void ShopPopup::runNextTenGacha()
+{
     // 十次完成
     if (currentTenIndex_ >= 10) {
         isTenGachaRunning_ = false;
@@ -1007,9 +958,6 @@ void ShopPopup::runNextTenGacha() {
         currentTenIndex_++;
 
         // 下一抽（给一点间隔）
-        this->scheduleOnce([this](float) {
-            runNextTenGacha();
-            }, 0.5f, "next_ten_gacha");
-        });
+        this->scheduleOnce([this](float) { runNextTenGacha(); }, 0.5f, "next_ten_gacha");
+    });
 }
-

@@ -1,4 +1,5 @@
 #include "GameManager.h"
+
 #include "cocos2d.h"
 
 void GameManager::setGold(ULL gold)

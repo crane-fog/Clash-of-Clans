@@ -19,4 +19,4 @@ public:
     virtual bool isAlive() const = 0;
 };
 
-#endif // __ITROOPTARGET_H__
+#endif  // __ITROOPTARGET_H__

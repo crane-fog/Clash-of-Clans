@@ -1,10 +1,10 @@
 #ifndef __MAIN_VILLAGE_SCENE_H__
 #define __MAIN_VILLAGE_SCENE_H__
 
-#include "cocos2d.h"
-#include "VillageScene.h"
 #include "Arch.h"
 #include "AudioEngine.h"
+#include "cocos2d.h"
+#include "VillageScene.h"
 
 // 主村庄场景类
 class MainVillage : public Village {
@@ -16,7 +16,7 @@ private:
     time_t last_exit_time_ = 0;
 
 public:
-    //背景音乐
+    // 背景音乐
     int mainhome_bgm = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
@@ -30,6 +30,7 @@ public:
     CREATE_FUNC(MainVillage);
     void onShopButtonClick(Ref* sender);
     bool addBuildingByNO(unsigned char no, int price);
+
 public:
     void MainVillage::createCancelButton(Arch* pendingArch_);
     void MainVillage::createConfirmButton(Arch* pendingArch_, int price, bool type_);
@@ -37,13 +38,13 @@ public:
     void MainVillage::confirmBuildingPlacement(Arch* pendingArch_);
     void MainVillage::removeCancelAndConfirmButtons(Arch* pendingArch_);
     void MainVillage::playBuildingDropEffect(Arch* arch);
-    //延迟调用商店面板，sec为延迟秒数
+    // 延迟调用商店面板，sec为延迟秒数
     void MainVillage::showShopPopupWithDelay(float sec);
 
     void onAttackButtonClick(Ref* sender);
     void onTroopButtonClick(Ref* sender);
     void onLabButtonClick(Ref* sender);
-    void onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, unsigned char &it,cocos2d::LayerColor* panel);
+    void onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, unsigned char& it, cocos2d::LayerColor* panel);
     // 获取大本营等级
     unsigned char getTownHallLevel();
     // 获取指定建筑数量
@@ -51,4 +52,4 @@ public:
 
     // void onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_, bool isReplay = 1);
 };
-#endif // __MAIN_VILLAGE_SCENE_H__
+#endif  // __MAIN_VILLAGE_SCENE_H__

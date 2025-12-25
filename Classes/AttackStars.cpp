@@ -1,18 +1,22 @@
-#include "UIparts.h"
+#include "AttackStars.h"
+
 #include "cocos/ui/CocosGUI.h"
-#include"MainVillageScene.h"
-#include"DataHelper.h"
-#include"AttackStars.h"
+#include "DataHelper.h"
+#include "MainVillageScene.h"
+#include "UIparts.h"
 USING_NS_CC;
 using namespace ui;
 
-bool AttackStars::init() {
+bool AttackStars::init()
+{
     if (!Node::init()) {
         return false;
     }
     // 注册大本营摧毁事件监听
-    TownHallDeathListener = cocos2d::EventListenerCustom::create("town_hall_destroyed", CC_CALLBACK_1(AttackStars::onTownHallDeath, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(TownHallDeathListener, this);
+    TownHallDeathListener =
+        cocos2d::EventListenerCustom::create("town_hall_destroyed", CC_CALLBACK_1(AttackStars::onTownHallDeath, this));
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        TownHallDeathListener, this);
     // 初始化成员变量
     progress_ = 0;
     lastDeadArch = 0;
@@ -23,7 +27,7 @@ bool AttackStars::init() {
 
     // 获取建筑总数
     ArchSum = TroopTargetManager::getInstance()->getlivingsum();
-    if (ArchSum <= 0) ArchSum = 1; // 防止除零错误
+    if (ArchSum <= 0) ArchSum = 1;  // 防止除零错误
 
     int x_ = 200;
     int y_ = 20;
@@ -31,10 +35,7 @@ bool AttackStars::init() {
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 创建进度标签
-    auto prog_label = Label::createWithSystemFont(
-        StringUtils::format("摧毁进度：%d%%",
-           progress_),
-        "Arial", 30);
+    auto prog_label = Label::createWithSystemFont(StringUtils::format("摧毁进度：%d%%", progress_), "Arial", 30);
     prog_label->setPosition(Vec2(230, visibleSize.height - 30));
     prog_label->setName("destoyed_label");
     this->addChild(prog_label);
@@ -72,8 +73,9 @@ bool AttackStars::init() {
 }
 
 // 检查更新的函数
-void AttackStars::checkForUpdates(float dt) {
-    if (isShowingVictory) return; // 正在显示胜利画面，不再更新
+void AttackStars::checkForUpdates(float dt)
+{
+    if (isShowingVictory) return;  // 正在显示胜利画面，不再更新
 
     CCLOG("=== 进度检查开始 ===");
 
@@ -91,8 +93,7 @@ void AttackStars::checkForUpdates(float dt) {
 
         // 更新进度标签
         if (prog_label) {
-            prog_label->setString(StringUtils::format("摧毁进度：%d%%",
-                newProgress));
+            prog_label->setString(StringUtils::format("摧毁进度：%d%%", newProgress));
         }
 
         progress_ = newProgress;
@@ -109,8 +110,7 @@ void AttackStars::checkForUpdates(float dt) {
             setStarColor(stars_[0], true);
             isComplete[0] = true;
         }
-        if(isTownStar&&!isComplete[1])
-        {
+        if (isTownStar && !isComplete[1]) {
             showPopup(stars_[1], newProgress);
             setStarColor(stars_[1], true);
             isComplete[1] = true;
@@ -130,8 +130,9 @@ void AttackStars::checkForUpdates(float dt) {
 }
 
 // 显示胜利画面
-void AttackStars::showVictoryScreen() {
-    if (isShowingVictory) return; // 防止重复调用
+void AttackStars::showVictoryScreen()
+{
+    if (isShowingVictory) return;  // 防止重复调用
 
     isShowingVictory = true;
     CCLOG("显示胜利画面");
@@ -145,7 +146,7 @@ void AttackStars::showVictoryScreen() {
     fullScreenMask->setContentSize(visibleSize);
     fullScreenMask->setPosition(origin);
     fullScreenMask->setName("victory_mask");
-    this->addChild(fullScreenMask,-1); // 较高层级
+    this->addChild(fullScreenMask, -1);  // 较高层级
 
     // 2. 获取所有需要移动到中间的UI元素
     auto progressLabel = dynamic_cast<cocos2d::Label*>(this->getChildByName("destoyed_label"));
@@ -158,13 +159,13 @@ void AttackStars::showVictoryScreen() {
     // 4. 创建胜利提示文字
     auto victoryLabel = Label::createWithSystemFont("胜利！所有建筑已被摧毁！", "Arial", 100);
     victoryLabel->setColor(Color3B::YELLOW);
-    victoryLabel->setPosition(Vec2(center.x+100, center.y + 200));
+    victoryLabel->setPosition(Vec2(center.x + 100, center.y + 200));
     victoryLabel->setName("victory_label");
     fullScreenMask->addChild(victoryLabel);
 
     // 5. 将所有UI元素移动到屏幕中央（动画）
     float moveDuration = 0.8f;
-    float finalY = center.y - 50; // 最终Y坐标
+    float finalY = center.y - 50;  // 最终Y坐标
 
     // 移动进度标签
     if (progressLabel) {
@@ -173,11 +174,10 @@ void AttackStars::showVictoryScreen() {
         progressLabel->runAction(Spawn::create(labelMove, labelScale, nullptr));
     }
 
-
     // 移动进度条
     if (progressBar) {
         auto barMove = MoveTo::create(moveDuration, Vec2(center.x, finalY));
-        auto barScale = ScaleTo::create(moveDuration, 2.5f, 3.0f); // 稍微放大
+        auto barScale = ScaleTo::create(moveDuration, 2.5f, 3.0f);  // 稍微放大
         progressBar->runAction(Spawn::create(barMove, barScale, nullptr));
     }
 
@@ -186,7 +186,7 @@ void AttackStars::showVictoryScreen() {
         if (stars_[i]) {
             float starX = center.x - 100 + i * 100;
             auto starMove = MoveTo::create(moveDuration, Vec2(starX, finalY - 80));
-            auto starScale = ScaleTo::create(moveDuration, 0.15f); // 稍微放大
+            auto starScale = ScaleTo::create(moveDuration, 0.15f);  // 稍微放大
             auto rotate = RotateBy::create(moveDuration, 360);
 
             // 如果星星还没点亮，先点亮它
@@ -214,13 +214,14 @@ void AttackStars::showVictoryScreen() {
 
         isShowingVictory = false;
         CCLOG("胜利画面消失");
-        });
+    });
 
     fullScreenMask->runAction(Sequence::create(delay, fadeOut, cleanup, nullptr));
 }
 
 // 重置UI到原始位置
-void AttackStars::resetUIPosition() {
+void AttackStars::resetUIPosition()
+{
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
     // 重置进度标签
@@ -252,7 +253,8 @@ void AttackStars::resetUIPosition() {
     }
 }
 
-void AttackStars::showPopup(cocos2d::Sprite* targetStar, int progress) {
+void AttackStars::showPopup(cocos2d::Sprite* targetStar, int progress)
+{
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 center = Vec2(visibleSize.width / 2, visibleSize.height / 2);
 
@@ -261,14 +263,15 @@ void AttackStars::showPopup(cocos2d::Sprite* targetStar, int progress) {
     flyingStar->setPosition(center);
     flyingStar->setScale(1.0f);
     flyingStar->setName("flying_star");
-    this->addChild(flyingStar, 10); // 较高层级
+    this->addChild(flyingStar, 10);  // 较高层级
 
     // 创建提示文本
     std::string text;
     if (progress == 50) {
         text = "摧毁进度超过50%！";
     }
-    if(isTownStar) text = "敌方大本营已被摧毁！";
+    if (isTownStar)
+        text = "敌方大本营已被摧毁！";
     else if (progress == 100) {
         text = "所有建筑已被摧毁！";
     }
@@ -294,21 +297,22 @@ void AttackStars::showPopup(cocos2d::Sprite* targetStar, int progress) {
     auto cleanup = CallFunc::create([flyingStar, progressText]() {
         flyingStar->removeFromParent();
         progressText->removeFromParent();
-        });
+    });
 
     // 执行动画
     flyingStar->runAction(Sequence::create(spawn, cleanup, nullptr));
     progressText->runAction(Sequence::create(DelayTime::create(0.5f), textFadeOut, nullptr));
 }
-void AttackStars::onTownHallDeath(cocos2d::EventCustom* event) {
+void AttackStars::onTownHallDeath(cocos2d::EventCustom* event)
+{
     isTownStar = 1;
     checkForUpdates();
 }
 
 // 析构函数
-AttackStars::~AttackStars() {
+AttackStars::~AttackStars()
+{
     if (deadArchUpdateListener) {
-        cocos2d::Director::getInstance()->getEventDispatcher()
-            ->removeEventListener(deadArchUpdateListener);
+        cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(deadArchUpdateListener);
     }
 }
