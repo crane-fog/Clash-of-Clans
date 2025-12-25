@@ -86,7 +86,6 @@ list(APPEND GAME_HEADER
      Classes/Archer.h
      Classes/ArchInfo.h
      Classes/ArchTargetManager.h
-     Classes/AttackSceneUI.h
      Classes/AttackStars.h
      Classes/Balloon.h
      Classes/Barbarian.h
@@ -102,6 +101,7 @@ list(APPEND GAME_HEADER
      Classes/HealthBar.h
      Classes/IArchTarget.h
      Classes/ITroopTarget.h
+     Classes/LoadingScene.h
      Classes/MainVillageScene.h
      Classes/ReplayAttack.h
      Classes/ShopPopup.h
