@@ -163,6 +163,7 @@ public:
     Wall(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
+    virtual void onDeath() override;
 };
 
 class GoldStorage : public Arch {

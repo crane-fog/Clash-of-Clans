@@ -67,7 +67,7 @@ bool AttackStars::init()
     }
 
     // 启动定时检查
-    this->schedule(CC_CALLBACK_1(AttackStars::checkForUpdates, this), 2.0f, "update_checker");
+    this->schedule(CC_CALLBACK_1(AttackStars::checkForUpdates, this), 0.5f, "update_checker");
 
     return true;
 }

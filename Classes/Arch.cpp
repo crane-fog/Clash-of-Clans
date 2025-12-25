@@ -855,6 +855,13 @@ void TownHall::onDeath()
     Arch::onDeath();
 }
 
+void Wall::onDeath()
+{
+    updateSurroundingWalls(x_, y_);
+    updateWall();
+    Arch::onDeath();
+}
+
 void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
 {
     for (auto arch : base_map_->archs_) {
@@ -878,6 +885,8 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
     }
     connection_nodes_.clear();
 
+    if (is_destroyed_) return;
+
     if (moving_wall == nullptr && is_moving) return;
 
     // 创建副本避免冲突
@@ -886,6 +895,7 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
     for (auto arch : archs_copy) {
         if (arch->getTargetType() != WALLT) continue;
         if (arch == this) continue;
+        if (arch->is_destroyed_) continue;
 
         Wall* other = static_cast<Wall*>(arch);
         int dx = abs(other->x_ - x_);

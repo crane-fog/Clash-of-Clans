@@ -65,6 +65,7 @@ public:
         RESOURCE = 1,               // 资源
         DEFENSE = 2,                // 防御
         WALLT = 3,                  // 城墙
+        TRAP = 4,                   // 陷阱
         NONE = 255                  // 无
     };
 
