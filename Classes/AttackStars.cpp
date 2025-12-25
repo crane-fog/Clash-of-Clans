@@ -50,7 +50,7 @@ bool AttackStars::init()
     progress_bar_ = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
     progress_bar_->setScaleX(2.3f);
     progress_bar_->setScaleY(3.0f);
-    progress_bar_->setPosition(cocos2d::Vec2(30 + x, visible_size.height - 100 + y));
+    progress_bar_->setPosition(cocos2d::Vec2(30.0f + x, visible_size.height - 100.0f + y));
     progress_bar_->setPercent(0);
     progress_bar_->setName("progress_bar");
     this->addChild(progress_bar_);
@@ -59,7 +59,7 @@ bool AttackStars::init()
     for (int i = 0; i < 3; ++i) {
         auto star = createStar();
         star->setScale(0.1f);
-        star->setPosition(cocos2d::Vec2(130 + i * 100, visible_size.height - 150));
+        star->setPosition(cocos2d::Vec2(130.0f + i * 100.0f, visible_size.height - 150.0f));
         star->setName(StringUtils::format("star_%d", i));
         stars_.push_back(star);
         this->addChild(star);
@@ -96,12 +96,12 @@ void AttackStars::checkForUpdates(float dt)
             prog_label->setString(StringUtils::format("摧毁进度：%d%%", new_progress));
         }
 
-        progress_ = new_progress;
+        progress_ = static_cast<float>(new_progress);
         last_dead_arch_ = current_dead_arch;
 
         // 更新进度条
         if (progress_bar_) {
-            progress_bar_->setPercent(new_progress);
+            progress_bar_->setPercent(static_cast<float>(new_progress));
         }
 
         // 星星点亮逻辑
@@ -182,7 +182,7 @@ void AttackStars::showVictoryScreen()
     }
 
     // 移动星星
-    for (int i = 0; i < stars_.size(); ++i) {
+    for (unsigned int i = 0; i < stars_.size(); ++i) {
         if (stars_[i]) {
             float star_x = center.x - 100 + i * 100;
             auto star_move = MoveTo::create(move_duration, Vec2(star_x, final_y - 80));
@@ -245,9 +245,9 @@ void AttackStars::resetUIPosition()
     }
 
     // 重置星星位置
-    for (int i = 0; i < stars_.size(); ++i) {
+    for (unsigned int i = 0; i < stars_.size(); ++i) {
         if (stars_[i]) {
-            stars_[i]->setPosition(Vec2(130 + i * 100, visible_size.height - 150));
+            stars_[i]->setPosition(Vec2(130.0f + i * 100.0f, visible_size.height - 150.0f));
             stars_[i]->setScale(0.1f);
         }
     }

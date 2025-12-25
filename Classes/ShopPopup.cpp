@@ -148,7 +148,7 @@ bool ShopPopup::init()
     gacha_tab->setTitleFontSize(28);
     gacha_tab->setTitleColor(Color3B::WHITE);
     gacha_tab->setContentSize(Size(tab_width, 60));
-    gacha_tab->setPosition(Vec2(tab_width * 1.5 + 20, tab_start_y));
+    gacha_tab->setPosition(Vec2(tab_width * 1.5f + 20, tab_start_y));
     gacha_tab->setColor(Color3B(200, 150, 100));  // 橙色
     gacha_tab->setTag(3);                         // 标记为抽卡标签
     gacha_tab->addTouchEventListener([this, gacha_tab, gacha_tab_bg](Ref* sender, ui::Widget::TouchEventType type) {
@@ -163,7 +163,7 @@ bool ShopPopup::init()
     auto scroll_view = ui::ScrollView::create();
     scroll_view->setContentSize(Size(panel_bg->getContentSize().width - 40, panel_bg->getContentSize().height));
 
-    scroll_view->setInnerContainerSize(Size(270 * kShopItemsInfo.at(1).size(), panel_bg->getContentSize().height));
+    scroll_view->setInnerContainerSize(Size(static_cast<float>(270 * kShopItemsInfo.at(1).size()), panel_bg->getContentSize().height));
     scroll_view->setDirection(ui::ScrollView::Direction::HORIZONTAL);
     scroll_view->setPosition(Vec2(20, 100));
     scroll_view->setScrollBarEnabled(true);
@@ -218,11 +218,11 @@ void ShopPopup::switchToTab(int tabIndex)
     // 根据标签显示不同的商品
     switch (tabIndex) {
         case 1:  // 建筑
-            scroll_view->setInnerContainerSize(Size(270 * building_items_.size(), scroll_view->getContentSize().height));
+            scroll_view->setInnerContainerSize(Size(static_cast<float>(270 * building_items_.size()), scroll_view->getContentSize().height));
             showItemsInScrollView(building_items_, scroll_view, tabIndex);
             break;
         case 2:  // 法术
-            scroll_view->setInnerContainerSize(Size(270 * magic_items_.size(), scroll_view->getContentSize().height));
+            scroll_view->setInnerContainerSize(Size(static_cast<float>(270 * magic_items_.size()), scroll_view->getContentSize().height));
             showItemsInScrollView(kShopItemsInfo.at(2), scroll_view, tabIndex);
             break;
         case 3:  // 抽卡
@@ -240,17 +240,17 @@ void ShopPopup::switchToTab(int tabIndex)
 // 在滚动容器中显示商品的辅助函数
 void ShopPopup::showItemsInScrollView(const std::vector<ShopItem>& items, ui::ScrollView* scrollView, int tabIndex)
 {
-    auto scroll_bg = LayerColor::create(Color4B(255, 230, 200, 255), 270 * building_items_.size(),
+    auto scroll_bg = LayerColor::create(Color4B(255, 230, 200, 255), static_cast<float>(270 * building_items_.size()),
                                        scrollView->getContentSize().height - 240);
     scroll_bg->setPosition(Vec2::ZERO);
     scroll_bg->setLocalZOrder(-1);  // 放在最底层
     // 将背景添加到滚动视图
     scrollView->addChild(scroll_bg);
-    for (int i = 0; i < items.size(); i++) {
+    for (unsigned int i = 0; i < items.size(); i++) {
         const auto& item = items[i];
         // 商品背景
         auto item_bg = LayerColor::create(Color4B(160, 180, 230, 255), 250, 300);
-        item_bg->setPosition(Vec2(20 + i * 270, 20));
+        item_bg->setPosition(Vec2(20.0f + i * 270.0f, 20.0f));
         scrollView->addChild(item_bg);
         // 根据商品ID确定建筑类型
         unsigned char arch_no = kInvalidArchNo;
@@ -537,7 +537,7 @@ void ShopPopup::showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor*
     targetNode->addChild(bubble, 999);  // 添加到商品背景，而不是this
 
     // 气泡背景
-    auto bubble_bg = LayerColor::create(Color4B(70, 70, 70, 2020), 200, 80);
+    auto bubble_bg = LayerColor::create(Color4B(70, 70, 70, 228), 200, 80);
     bubble_bg->setPosition(Vec2(-100, 0));  // 居中
     bubble->addChild(bubble_bg);
 
@@ -771,7 +771,7 @@ void ShopPopup::showGachaAnimation(int rarity)
             ray->setTexture("Nflash.png");
         }
         ray->setPosition(Vec2(0, 150));
-        ray->setRotation(i * 45);
+        ray->setRotation(i * 45.0f);
         ray->setOpacity(0);
         rotating_glow->addChild(ray);
 

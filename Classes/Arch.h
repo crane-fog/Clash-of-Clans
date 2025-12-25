@@ -141,7 +141,7 @@ public:
         if (current_hp_ <= 0) return;
         if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE && !is_mine_) {
             float p = damage / kArchInfo.at(no_)[level_ - 1].hp_;
-            unsigned long long resource_get = current_capacity_ * p;
+            unsigned long long resource_get = current_capacity_ * static_cast<unsigned long long>(p);
             if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
                 GameManager::getInstance()->setGold(GameManager::getInstance()->getGold() + resource_get);
             else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)

@@ -439,7 +439,7 @@ std::string Arch::getArchNameFromEnum(unsigned char archNo)
 
 void Arch::archUpgrade()
 {
-    unsigned char max = kArchInfo.at(no_).size();
+    unsigned char max = static_cast<unsigned char>(kArchInfo.at(no_).size());
     if (level_ < max) {
         // 获取大本营等级
         unsigned char town_hall_level = 1;
@@ -757,7 +757,7 @@ void Arch::startResourceProduction()
         [=](float dt) {
             if (current_capacity_ <= info.max_capacity_) {
                 // 增加生产量，每秒按生产速度增加
-                current_capacity_ += produce_speed_per_second;
+                current_capacity_ += static_cast<unsigned int>(produce_speed_per_second);
 
                 // 如果容量超过最大值，设置为最大容量
                 if (current_capacity_ > info.max_capacity_) {

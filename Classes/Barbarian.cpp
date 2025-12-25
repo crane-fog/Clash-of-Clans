@@ -13,7 +13,7 @@ const std::array<float, MAX_TROOP_LEVEL + 1> Barbarian::kResearchTimes = {0, 0, 
 const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Barbarian::kLaboratoryLevelRequireds = {0, 1, 1, 3, 5, 6};
 
 Barbarian::Barbarian(BaseMap* base_map, int level, cocos2d::Vec2 position)
-    : Troop(base_map, level, position, NONE, MELEE_SINGLE_GROUND, 1, 1, 2, 1, 0.4,
+    : Troop(base_map, level, position, NONE, MELEE_SINGLE_GROUND, 1, 1, 2, 1, 0.4f,
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 9, 12, 15, 18, 23}),
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 45, 54, 65, 85, 105}))
 {}

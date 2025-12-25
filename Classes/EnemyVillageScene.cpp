@@ -245,7 +245,7 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
 }
 
 // 更新兵种数量标签
-void EnemyVillage::updateTroopCountLabel(int index)
+void EnemyVillage::updateTroopCountLabel(unsigned int index)
 {
     if (index >= 0 && index < troop_count_labels_.size()) {
         auto label = troop_count_labels_[index];
@@ -255,7 +255,7 @@ void EnemyVillage::updateTroopCountLabel(int index)
 }
 
 // 禁用已满的兵种按钮
-void EnemyVillage::disableTroopButton(int index)
+void EnemyVillage::disableTroopButton(unsigned int index)
 {
     if (index >= 0 && index < troop_buttons_.size()) {
         auto button = troop_buttons_[index];
