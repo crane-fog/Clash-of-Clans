@@ -1,28 +1,25 @@
 #ifndef __GIANT_H__
 #define __GIANT_H__
-#include<vector>
-#include<string>
+#include <string>
+#include <vector>
+
 #include "Troop.h"
-const std::vector<std::string> pics_giant = {
-        "troop/Giant1-2.webp",
-        "troop/Giant1-2.webp",
-        "troop/Giant1-2.webp",
-        "troop/Giant3-4.webp",
-        "troop/Giant3-4.webp",
-        "troop/Giant5.webp",
+
+const std::vector<std::string> kPicsGiant = {
+    "troop/Giant1-2.webp", "troop/Giant1-2.webp", "troop/Giant1-2.webp",
+    "troop/Giant3-4.webp", "troop/Giant3-4.webp", "troop/Giant5.webp",
 };
+
 class Giant : public Troop {
-private:
-
 public:
-    //升到level级所需资源花费
-    static const std::array<int, MAX_TROOP_LEVEL + 1> research_costs_;
+    // 升到level级所需资源花费
+    static const std::array<int, MAX_TROOP_LEVEL + 1> kResearchCosts;
 
-    //升到level级所需时间 单位：小时
-    static const std::array<float, MAX_TROOP_LEVEL + 1> research_times_;
+    // 升到level级所需时间 单位：小时
+    static const std::array<float, MAX_TROOP_LEVEL + 1> kResearchTimes;
 
-    //升到level级所需实验室等级
-    static const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
+    // 升到level级所需实验室等级
+    static const std::array<uchar, MAX_TROOP_LEVEL + 1> kLaboratoryLevelRequireds;
 
     // 构造函数
     Giant(BaseMap* base_map, int level, cocos2d::Vec2 position);
@@ -39,11 +36,11 @@ public:
     // 获取士兵类型（地面兵种）
     virtual ArchTargetType getTargetType() const override { return GROUND; }
 
-    //获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
-    virtual cocos2d::Vec2 getPixelPosition() const override { return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y)); }
+    // 获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
+    virtual cocos2d::Vec2 getPixelPosition() const override;
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return GIANT; }
 };
 
-#endif // __GIANT_H__
+#endif  // __GIANT_H__

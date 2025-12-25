@@ -1,0 +1,46 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+
+# --- 缩进与空格 ---
+IndentWidth: 4
+UseTab: Never
+# 访问修饰符与 class 对齐
+AccessModifierOffset: -4
+# 行宽限制
+ColumnLimit: 120
+
+# --- 头文件排序 ---
+SortIncludes: CaseInsensitive
+IncludeBlocks: Regroup
+
+# --- 大括号换行规则 ---
+BreakBeforeBraces: Custom
+BraceWrapping:
+  # {
+  AfterFunction: true
+
+  AfterClass: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterEnum: false
+  AfterControlStatement: Never
+  AfterNamespace: false
+
+  # }
+  BeforeElse: true
+  BeforeCatch: true
+
+  # 空函数
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+
+# --- 细节 ---
+# 确保控制语句 (if/for) 与 ( 之间有一个空格
+SpaceBeforeParens: ControlStatements
+# 确保赋值运算符前后有空格
+SpaceBeforeAssignmentOperators: true
+# 指针*靠左
+PointerAlignment: Left
+# 续行缩进宽度
+ContinuationIndentWidth: 4

@@ -1,29 +1,29 @@
 #ifndef __DRAGON_H__
 #define __DRAGON_H__
-#include<vector>
-#include<string>
+#include <string>
+#include <vector>
+
 #include "Troop.h"
-const std::vector<std::string> pics_dragon = {
-        "troop/Dragon1.webp",
-        "troop/Dragon1.webp",
-        "troop/Dragon2.webp",
-        "troop/Dragon3.webp",
-        "troop/Dragon4.webp",
-        "troop/Dragon5.webp",
+
+const std::vector<std::string> kPicsDragon = {
+    "troop/Dragon1.webp", "troop/Dragon1.webp", "troop/Dragon2.webp",
+    "troop/Dragon3.webp", "troop/Dragon4.webp", "troop/Dragon5.webp",
 };
+
 class Dragon : public Troop {
 private:
-    const float area_splash_radius_ = 0.3f;// 普攻伤害半径
+    const float kAreaSplashRadius = 0.3f;  // 普攻伤害半径
 
 public:
-    //升到level级所需资源花费
-    static const std::array<int, MAX_TROOP_LEVEL + 1> research_costs_;
+    // 升到level级所需资源花费
+    static const std::array<int, MAX_TROOP_LEVEL + 1> kResearchCosts;
 
-    //升到level级所需时间 单位：小时
-    static const std::array<float, MAX_TROOP_LEVEL + 1> research_times_;
+    // 升到level级所需时间 单位：小时
+    static const std::array<float, MAX_TROOP_LEVEL + 1> kResearchTimes;
 
-    //升到level级所需实验室等级
-    static const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
+    // 升到level级所需实验室等级
+    static const std::array<uchar, MAX_TROOP_LEVEL + 1> kLaboratoryLevelRequireds;
+
     // 构造函数
     Dragon(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
 
@@ -39,11 +39,8 @@ public:
     // 获取士兵类型（空中兵种）
     virtual ArchTargetType getTargetType() const override { return AIR; }
 
-    //获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
-    virtual cocos2d::Vec2 getPixelPosition() const override{
-		cocos2d::Vec2 pixel_ground = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
-        return cocos2d::Vec2(pixel_ground.x, pixel_ground.y+10.0f);
-    }
+    // 获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
+    virtual cocos2d::Vec2 getPixelPosition() const override;
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return DRAGON; }
@@ -51,4 +48,4 @@ public:
     void onDeath() override;
 };
 
-#endif // __DRAGON_H__
+#endif  // __DRAGON_H__

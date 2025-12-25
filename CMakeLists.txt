@@ -59,15 +59,16 @@ list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/Arch.cpp
      Classes/Archer.cpp
+     Classes/ArchTargetManager.cpp
      Classes/AttackStars.cpp
      Classes/Balloon.cpp
      Classes/Barbarian.cpp
      Classes/BaseMap.cpp
-     Classes/CocController.cpp
-     Classes/DataHelper.cpp
+     Classes/CocManager.cpp
+     Classes/CocUtility.cpp
      Classes/Dragon.cpp
      Classes/EnemyVillageScene.cpp
-     Classes/GameManager.cpp
+     Classes/ResourceManager.cpp
      Classes/Giant.cpp
      Classes/HealthBar.cpp
      Classes/MainVillageScene.cpp
@@ -75,6 +76,7 @@ list(APPEND GAME_SOURCE
      Classes/Troop.cpp
      Classes/TroopConfig.cpp
      Classes/TroopTargetManager.cpp
+     Classes/UIcommon.cpp
      Classes/UIparts.cpp
      Classes/VillageScene.cpp
      Classes/WallBreaker.cpp
@@ -85,24 +87,20 @@ list(APPEND GAME_HEADER
      Classes/Archer.h
      Classes/ArchInfo.h
      Classes/ArchTargetManager.h
-     Classes/AttackSceneUI.h
      Classes/AttackStars.h
      Classes/Balloon.h
      Classes/Barbarian.h
      Classes/BaseMap.h
-     Classes/CalculateHelper.h
-     Classes/CocController.h
-     Classes/CoordAdaptor.h
-     Classes/DataHelper.h
+     Classes/CocManager.h
+     Classes/CocUtility.h
      Classes/Dragon.h
      Classes/EnemyVillageScene.h
-     Classes/GameManager.h
+     Classes/ResourceManager.h
      Classes/Giant.h
      Classes/HealthBar.h
      Classes/IArchTarget.h
      Classes/ITroopTarget.h
      Classes/MainVillageScene.h
-     Classes/ReplayAttack.h
      Classes/ShopPopup.h
      Classes/Troop.h
      Classes/TroopConfig.h

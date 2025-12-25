@@ -1,0 +1,38 @@
+Checks: >
+  -*,
+  readability-identifier-naming
+
+WarningsAsErrors: ''
+
+CheckOptions:
+  # ===== 类型 =====
+  - key: readability-identifier-naming.TypeCase
+    value: CamelCase
+
+  # ===== 函数 =====
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+
+  # ===== 普通变量 =====
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+
+  # ===== 类成员变量 =====
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.MemberSuffix
+    value: _
+
+  # ===== 常量（const / constexpr / enum const）=====
+  - key: readability-identifier-naming.ConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstantPrefix
+    value: k
+
+# ===== 禁用枚举值命名检查 =====
+  - key: readability-identifier-naming.EnumConstantCase
+    value: any
+  - key: readability-identifier-naming.EnumConstantPrefix
+    value: ''
+  - key: readability-identifier-naming.EnumConstantSuffix
+    value: ''

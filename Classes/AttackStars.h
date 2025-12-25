@@ -1,80 +1,65 @@
-#pragma once
 #ifndef __ATTACKSTARS_H__
 #define __ATTACKSTARS_H__
 
-#include "cocos2d.h"
+#include <string.h>
+
+#include "Arch.h"
 #include "BaseMap.h"
+#include "CocManager.h"
 #include "cocos/ui/CocosGUI.h"
-#include"Arch.h"
-#include<string.h>
-#include "CocController.h"
-#include"UIcommon.h"
-#include"TroopTargetManager.h"
+#include "TroopTargetManager.h"
+
 class AttackStars : public cocos2d::Node {
+private:
+    int last_dead_arch_ = 0;  // 记录上次的数量
+    bool is_complete_[3] = {false};
+    int arch_sum_ = TroopTargetManager::getInstance()->getlivingsum();
+    float progress_;
+    cocos2d::ui::LoadingBar* progress_bar_;
+    std::vector<cocos2d::Sprite*> stars_;  // 存储星星
+
+    // 创建星星
+    cocos2d::Sprite* createStar();
+
+    // 存储监听器
+    cocos2d::EventListenerCustom* dead_arch_update_listener_;
+
 public:
-    cocos2d::EventListenerCustom* TownHallDeathListener;  // 存储监听器
-    void AttackStars::onTownHallDeath(cocos2d::EventCustom* event);
-    bool isTownStar = 0;
-    bool isShowingVictory = false; // 防止胜利画面重复显示
-    AttackStars()
-        : progress_(0) {
-    }
+    // 存储监听器
+    cocos2d::EventListenerCustom* town_hall_death_listener_;
 
-    static AttackStars* create() {
-        AttackStars* ret = new AttackStars();
-        if (ret && ret->init()) {
-            ret->autorelease();
-            return ret;
-        }
-        CC_SAFE_DELETE(ret);
-        return nullptr;
-    }
+    void onTownHallDeath(cocos2d::EventCustom* event);
 
-    bool init() override;
-    void setProgress(float progress) {
-        progress_ = progress;
-        progressBar_->setPercent(progress_);
-    }
+    bool is_town_star_ = 0;
 
-    void setStarColor(cocos2d::Sprite* star, bool isAchieved) {
-        if (isAchieved) {
-            star->setColor(cocos2d::Color3B(255, 255, 255)); // 恢复原来的颜色
-        }
-        else {
-            star->setColor(cocos2d::Color3B(169, 169, 169)); // 灰色
-        }
-    }
+    // 防止胜利画面重复显示
+    bool is_showing_victory_ = false;
+
+    AttackStars() : progress_(0) {}
+    ~AttackStars();
+
+    CREATE_FUNC(AttackStars);
+
+    virtual bool init() override;
+
+    void setProgress(float progress);
+
+    void setStarColor(cocos2d::Sprite* star, bool isAchieved);
 
     // 检查其他条件
-    bool someOtherConditionMet() {
-        return progress_ > 75.0f;
-    }
+    bool someOtherConditionMet() const { return progress_ > 75.0f; }
 
-    //点亮星星动画
+    // 点亮星星动画
     void showPopup(cocos2d::Sprite* targetStar, int progress);
 
     // 更新摧毁进度条的回调函数
-    void checkForUpdates(float dt=1.0f);  // 定时检查函数
+    void checkForUpdates(float dt = 1.0f);
+
     // 重置UI到原始位置
-    void AttackStars::resetUIPosition();
+    void resetUIPosition();
 
     // 显示胜利画面
-    void AttackStars::showVictoryScreen();
-private:
-    int lastDeadArch = 0;  // 记录上次的数量
-    bool isComplete[3] = { false };
-    ~AttackStars();
-    int ArchSum = TroopTargetManager::getInstance()->getlivingsum();
-    float progress_;
-    cocos2d::ui::LoadingBar* progressBar_;
-    std::vector<cocos2d::Sprite*> stars_; // 存储星星的vector
-
-    // 创建星星
-    cocos2d::Sprite* createStar() {
-        return cocos2d::Sprite::create("attack_scene/star.png"); // 星星图片
-    }
-
-    cocos2d::EventListenerCustom* deadArchUpdateListener;  // 存储监听器
+    void showVictoryScreen();
 };
 
-#endif // __ATTACKSTARS_H__
+#endif  // __ATTACKSTARS_H__

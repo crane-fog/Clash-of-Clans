@@ -1,6 +1,8 @@
 #ifndef __ITROOPTARGET_H__
 #define __ITROOPTARGET_H__
+
 #include "cocos2d.h"
+
 class ITroopTarget {
 public:
     virtual ~ITroopTarget() = default;
@@ -19,4 +21,4 @@ public:
     virtual bool isAlive() const = 0;
 };
 
-#endif // __ITROOPTARGET_H__
+#endif  // __ITROOPTARGET_H__

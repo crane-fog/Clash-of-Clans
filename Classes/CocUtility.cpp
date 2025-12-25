@@ -1,22 +1,100 @@
-#include <fstream>
-#include "DataHelper.h"
-#include "ArchInfo.h"
-// todo：改用cocos2d::FileUtils
+#include "CocUtility.h"
 
-void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vector<ArchData>& target)
+#include <fstream>
+
+#include "ArchInfo.h"
+
+float CalculateHelper::calculateDistanceToSquare(const cocos2d::Vec2& point, const cocos2d::Vec2& square_center,
+                                                 float square_size)
+{
+    float half_size = square_size / 2.0f;
+
+    // 计算方形的边界
+    float left = square_center.x - half_size;
+    float right = square_center.x + half_size;
+    float top = square_center.y + half_size;
+    float bottom = square_center.y - half_size;
+
+    // 计算点到方形的距离
+    float dx = 0.0f;
+    float dy = 0.0f;
+
+    if (point.x < left) {
+        dx = left - point.x;
+    }
+    else if (point.x > right) {
+        dx = point.x - right;
+    }
+
+    if (point.y < bottom) {
+        dy = bottom - point.y;
+    }
+    else if (point.y > top) {
+        dy = point.y - top;
+    }
+
+    // 如果点在方形内部，距离为0
+    if (dx == 0.0f && dy == 0.0f) {
+        return 0.0f;
+    }
+
+    // 计算欧几里得距离
+    return sqrtf(dx * dx + dy * dy);
+}
+
+cocos2d::Vec2 CoordAdaptor::cellToPixel(const cocos2d::Node* const kBaseMap, const cocos2d::Vec2& original)
+{
+    float cell_width_zero = kBaseMap->getContentSize().width * 0.17813765f;
+    float cell_height_zero = kBaseMap->getContentSize().height * 0.53831041f;
+    float cell_width = kBaseMap->getContentSize().width * 0.00757575f;
+    float cell_height = kBaseMap->getContentSize().height * 0.00826040f;
+    return cocos2d::Vec2((original.x + original.y) * cell_width + cell_width_zero,
+                         (original.y - original.x) * cell_height + cell_height_zero);
+}
+
+cocos2d::Vec2 CoordAdaptor::cellDeltaToPixelDelta(const cocos2d::Node* const kBaseMap, const cocos2d::Vec2& delta)
+{
+    float cell_width = kBaseMap->getContentSize().width * 0.00757575f;
+    float cell_height = kBaseMap->getContentSize().height * 0.00826040f;
+    return cocos2d::Vec2((delta.x + delta.y) * cell_width, (delta.y - delta.x) * cell_height);
+}
+
+cocos2d::Vec2 CoordAdaptor::pixelToCell(const cocos2d::Node* const kBaseMap, const cocos2d::Vec2& pixelPos)
+{
+    float cell_width_zero = kBaseMap->getContentSize().width * 0.17813765f;
+    float cell_height_zero = kBaseMap->getContentSize().height * 0.53831041f;
+    float cell_width = kBaseMap->getContentSize().width * 0.00757575f;
+    float cell_height = kBaseMap->getContentSize().height * 0.00826040f;
+
+    float x_prime = (pixelPos.x - cell_width_zero) / cell_width;
+    float y_prime = (pixelPos.y - cell_height_zero) / cell_height;
+
+    float cx = (x_prime - y_prime) / 2.0f;
+    float cy = (x_prime + y_prime) / 2.0f;
+
+    return cocos2d::Vec2(cx, cy);
+}
+
+int CoordAdaptor::calcOrder(const cocos2d::Vec2& middle_pos)
+{
+    return static_cast<int>(middle_pos.x - middle_pos.y) + 50;
+}
+
+
+void DataHelper::mapToList(const ArchData source[kMapSize][kMapSize], std::vector<ArchData>& target)
 {
     unsigned char size = 0;
     ArchData temp;
-    bool visited[MAP_SIZE][MAP_SIZE] = { false };
-    for (int x = 0; x < MAP_SIZE; x++) {
-        for (int y = 0; y < MAP_SIZE; y++) {
+    bool visited[kMapSize][kMapSize] = {false};
+    for (int x = 0; x < kMapSize; x++) {
+        for (int y = 0; y < kMapSize; y++) {
             if (visited[x][y]) {
                 continue;
             }
 
             const ArchData& current = source[x][y];
 
-            if (current.no_ == INVALID_ARCH_NO) {
+            if (current.no_ == kInvalidArchNo) {
                 visited[x][y] = true;
                 continue;
             }
@@ -25,7 +103,7 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
             temp.level_ = current.level_;
             temp.x_ = static_cast<unsigned char>(x);
             temp.y_ = static_cast<unsigned char>(y);
-            temp.current_hp_ = 0; // 存储时不保存当前生命值，读取时根据等级自动填充满血
+            temp.current_hp_ = 0;  // 存储时不保存当前生命值，读取时根据等级自动填充满血
             temp.remaining_upgrade_time_ = current.remaining_upgrade_time_;
             temp.current_capacity_ = current.current_capacity_;
             target.push_back(temp);
@@ -34,7 +112,7 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
 
             for (unsigned char dx = 0; dx < size; ++dx) {
                 for (unsigned char dy = 0; dy < size; ++dy) {
-                    if (x + dx < MAP_SIZE && y + dy < MAP_SIZE) {
+                    if (x + dx < kMapSize && y + dy < kMapSize) {
                         visited[x + dx][y + dy] = true;
                     }
                 }
@@ -43,12 +121,12 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
     }
 }
 
-void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[MAP_SIZE][MAP_SIZE])
+void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[kMapSize][kMapSize])
 {
     unsigned char size = 0, x = 0, y = 0;
-    for (int i = 0; i < MAP_SIZE; i++) {
-        for (int j = 0; j < MAP_SIZE; j++) {
-            target[i][j].no_ = INVALID_ARCH_NO;
+    for (int i = 0; i < kMapSize; i++) {
+        for (int j = 0; j < kMapSize; j++) {
+            target[i][j].no_ = kInvalidArchNo;
         }
     }
 
@@ -57,8 +135,8 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[
         y = source[i].y_;
         target[x][y].no_ = source[i].no_;
         target[x][y].level_ = source[i].level_;
-        target[x][y].x_ = source[i].x_; // 此处填充的x统一为min(x)
-        target[x][y].y_ = source[i].y_; // min(y)
+        target[x][y].x_ = source[i].x_;  // 此处填充的x统一为min(x)
+        target[x][y].y_ = source[i].y_;  // min(y)
         target[x][y].current_hp_ = kArchInfo.at(source[i].no_)[source[i].level_ - 1].hp_;
         target[x][y].remaining_upgrade_time_ = source[i].remaining_upgrade_time_;
         target[x][y].current_capacity_ = source[i].current_capacity_;
@@ -73,7 +151,7 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[
     }
 }
 
-bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[MAP_SIZE][MAP_SIZE])
+bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize])
 {
     unsigned char x = 0, y = 0;
     unsigned short num = 0;
@@ -95,7 +173,7 @@ bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchDa
     return true;
 }
 
-bool DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[MAP_SIZE][MAP_SIZE])
+bool DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize])
 {
     unsigned short num = 0;
     std::vector<ArchData> data;
@@ -118,7 +196,8 @@ bool DataHelper::writeArchData(const std::string& file_name, time_t time, const 
     return true;
 }
 
-bool DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir)
+bool DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
+                                unsigned long long& jewel)
 {
     std::ifstream infile(file_name, std::ios::binary);
     if (!infile) {
@@ -126,11 +205,13 @@ bool DataHelper::readSourceData(const std::string& file_name, unsigned long long
     }
     infile.read(reinterpret_cast<char*>(&gold), sizeof(unsigned long long));
     infile.read(reinterpret_cast<char*>(&elixir), sizeof(unsigned long long));
+    infile.read(reinterpret_cast<char*>(&jewel), sizeof(unsigned long long));
     infile.close();
     return true;
 }
 
-bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir)
+bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
+                                 const unsigned long long elixir, const unsigned long long jewel)
 {
     std::ofstream outfile(file_name, std::ios::binary);
     if (!outfile) {
@@ -138,6 +219,7 @@ bool DataHelper::writeSourceData(const std::string& file_name, const unsigned lo
     }
     outfile.write(reinterpret_cast<const char*>(&gold), sizeof(unsigned long long));
     outfile.write(reinterpret_cast<const char*>(&elixir), sizeof(unsigned long long));
+    outfile.write(reinterpret_cast<const char*>(&jewel), sizeof(unsigned long long));
     return true;
 }
 
