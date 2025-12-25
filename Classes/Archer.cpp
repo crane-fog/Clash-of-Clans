@@ -4,13 +4,13 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Archer::research_costs_ = {0, 0, 20000, 80000, 200000, 500000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Archer::kResearchCosts = {0, 0, 20000, 80000, 200000, 500000};
 
 // 升到level级所需时间 单位：小时
-const std::array<float, MAX_TROOP_LEVEL + 1> Archer::research_times_ = {0, 0, 1, 2, 3, 8};
+const std::array<float, MAX_TROOP_LEVEL + 1> Archer::kResearchTimes = {0, 0, 1, 2, 3, 8};
 
 // 升到level级所需实验室等级
-const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Archer::laboratory_level_requireds_ = {0, 1, 1, 3, 5, 6};
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Archer::kLaboratoryLevelRequireds = {0, 1, 1, 3, 5, 6};
 
 Archer::Archer(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, RANGED_SINGLE_AIR_GROUND, 1, 2, 3.0f, 1.0f, 3.5f,
@@ -20,14 +20,14 @@ Archer::Archer(BaseMap* base_map, int level, cocos2d::Vec2 position)
 
 Archer* Archer::create(BaseMap* base_map, int level, cocos2d::Vec2 position)
 {
-    Archer* pRet = new (std::nothrow) Archer(base_map, level, position);
-    if (pRet && pRet->initWithFile(pics_archer.at(level))) {
-        pRet->autorelease();
-        return pRet;
+    Archer* p_ret = new (std::nothrow) Archer(base_map, level, position);
+    if (p_ret && p_ret->initWithFile(kPicsArcher.at(level))) {
+        p_ret->autorelease();
+        return p_ret;
     }
     else {
-        delete pRet;
-        pRet = nullptr;
+        delete p_ret;
+        p_ret = nullptr;
         return nullptr;
     }
 }

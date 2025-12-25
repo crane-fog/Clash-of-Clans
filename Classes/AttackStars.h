@@ -13,10 +13,10 @@
 #include "UIcommon.h"
 class AttackStars : public cocos2d::Node {
 public:
-    cocos2d::EventListenerCustom* TownHallDeathListener;  // 存储监听器
+    cocos2d::EventListenerCustom* town_hall_death_listener_;  // 存储监听器
     void AttackStars::onTownHallDeath(cocos2d::EventCustom* event);
-    bool isTownStar = 0;
-    bool isShowingVictory = false;  // 防止胜利画面重复显示
+    bool is_town_star_ = 0;
+    bool is_showing_victory_ = false;  // 防止胜利画面重复显示
     AttackStars() : progress_(0) {}
 
     static AttackStars* create()
@@ -34,7 +34,7 @@ public:
     void setProgress(float progress)
     {
         progress_ = progress;
-        progressBar_->setPercent(progress_);
+        progress_bar_->setPercent(progress_);
     }
 
     void setStarColor(cocos2d::Sprite* star, bool isAchieved)
@@ -62,12 +62,12 @@ public:
     void AttackStars::showVictoryScreen();
 
 private:
-    int lastDeadArch = 0;  // 记录上次的数量
-    bool isComplete[3] = {false};
+    int last_dead_arch_ = 0;  // 记录上次的数量
+    bool is_complete_[3] = {false};
     ~AttackStars();
-    int ArchSum = TroopTargetManager::getInstance()->getlivingsum();
+    int arch_sum_ = TroopTargetManager::getInstance()->getlivingsum();
     float progress_;
-    cocos2d::ui::LoadingBar* progressBar_;
+    cocos2d::ui::LoadingBar* progress_bar_;
     std::vector<cocos2d::Sprite*> stars_;  // 存储星星的vector
 
     // 创建星星
@@ -76,7 +76,7 @@ private:
         return cocos2d::Sprite::create("attack_scene/star.png");  // 星星图片
     }
 
-    cocos2d::EventListenerCustom* deadArchUpdateListener;  // 存储监听器
+    cocos2d::EventListenerCustom* dead_arch_update_listener_;  // 存储监听器
 };
 
 #endif  // __ATTACKSTARS_H__

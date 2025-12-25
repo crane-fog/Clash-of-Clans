@@ -12,7 +12,7 @@ protected:
     BaseMap* base_map_;
     UIBars* ui_layer_;  // 在基类中添加UI层
     // 村庄中的建筑状态数据
-    ArchData arch_status_[MAP_SIZE][MAP_SIZE];
+    ArchData arch_status_[kMapSize][kMapSize];
 
 public:
     // 初始化，当对象被创建时被自动调用

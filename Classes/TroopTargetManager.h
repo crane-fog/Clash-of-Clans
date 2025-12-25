@@ -25,15 +25,15 @@ protected:
     std::vector<std::vector<float>> wall_cost_map_;
 
     // 地图尺寸常量
-    static const int MAP_WIDTH = 44;  // 44格，对应游戏坐标
-    static const int MAP_HEIGHT = 44;
+    static const int kMapWidth = 44;  // 44格，对应游戏坐标
+    static const int kMapHeight = 44;
 
     // 移动代价常量
-    static constexpr float NORMAL_COST = 1.0f;            // 普通地面移动代价
-    static constexpr float DIAGONAL_COST = 1.414f;        // 斜向移动代价
-    static constexpr float WALL_COST = 30.0f;             // 墙的移动代价（可通行但代价很高）
-    static constexpr float BUILDING_BLOCK_COST = 999.0f;  // 建筑阻挡代价（基本不可通行）
-    static constexpr float UNREACHABLE_COST = 1000.0f;    // 完全不可达的代价
+    static constexpr float kNormalCost = 1.0f;            // 普通地面移动代价
+    static constexpr float kDiagonalCost = 1.414f;        // 斜向移动代价
+    static constexpr float kWallCost = 30.0f;             // 墙的移动代价（可通行但代价很高）
+    static constexpr float kBuildingBlockCost = 999.0f;  // 建筑阻挡代价（基本不可通行）
+    static constexpr float kUnreachableCost = 1000.0f;    // 完全不可达的代价
 
 public:
     static TroopTargetManager* getInstance();
@@ -102,22 +102,22 @@ private:
     // 将网格坐标转换为距离场数组索引
     int posToIndex(const cocos2d::Vec2& pos) const
     {
-        return static_cast<int>(pos.y) * MAP_WIDTH + static_cast<int>(pos.x);
+        return static_cast<int>(pos.y) * kMapWidth + static_cast<int>(pos.x);
     }
 
     // 检查坐标是否有效
     bool isValidPosition(const cocos2d::Vec2& pos) const
     {
-        return pos.x >= 0 && pos.x < MAP_WIDTH && pos.y >= 0 && pos.y < MAP_HEIGHT;
+        return pos.x >= 0 && pos.x < kMapWidth && pos.y >= 0 && pos.y < kMapHeight;
     }
-    int livingArch = 0;
-    int deadArch = 0;
+    int living_arch_ = 0;
+    int dead_arch_ = 0;
 
 public:
-    int getlivingsum() { return livingArch; }
-    int getDeadsum() { return deadArch; }
-    void setlivingsum(int newArch) { this->livingArch = newArch; }
-    void setdeadsum(int newArch) { this->deadArch = newArch; }
+    int getlivingsum() { return living_arch_; }
+    int getDeadsum() { return dead_arch_; }
+    void setlivingsum(int newArch) { this->living_arch_ = newArch; }
+    void setdeadsum(int newArch) { this->dead_arch_ = newArch; }
 };
 
 #endif  // __TROOPTARGETMANAGER_H__

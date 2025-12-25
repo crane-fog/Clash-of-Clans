@@ -5,20 +5,20 @@
 #include "ArchInfo.h"
 // todo：改用cocos2d::FileUtils
 
-void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vector<ArchData>& target)
+void DataHelper::mapToList(const ArchData source[kMapSize][kMapSize], std::vector<ArchData>& target)
 {
     unsigned char size = 0;
     ArchData temp;
-    bool visited[MAP_SIZE][MAP_SIZE] = {false};
-    for (int x = 0; x < MAP_SIZE; x++) {
-        for (int y = 0; y < MAP_SIZE; y++) {
+    bool visited[kMapSize][kMapSize] = {false};
+    for (int x = 0; x < kMapSize; x++) {
+        for (int y = 0; y < kMapSize; y++) {
             if (visited[x][y]) {
                 continue;
             }
 
             const ArchData& current = source[x][y];
 
-            if (current.no_ == INVALID_ARCH_NO) {
+            if (current.no_ == kInvalidArchNo) {
                 visited[x][y] = true;
                 continue;
             }
@@ -36,7 +36,7 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
 
             for (unsigned char dx = 0; dx < size; ++dx) {
                 for (unsigned char dy = 0; dy < size; ++dy) {
-                    if (x + dx < MAP_SIZE && y + dy < MAP_SIZE) {
+                    if (x + dx < kMapSize && y + dy < kMapSize) {
                         visited[x + dx][y + dy] = true;
                     }
                 }
@@ -45,12 +45,12 @@ void DataHelper::mapToList(const ArchData source[MAP_SIZE][MAP_SIZE], std::vecto
     }
 }
 
-void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[MAP_SIZE][MAP_SIZE])
+void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[kMapSize][kMapSize])
 {
     unsigned char size = 0, x = 0, y = 0;
-    for (int i = 0; i < MAP_SIZE; i++) {
-        for (int j = 0; j < MAP_SIZE; j++) {
-            target[i][j].no_ = INVALID_ARCH_NO;
+    for (int i = 0; i < kMapSize; i++) {
+        for (int j = 0; j < kMapSize; j++) {
+            target[i][j].no_ = kInvalidArchNo;
         }
     }
 
@@ -75,7 +75,7 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[
     }
 }
 
-bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[MAP_SIZE][MAP_SIZE])
+bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize])
 {
     unsigned char x = 0, y = 0;
     unsigned short num = 0;
@@ -97,7 +97,7 @@ bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchDa
     return true;
 }
 
-bool DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[MAP_SIZE][MAP_SIZE])
+bool DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize])
 {
     unsigned short num = 0;
     std::vector<ArchData> data;
@@ -132,15 +132,15 @@ bool DataHelper::readSourceData(const std::string& file_name, unsigned long long
     return true;
 }
 
-bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
-                                 const unsigned long long elixir)
+bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long kGold,
+                                 const unsigned long long kElixir)
 {
     std::ofstream outfile(file_name, std::ios::binary);
     if (!outfile) {
         return false;
     }
-    outfile.write(reinterpret_cast<const char*>(&gold), sizeof(unsigned long long));
-    outfile.write(reinterpret_cast<const char*>(&elixir), sizeof(unsigned long long));
+    outfile.write(reinterpret_cast<const char*>(&kGold), sizeof(unsigned long long));
+    outfile.write(reinterpret_cast<const char*>(&kElixir), sizeof(unsigned long long));
     return true;
 }
 

@@ -10,7 +10,7 @@
 // level使用要-1
 // unsigned int a = kArchInfo.at(ARCHER_TOWER)[2].hp_;
 
-const unsigned char INVALID_ARCH_NO = 255;
+const unsigned char kInvalidArchNo = 255;
 
 enum ArchName : unsigned char {
     TOWN_HALL = 0,          // 大本营

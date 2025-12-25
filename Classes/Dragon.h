@@ -4,23 +4,23 @@
 #include <vector>
 
 #include "Troop.h"
-const std::vector<std::string> pics_dragon = {
+const std::vector<std::string> kPicsDragon = {
     "troop/Dragon1.webp", "troop/Dragon1.webp", "troop/Dragon2.webp",
     "troop/Dragon3.webp", "troop/Dragon4.webp", "troop/Dragon5.webp",
 };
 class Dragon : public Troop {
 private:
-    const float area_splash_radius_ = 0.3f;  // 普攻伤害半径
+    const float kAreaSplashRadius = 0.3f;  // 普攻伤害半径
 
 public:
     // 升到level级所需资源花费
-    static const std::array<int, MAX_TROOP_LEVEL + 1> research_costs_;
+    static const std::array<int, MAX_TROOP_LEVEL + 1> kResearchCosts;
 
     // 升到level级所需时间 单位：小时
-    static const std::array<float, MAX_TROOP_LEVEL + 1> research_times_;
+    static const std::array<float, MAX_TROOP_LEVEL + 1> kResearchTimes;
 
     // 升到level级所需实验室等级
-    static const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
+    static const std::array<uchar, MAX_TROOP_LEVEL + 1> kLaboratoryLevelRequireds;
     // 构造函数
     Dragon(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
 

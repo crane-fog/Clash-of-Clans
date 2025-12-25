@@ -4,13 +4,13 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Barbarian::research_costs_ = {0, 0, 10000, 50000, 130000, 300000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Barbarian::kResearchCosts = {0, 0, 10000, 50000, 130000, 300000};
 
 // 升到level级所需时间 单位：小时
-const std::array<float, MAX_TROOP_LEVEL + 1> Barbarian::research_times_ = {0, 0, 0.5, 1, 2, 4};
+const std::array<float, MAX_TROOP_LEVEL + 1> Barbarian::kResearchTimes = {0, 0, 0.5, 1, 2, 4};
 
 // 升到level级所需实验室等级
-const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Barbarian::laboratory_level_requireds_ = {0, 1, 1, 3, 5, 6};
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Barbarian::kLaboratoryLevelRequireds = {0, 1, 1, 3, 5, 6};
 
 Barbarian::Barbarian(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, NONE, MELEE_SINGLE_GROUND, 1, 1, 2, 1, 0.4,
@@ -20,14 +20,14 @@ Barbarian::Barbarian(BaseMap* base_map, int level, cocos2d::Vec2 position)
 
 Barbarian* Barbarian::create(BaseMap* base_map, int level, cocos2d::Vec2 position)
 {
-    Barbarian* pRet = new (std::nothrow) Barbarian(base_map, level, position);
-    if (pRet && pRet->initWithFile(pics_barbarian.at(level))) {
-        pRet->autorelease();
-        return pRet;
+    Barbarian* p_ret = new (std::nothrow) Barbarian(base_map, level, position);
+    if (p_ret && p_ret->initWithFile(kPicsBarbarian.at(level))) {
+        p_ret->autorelease();
+        return p_ret;
     }
     else {
-        delete pRet;
-        pRet = nullptr;
+        delete p_ret;
+        p_ret = nullptr;
         return nullptr;
     }
 }

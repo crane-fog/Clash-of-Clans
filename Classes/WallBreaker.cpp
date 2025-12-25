@@ -4,13 +4,13 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> WallBreaker::research_costs_ = {0, 0, 80000, 200000, 450000, 1000000};
+const std::array<int, MAX_TROOP_LEVEL + 1> WallBreaker::kResearchCosts = {0, 0, 80000, 200000, 450000, 1000000};
 
 // 升到level级所需时间 单位：小时
-const std::array<float, MAX_TROOP_LEVEL + 1> WallBreaker::research_times_ = {0, 0, 3, 4, 12, 16};
+const std::array<float, MAX_TROOP_LEVEL + 1> WallBreaker::kResearchTimes = {0, 0, 3, 4, 12, 16};
 
 // 升到level级所需实验室等级
-const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> WallBreaker::laboratory_level_requireds_ = {0, 1, 2, 4, 5, 6};
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> WallBreaker::kLaboratoryLevelRequireds = {0, 1, 2, 4, 5, 6};
 
 WallBreaker::WallBreaker(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, WALLT, MELEE_AOE_GROUND, 2, 5, 3.0f, 0.0f, 0.5f,
@@ -20,14 +20,14 @@ WallBreaker::WallBreaker(BaseMap* base_map, int level, cocos2d::Vec2 position)
 
 WallBreaker* WallBreaker::create(BaseMap* base_map, int level, cocos2d::Vec2 position)
 {
-    WallBreaker* pRet = new (std::nothrow) WallBreaker(base_map, level, position);
-    if (pRet && pRet->initWithFile(pics_wallbreaker.at(level))) {
-        pRet->autorelease();
-        return pRet;
+    WallBreaker* p_ret = new (std::nothrow) WallBreaker(base_map, level, position);
+    if (p_ret && p_ret->initWithFile(kPicsWallbreaker.at(level))) {
+        p_ret->autorelease();
+        return p_ret;
     }
     else {
-        delete pRet;
-        pRet = nullptr;
+        delete p_ret;
+        p_ret = nullptr;
         return nullptr;
     }
 }
@@ -76,7 +76,7 @@ void WallBreaker::performAttack()
     float size;
     cocos2d::Vec2 center = current_target_->getCellPosition(size);
     std::vector<ITroopTarget*> targets =
-        TroopTargetManager::getInstance()->getTargetsInRange(center, area_splash_radius_);
+        TroopTargetManager::getInstance()->getTargetsInRange(center, kAreaSplashRadius);
     for (auto target : targets) {
         target->takeDamage(damage);
         float size;
@@ -108,7 +108,7 @@ void WallBreaker::onDeath()
     if (status_ == DEAD) return;
     float damage = damages_upon_death_[level_];
     std::vector<ITroopTarget*> targets =
-        TroopTargetManager::getInstance()->getTargetsInRange(getCellPosition(), death_damage_radius_);
+        TroopTargetManager::getInstance()->getTargetsInRange(getCellPosition(), kDeathDamageRadius);
     for (auto target : targets) {
         if (target->getTargetType() == Troop::WALLT) damage *= 40;  // 对墙壁伤害加成
         target->takeDamage(damage);

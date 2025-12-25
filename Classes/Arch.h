@@ -82,7 +82,7 @@ protected:
 
 public:
     // 建筑是否被摧毁
-    bool is_Destroyed = false;
+    bool is_destroyed_ = false;
     // 拖动相关
     bool is_dragging_ = false;
     cocos2d::Vec2 touch_start_pos_;
@@ -129,7 +129,7 @@ public:
     // 我先改了调试用，你到时候调整一下
     virtual void onDeath()
     {
-        is_Destroyed = true;
+        is_destroyed_ = true;
         health_bar_->setVisible(false);
         TroopTargetManager::getInstance()->unregisterTroopTarget(this);
         this->setTexture("arch/Arch_Destroyed.png");
@@ -140,8 +140,8 @@ public:
     {
         if (current_hp_ <= 0) return;
         if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE && !is_mine_) {
-            float p_ = damage / kArchInfo.at(no_)[level_ - 1].hp_;
-            unsigned long long resource_get = current_capacity_ * p_;
+            float p = damage / kArchInfo.at(no_)[level_ - 1].hp_;
+            unsigned long long resource_get = current_capacity_ * p;
             if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
                 GameManager::getInstance()->setGold(GameManager::getInstance()->getGold() + resource_get);
             else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
@@ -162,7 +162,7 @@ public:
 
     // 建筑面板UI相关
     virtual void showArchPanel();
-    bool isUpgrading = false;
+    bool is_upgrading_ = false;
     // 关闭建筑信息面板
     void closeArchPanel();
     // 升级按钮
@@ -172,7 +172,7 @@ public:
     static std::string getArchNameFromEnum(unsigned char archNo);
     virtual void Arch::createUpgradeComparisonPanel();
     void Arch::onUpgradeCancel(Ref* sender);
-    void Arch::Buiding_Upgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
+    void Arch::buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
                                  bool type);
     // 资源生产
     void Arch::startResourceProduction();
@@ -291,14 +291,14 @@ class ArchFactory {
     using Creater = std::function<Arch*(const ArchData&, BaseMap*)>;
 
 private:
-    static std::map<unsigned char, Creater> creaters_;
+    static std::map<unsigned char, Creater> creaters;
 
 public:
-    static void registerCreater(unsigned char no, const Creater& creater) { creaters_[no] = creater; }
+    static void registerCreater(unsigned char no, const Creater& creater) { creaters[no] = creater; }
     static Arch* createArch(const ArchData& data, BaseMap* base_map)
     {
-        auto it = creaters_.find(data.no_);
-        if (it != creaters_.end()) {
+        auto it = creaters.find(data.no_);
+        if (it != creaters.end()) {
             return it->second(data, base_map);
         }
         return nullptr;

@@ -43,7 +43,7 @@ public:
     ULL getJewel() const { return my_jewel_; }
 
     ULL getMaxJewel() const { return max_jewel_; }
-    bool isReplay = 0;
+    bool is_replay_ = 0;
 };
 
 #endif  // __GAME_MANAGER_H__

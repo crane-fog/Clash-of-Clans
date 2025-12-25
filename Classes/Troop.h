@@ -40,10 +40,10 @@ protected:
     float attack_timer_;
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     // 每次伤害
-    const std::array<float, MAX_TROOP_LEVEL + 1> damage_per_attacks_;
+    const std::array<float, MAX_TROOP_LEVEL + 1> kDamagePerAttacks;
 
     // 生命值
-    const std::array<float, MAX_TROOP_LEVEL + 1> hitpoints_;
+    const std::array<float, MAX_TROOP_LEVEL + 1> kHitpoints;
 
 public:
     enum TroopType : uchar { BARBARIAN = 0, ARCHER = 1, GIANT = 2, WALL_BREAKER = 3, DRAGON = 4, BALLOON = 5 };
@@ -57,7 +57,7 @@ public:
         NONE = 255                  // 无
     };
     // 攻击偏好建筑类型
-    const PreferredTarget preferred_target_;
+    const PreferredTarget kPreferredTarget;
 
     enum AttackType : uchar {
         MELEE_SINGLE_GROUND = 0,       // 近战单体地面-Barbarian,Giant
@@ -71,18 +71,18 @@ public:
         // 范围伤害的中心是什么？士兵or目标建筑？-平时目标中心，死亡溅射士兵中心。
     };
     // 伤害类型(近战或远程,单体或范围,仅地面目标或地面和空中目标etc)
-    const AttackType attack_type_;
+    const AttackType kAttackType;
     // 占据人口
-    const uchar housing_space_;
+    const uchar kHousingSpace;
     // 所需训练营等级
-    const uchar barracks_level_required_;
+    const uchar kBarracksLevelRequired;
 
     // 移动速度 格/秒
-    const float movement_speed_;
+    const float kMovementSpeed;
     // 攻击速度 秒/次
-    const float attack_speed_;
+    const float kAttackSpeed;
     // 攻击距离 格
-    const float range_;
+    const float kRange;
 
 public:
     // 构造函数相关
@@ -139,7 +139,7 @@ public:
     float getCurrentHitpoints() const { return current_hitpoints_; }
 
     // 获取最大生命值
-    float getMaxHitpoints() const { return hitpoints_[level_]; }
+    float getMaxHitpoints() const { return kHitpoints[level_]; }
 
     // 获取当前等级
     int getLevel() const { return level_; }
@@ -151,7 +151,7 @@ public:
     void levelUp() { setLevel(level_ + 1); }
 
     // 获取攻击伤害
-    float getCurrentDamage() const { return damage_per_attacks_[level_]; }
+    float getCurrentDamage() const { return kDamagePerAttacks[level_]; }
 
     /*以下为渲染相关*/
     // 获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标

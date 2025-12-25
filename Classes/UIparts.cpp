@@ -13,61 +13,61 @@ bool UIBars::init()
     }
 
     // 获取屏幕尺寸
-    auto visibleSize = Director::getInstance()->getVisibleSize();
+    auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     unsigned long long gold = GameManager::getInstance()->getGold();
     unsigned long long elixir = GameManager::getInstance()->getElixir();
-    unsigned long long maxGold = GameManager::getInstance()->getMaxGold();
-    unsigned long long maxElixir = GameManager::getInstance()->getMaxElixir();
+    unsigned long long max_gold = GameManager::getInstance()->getMaxGold();
+    unsigned long long max_elixir = GameManager::getInstance()->getMaxElixir();
     unsigned long long jewel = GameManager::getInstance()->getJewel();
-    unsigned long long maxJewel = GameManager::getInstance()->getMaxJewel();
+    unsigned long long max_jewel = GameManager::getInstance()->getMaxJewel();
 
     // 创建多个进度条:金币和圣水
-    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visibleSize.width - 500,
-                                    visibleSize.height - 50, maxGold);
-    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", elixir, visibleSize.width - 500,
-                                    visibleSize.height - 150, maxElixir);
-    createProgressBarWithBackground("宝石", Color3B::GREEN, "jewel.png", jewel, visibleSize.width - 500,
-                                    visibleSize.height - 250, maxJewel);
+    createProgressBarWithBackground("金币", Color3B::YELLOW, "Gold.png", gold, visible_size.width - 500,
+                                    visible_size.height - 50, max_gold);
+    createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", elixir, visible_size.width - 500,
+                                    visible_size.height - 150, max_elixir);
+    createProgressBarWithBackground("宝石", Color3B::GREEN, "jewel.png", jewel, visible_size.width - 500,
+                                    visible_size.height - 250, max_jewel);
 
     // 创建返回按钮 - 固定在左上角
-    auto backButton = ui::Button::create("BackButton.png");
-    backButton->setPosition(Vec2(80, visibleSize.height - 80));
-    backButton->addClickEventListener([&](Ref* sender) {
+    auto back_button = ui::Button::create("BackButton.png");
+    back_button->setPosition(Vec2(80, visible_size.height - 80));
+    back_button->addClickEventListener([&](Ref* sender) {
         // 按钮点击事件
     });
-    this->addChild(backButton);
+    this->addChild(back_button);
 
     // 注册金币更新事件监听
-    goldUpdateListener =
+    gold_update_listener_ =
         cocos2d::EventListenerCustom::create("update_gold_event", CC_CALLBACK_1(UIBars::onGoldUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(goldUpdateListener,
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(gold_update_listener_,
                                                                                                    this);
 
     // 注册圣水更新事件监听
-    elixirUpdateListener =
+    elixir_update_listener_ =
         cocos2d::EventListenerCustom::create("update_elixir_event", CC_CALLBACK_1(UIBars::onElixirUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixirUpdateListener,
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixir_update_listener_,
                                                                                                    this);
 
     // 注册宝石更新事件监听
-    elixirUpdateListener =
+    elixir_update_listener_ =
         cocos2d::EventListenerCustom::create("update_jewel_event", CC_CALLBACK_1(UIBars::onJewelUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixirUpdateListener,
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixir_update_listener_,
                                                                                                    this);
 
     // 注册最大金币更新事件监听
-    maxGoldUpdateListener =
+    max_gold_update_listener_ =
         cocos2d::EventListenerCustom::create("update_max_gold_event", CC_CALLBACK_1(UIBars::onMaxGoldUpdated, this));
     cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
-        maxGoldUpdateListener, this);
+        max_gold_update_listener_, this);
 
     // 注册最大圣水更新事件监听
-    maxElixirUpdateListener = cocos2d::EventListenerCustom::create("update_max_elixir_event",
+    max_elixir_update_listener_ = cocos2d::EventListenerCustom::create("update_max_elixir_event",
                                                                    CC_CALLBACK_1(UIBars::onMaxElixirUpdated, this));
     cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
-        maxElixirUpdateListener, this);
+        max_elixir_update_listener_, this);
 
     return true;
 }
@@ -76,66 +76,66 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
                                              float y, unsigned long long UpperLimit)
 {
     ProgressBarData data;
-    data.title = title;
+    data.title_ = title;
     float percent = 0;
     if (UpperLimit > 0) {
         percent = (float)nowAmount * 100.0f / UpperLimit;
     }
     // 创建图像图标
-    data.icon = Sprite::create(iconPath);  // 图标图片
-    if (data.icon) {
-        data.icon->setPosition(Vec2(x + 450, y));  // 滑动条右边
-        data.icon->setScale(1.0f);                 // 调整图标大小
-        this->addChild(data.icon);
+    data.icon_ = Sprite::create(iconPath);  // 图标图片
+    if (data.icon_) {
+        data.icon_->setPosition(Vec2(x + 450, y));  // 滑动条右边
+        data.icon_->setScale(1.0f);                 // 调整图标大小
+        this->addChild(data.icon_);
     }
     // 创建标题
-    auto titleLabel = Label::createWithSystemFont(title, "Arial", 45);
-    titleLabel->setPosition(Vec2(x - 220, y));
-    titleLabel->setTextColor(Color4B::WHITE);
-    titleLabel->setAnchorPoint(Vec2(0, 0.5));
-    this->addChild(titleLabel);
+    auto title_label = Label::createWithSystemFont(title, "Arial", 45);
+    title_label->setPosition(Vec2(x - 220, y));
+    title_label->setTextColor(Color4B::WHITE);
+    title_label->setAnchorPoint(Vec2(0, 0.5));
+    this->addChild(title_label);
 
     // 创建背景框
     auto background = LayerColor::create(Color4B(255, 255, 255, 150), 500, 40);  // 黑色半透明
     background->setPosition(Vec2(x - 100, y - 24.0f));                           // 设置位置
     this->addChild(background, 0);
-    data.background = nullptr;  // 由于使用LayerColor，这里设为null
+    data.background_ = nullptr;  // 由于使用LayerColor，这里设为null
 
     // 创建进度条
-    data.loadingBar = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
-    if (data.loadingBar) {
-        data.loadingBar->setDirection(cocos2d::ui::LoadingBar::Direction::RIGHT);
-        data.loadingBar->setPercent(percent);
-        data.loadingBar->setPosition(Vec2(x + 150, y - 4));
-        data.loadingBar->setScaleX(2.4f);
-        data.loadingBar->setScaleY(2.0f);
-        data.loadingBar->setColor(barColor);
-        this->addChild(data.loadingBar, 1);
+    data.loading_bar_ = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
+    if (data.loading_bar_) {
+        data.loading_bar_->setDirection(cocos2d::ui::LoadingBar::Direction::RIGHT);
+        data.loading_bar_->setPercent(percent);
+        data.loading_bar_->setPosition(Vec2(x + 150, y - 4));
+        data.loading_bar_->setScaleX(2.4f);
+        data.loading_bar_->setScaleY(2.0f);
+        data.loading_bar_->setColor(barColor);
+        this->addChild(data.loading_bar_, 1);
     }
 
     // 创建数量标签
-    data.percentLabel =
+    data.percent_label_ =
         Label::createWithSystemFont(StringUtils::format("%llu / %llu", nowAmount, UpperLimit), "Arial", 30);
-    data.percentLabel->setPosition(Vec2(x + 150, y - 5));
-    data.percentLabel->setTextColor(Color4B::BLACK);
-    this->addChild(data.percentLabel, 2);
+    data.percent_label_->setPosition(Vec2(x + 150, y - 5));
+    data.percent_label_->setTextColor(Color4B::BLACK);
+    this->addChild(data.percent_label_, 2);
 
     // 保存到容器
-    progressBars_.push_back(data);
+    progress_bars_.push_back(data);
 }
 
 void UIBars::updateProgressBar(const std::string& title, unsigned long long nowAmount, unsigned long long maxAmount)
 {
-    for (auto& data : progressBars_) {
-        if (data.title == title) {
-            if (data.loadingBar && data.percentLabel) {
+    for (auto& data : progress_bars_) {
+        if (data.title_ == title) {
+            if (data.loading_bar_ && data.percent_label_) {
                 float percent = 0;
                 if (maxAmount > 0) {
                     percent = (float)nowAmount * 100.0f / maxAmount;
                 }
                 if (percent > 100.0f) percent = 100.0f;
-                data.loadingBar->setPercent(percent);
-                data.percentLabel->setString(StringUtils::format("%llu / %llu", nowAmount, maxAmount));
+                data.loading_bar_->setPercent(percent);
+                data.percent_label_->setString(StringUtils::format("%llu / %llu", nowAmount, maxAmount));
             }
             break;
         }
@@ -145,65 +145,65 @@ void UIBars::updateProgressBar(const std::string& title, unsigned long long nowA
 void UIBars::onGoldUpdated(cocos2d::EventCustom* event)
 {
     unsigned long long gold = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long maxGold = GameManager::getInstance()->getMaxGold();
-    updateProgressBar("金币", gold, maxGold);
+    unsigned long long max_gold = GameManager::getInstance()->getMaxGold();
+    updateProgressBar("金币", gold, max_gold);
 }
 void UIBars::onElixirUpdated(cocos2d::EventCustom* event)
 {
     unsigned long long elixir = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long maxElixir = GameManager::getInstance()->getMaxElixir();
-    updateProgressBar("圣水", elixir, maxElixir);
+    unsigned long long max_elixir = GameManager::getInstance()->getMaxElixir();
+    updateProgressBar("圣水", elixir, max_elixir);
 }
 void UIBars::onJewelUpdated(cocos2d::EventCustom* event)
 {
-    unsigned long long Jewel = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long maxJewel = GameManager::getInstance()->getMaxJewel();
-    updateProgressBar("宝石", Jewel, maxJewel);
+    unsigned long long jewel = *static_cast<unsigned long long*>(event->getUserData());
+    unsigned long long max_jewel = GameManager::getInstance()->getMaxJewel();
+    updateProgressBar("宝石", jewel, max_jewel);
 }
 void UIBars::onMaxGoldUpdated(cocos2d::EventCustom* event)
 {
-    unsigned long long maxGold = *static_cast<unsigned long long*>(event->getUserData());
+    unsigned long long max_gold = *static_cast<unsigned long long*>(event->getUserData());
     unsigned long long gold = GameManager::getInstance()->getGold();
-    updateProgressBar("金币", gold, maxGold);
+    updateProgressBar("金币", gold, max_gold);
 }
 
 void UIBars::onMaxElixirUpdated(cocos2d::EventCustom* event)
 {
-    unsigned long long maxElixir = *static_cast<unsigned long long*>(event->getUserData());
+    unsigned long long max_elixir = *static_cast<unsigned long long*>(event->getUserData());
     unsigned long long elixir = GameManager::getInstance()->getElixir();
-    updateProgressBar("圣水", elixir, maxElixir);
+    updateProgressBar("圣水", elixir, max_elixir);
 }
 
 // 倒计时类相关
 void CountdownTimer::start(unsigned int seconds, std::function<void(int)> onTick, std::function<void()> onComplete)
 {
-    remainingTime_ = seconds;
-    totalTime_ = seconds;
-    onTick_ = onTick;
-    onComplete_ = onComplete;
-    isRunning_ = true;
+    remaining_time_ = seconds;
+    total_time_ = seconds;
+    on_tick_ = onTick;
+    on_complete_ = onComplete;
+    is_running_ = true;
 
     schedule([this](float dt) { this->updateTimer(dt); }, 1.0f, CC_REPEAT_FOREVER, 0, "TimerUpdate");
 }
 
 void CountdownTimer::updateTimer(float dt)
 {
-    if (!isRunning_) return;
+    if (!is_running_) return;
 
-    if (remainingTime_ > 0) {
-        remainingTime_--;
+    if (remaining_time_ > 0) {
+        remaining_time_--;
 
         // 回调通知
-        if (onTick_) {
-            onTick_(remainingTime_);
+        if (on_tick_) {
+            on_tick_(remaining_time_);
         }
 
-        if (remainingTime_ == 0) {
+        if (remaining_time_ == 0) {
             unschedule("TimerUpdate");
-            isRunning_ = false;
+            is_running_ = false;
 
-            if (onComplete_) {
-                onComplete_();
+            if (on_complete_) {
+                on_complete_();
             }
         }
     }
@@ -286,12 +286,12 @@ void UICommonHelper::showChallengeSelectionPanel(cocos2d::Node* parent)
     panel->addChild(exit_button);
 
     // 创建选项
-    const std::array<std::string, 4> scene_names = {"关卡1", "关卡2", "关卡3", "关卡4"};
-    const std::array<std::string, 4> scene_images = {"attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp",
+    const std::array<std::string, 4> kSceneNames = {"关卡1", "关卡2", "关卡3", "关卡4"};
+    const std::array<std::string, 4> kSceneImages = {"attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp",
                                                      "attack_scene/Scenery3.webp", "attack_scene/Scenery4.webp"};
 
-    for (size_t i = 0; i < scene_names.size(); i++) {
-        createOptionItem(panel, i, scene_names[i], scene_images[i], confirm_button);
+    for (size_t i = 0; i < kSceneNames.size(); i++) {
+        createOptionItem(panel, i, kSceneNames[i], kSceneImages[i], confirm_button);
     }
 }
 
@@ -363,14 +363,14 @@ void UICommonHelper::onOptionClick(cocos2d::LayerColor* item_bg, int index, coco
     // 取消之前的选中状态
     if (selected_item_bg_) {
         selected_item_bg_->setColor(cocos2d::Color3B::WHITE);
-        remove_border(selected_item_bg_);
+        removeBorder(selected_item_bg_);
     }
 
     // 设置新的选中状态
     selected_item_bg_ = item_bg;
     if (selected_item_bg_) {
         selected_item_bg_->setColor(cocos2d::Color3B::BLUE);
-        draw_border(selected_item_bg_);
+        drawBorder(selected_item_bg_);
         confirm_button->setEnabled(true);
         can_confirm_ = index;
     }

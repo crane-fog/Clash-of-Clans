@@ -191,14 +191,14 @@ void BaseMap::onMouseMove(Event* event)
     if (!is_dragging_) return;
 
     EventMouse* e = (EventMouse*)event;
-    Vec2 currentMousePos = e->getLocation();
-    currentMousePos.y = Director::getInstance()->getWinSize().height - currentMousePos.y;  // 转换Y轴坐标
-    Vec2 delta = currentMousePos - last_mouse_pos_;
+    Vec2 current_mouse_pos = e->getLocation();
+    current_mouse_pos.y = Director::getInstance()->getWinSize().height - current_mouse_pos.y;  // 转换Y轴坐标
+    Vec2 delta = current_mouse_pos - last_mouse_pos_;
 
     this->setPosition(this->getPosition() + delta);
     checkAndClampPosition();
 
-    last_mouse_pos_ = currentMousePos;
+    last_mouse_pos_ = current_mouse_pos;
 }
 void BaseMap::setInputEnabled(bool enabled)
 {

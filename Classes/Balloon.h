@@ -4,26 +4,26 @@
 #include <vector>
 
 #include "Troop.h"
-const std::vector<std::string> pics_balloon = {
+const std::vector<std::string> kPicsBalloon = {
     "troop/Balloon1-2.webp", "troop/Balloon1-2.webp", "troop/Balloon1-2.webp",
     "troop/Balloon3-4.webp", "troop/Balloon3-4.webp", "troop/Balloon5.webp",
 };
 class Balloon : public Troop {
 private:
-    const float area_splash_radius_ = 1.2f;    // 普攻伤害半径
-    const float death_damage_radius_ = 1.2f;   // 死亡伤害半径
-    const float death_damage_delay_ = 0.146f;  // 死亡伤害延时
-    const std::array<float, MAX_TROOP_LEVEL + 1> damages_upon_death_ = {0, 25, 32, 48, 72, 108};
+    const float kAreaSplashRadius = 1.2f;    // 普攻伤害半径
+    const float kDeathDamageRadius = 1.2f;   // 死亡伤害半径
+    const float kDeathDamageDelay = 0.146f;  // 死亡伤害延时
+    const std::array<float, MAX_TROOP_LEVEL + 1> kDamagesUponDeath = {0, 25, 32, 48, 72, 108};
 
 public:
     // 升到level级所需资源花费
-    static const std::array<int, MAX_TROOP_LEVEL + 1> research_costs_;
+    static const std::array<int, MAX_TROOP_LEVEL + 1> kResearchCosts;
 
     // 升到level级所需时间 单位：小时
-    static const std::array<float, MAX_TROOP_LEVEL + 1> research_times_;
+    static const std::array<float, MAX_TROOP_LEVEL + 1> kResearchTimes;
 
     // 升到level级所需实验室等级
-    static const std::array<uchar, MAX_TROOP_LEVEL + 1> laboratory_level_requireds_;
+    static const std::array<uchar, MAX_TROOP_LEVEL + 1> kLaboratoryLevelRequireds;
     // 构造函数
     Balloon(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
 

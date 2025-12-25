@@ -10,14 +10,14 @@
 class MainVillage : public Village {
 private:
     // 村庄中的建筑状态数据
-    ArchData arch_status_[MAP_SIZE][MAP_SIZE];
+    ArchData arch_status_[kMapSize][kMapSize];
 
     // 上次退出场景的时间
     time_t last_exit_time_ = 0;
 
 public:
     // 背景音乐
-    int mainhome_bgm = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
+    int mainhome_bgm_ = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
     // 当对象被渲染时被自动调用

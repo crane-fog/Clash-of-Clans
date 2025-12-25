@@ -35,10 +35,10 @@ using namespace cocos2d::experimental;
 
 USING_NS_CC;
 
-static cocos2d::Size designResolutionSize = cocos2d::Size(1920, 1080);
-static cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
-static cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
-static cocos2d::Size largeResolutionSize = cocos2d::Size(2048, 1536);
+static cocos2d::Size design_resolution_size = cocos2d::Size(1920, 1080);
+static cocos2d::Size small_resolution_size = cocos2d::Size(480, 320);
+static cocos2d::Size medium_resolution_size = cocos2d::Size(1024, 768);
+static cocos2d::Size large_resolution_size = cocos2d::Size(2048, 1536);
 
 AppDelegate::AppDelegate() {}
 
@@ -54,14 +54,14 @@ AppDelegate::~AppDelegate()
 void AppDelegate::initGLContextAttrs()
 {
     // set OpenGL context attributes: red,green,blue,alpha,depth,stencil,multisamplesCount
-    GLContextAttrs glContextAttrs = {8, 8, 8, 8, 24, 8, 0};
+    GLContextAttrs gl_context_attrs = {8, 8, 8, 8, 24, 8, 0};
 
-    GLView::setGLContextAttrs(glContextAttrs);
+    GLView::setGLContextAttrs(gl_context_attrs);
 }
 
 // if you want to use the package manager to install more packages,
 // don't modify or remove this function
-static int register_all_packages()
+static int registerAllPackages()
 {
     return 0;  // flag for packages manager
 }
@@ -75,7 +75,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || \
     (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
         glview = GLViewImpl::createWithRect(
-            "Clash-of-Clans", cocos2d::Rect(0, 0, designResolutionSize.width, designResolutionSize.height));
+            "Clash-of-Clans", cocos2d::Rect(0, 0, design_resolution_size.width, design_resolution_size.height));
 #else
         glview = GLViewImpl::create("Clash-of-Clans");
 #endif
@@ -89,7 +89,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     director->setAnimationInterval(1.0f / 60);
 
     // Set the design resolution
-    glview->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height,
+    glview->setDesignResolutionSize(design_resolution_size.width, design_resolution_size.height,
                                     ResolutionPolicy::NO_BORDER);
     // auto frameSize = glview->getFrameSize();
     //// if the frame's height is larger than the height of medium size.
@@ -111,7 +111,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     //     smallResolutionSize.width/designResolutionSize.width));
     // }
 
-    register_all_packages();
+    registerAllPackages();
 
     //// create a scene. it's an autorelease object
     // auto scene = HelloWorld::createScene();

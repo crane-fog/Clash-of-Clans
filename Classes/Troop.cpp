@@ -11,15 +11,15 @@ Troop::Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarg
       level_(level),
       position_(position),
       current_hitpoints_(0),
-      preferred_target_(preferred_target),
-      attack_type_(attack_type),
-      housing_space_(housing_space),
-      barracks_level_required_(barracks_level_required),
-      movement_speed_(movement_speed),
-      attack_speed_(attack_speed),
-      range_(range),
-      damage_per_attacks_(damage_per_attacks),
-      hitpoints_(hitpoints),
+      kPreferredTarget(preferred_target),
+      kAttackType(attack_type),
+      kHousingSpace(housing_space),
+      kBarracksLevelRequired(barracks_level_required),
+      kMovementSpeed(movement_speed),
+      kAttackSpeed(attack_speed),
+      kRange(range),
+      kDamagePerAttacks(damage_per_attacks),
+      kHitpoints(hitpoints),
       status_(IDLE),
       current_target_(nullptr),
       current_path_direction_(cocos2d::Vec2::ZERO),
@@ -29,7 +29,7 @@ Troop::Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarg
         level_ = 1;  // 默认等级为1，防止越界
     }
     // 初始化当前生命值为最大生命值
-    current_hitpoints_ = hitpoints_[level_];
+    current_hitpoints_ = kHitpoints[level_];
     health_bar_ = nullptr;
 }
 // TODO:所有子类都需要实现init以及create
@@ -49,7 +49,7 @@ bool Troop::initWithFile(const std::string& filename)
         return false;
     }
     // 创建并添加血条
-    health_bar_ = HealthBar::create(hitpoints_[level_]);
+    health_bar_ = HealthBar::create(kHitpoints[level_]);
     if (health_bar_ == nullptr) {
         return false;
     }
@@ -116,25 +116,25 @@ bool Troop::setCellPosition(const cocos2d::Vec2& position)
     }
     else {
         // 位置在非法范围内，设置到最近的边框上
-        cocos2d::Vec2 newPos = position;
+        cocos2d::Vec2 new_pos = position;
 
         // 限制x坐标在[0, 44]范围内
-        if (newPos.x < 0) {
-            newPos.x = 0;
+        if (new_pos.x < 0) {
+            new_pos.x = 0;
         }
-        else if (newPos.x > 44) {
-            newPos.x = 44;
+        else if (new_pos.x > 44) {
+            new_pos.x = 44;
         }
 
         // 限制y坐标在[0, 44]范围内
-        if (newPos.y < 0) {
-            newPos.y = 0;
+        if (new_pos.y < 0) {
+            new_pos.y = 0;
         }
-        else if (newPos.y > 44) {
-            newPos.y = 44;
+        else if (new_pos.y > 44) {
+            new_pos.y = 44;
         }
 
-        position_ = newPos;
+        position_ = new_pos;
         return false;
     }
 }
@@ -177,15 +177,15 @@ void Troop::updateMovingState(float dt)
 {
     // 更新ZOrder
     bool is_air = (getTroopTypeIndex() == Troop::BALLOON || getTroopTypeIndex() == Troop::DRAGON);
-    int currentZ = CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_, getPosition()));
+    int current_z = CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_, getPosition()));
     if (is_air) {
-        if (currentZ + 20 != this->getLocalZOrder()) {
-            this->setLocalZOrder(currentZ + 20);
+        if (current_z + 20 != this->getLocalZOrder()) {
+            this->setLocalZOrder(current_z + 20);
         }
     }
     else {
-        if (currentZ != this->getLocalZOrder()) {
-            this->setLocalZOrder(currentZ);
+        if (current_z != this->getLocalZOrder()) {
+            this->setLocalZOrder(current_z);
         }
     }
 
@@ -196,14 +196,14 @@ void Troop::updateMovingState(float dt)
     }
 
     // 检查是否已经在攻击范围内
-    if (TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, range_)) {
+    if (TroopTargetManager::getInstance()->isInAttackRange(getCellPosition(), current_target_, kRange)) {
         changeStatus(ATTACKING);
         return;
     }
 
     // 获取移动方向（地面兵种考虑阻挡，空中兵种忽略）
     current_path_direction_ =
-        TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, range_, is_air);
+        TroopTargetManager::getInstance()->getNextMoveDirection(getCellPosition(), current_target_, kRange, is_air);
 
     // 执行移动
     if (current_path_direction_ != cocos2d::Vec2::ZERO) {
@@ -211,7 +211,7 @@ void Troop::updateMovingState(float dt)
         // 斜向向量（如{1,1}）的模长为sqrt(2)，需要归一化为单位向量
         current_path_direction_.normalize();
         cocos2d::Vec2 new_position;
-        new_position = getCellPosition() + current_path_direction_ * movement_speed_ * dt;
+        new_position = getCellPosition() + current_path_direction_ * kMovementSpeed * dt;
         // 撞到墙上了
         // TODO:感觉路径上的墙这一块还要改
         if (!is_air && TroopTargetManager::getInstance()->isCellWall(new_position)) {
@@ -219,7 +219,7 @@ void Troop::updateMovingState(float dt)
             float size;
             new_position =
                 getCellPosition() +
-                current_path_direction_ * (-range_ + CalculateHelper::calculateDistanceToSquare(
+                current_path_direction_ * (-kRange + CalculateHelper::calculateDistanceToSquare(
                                                          getCellPosition(), wall->getCellPosition(size), 1.0f));
             current_target_ = wall;
             changeStatus(ATTACKING);
@@ -245,7 +245,7 @@ void Troop::updateAttackingState(float dt)
 
     // 攻击定时逻辑
     attack_timer_ += dt;
-    if (attack_timer_ >= attack_speed_) {
+    if (attack_timer_ >= kAttackSpeed) {
         performAttack();
         attack_timer_ = 0.0f;
     }
@@ -282,7 +282,7 @@ void Troop::findNewTarget()
 {
     float min_dist;
     current_target_ =
-        TroopTargetManager::getInstance()->getNearestTroopTarget(getCellPosition(), min_dist, false, preferred_target_);
+        TroopTargetManager::getInstance()->getNearestTroopTarget(getCellPosition(), min_dist, false, kPreferredTarget);
 }
 
 std::string Troop::getTroopNameFromEnum(uchar troop_no)

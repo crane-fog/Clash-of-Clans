@@ -5,7 +5,7 @@
 
 class Arch;
 
-const int MAP_SIZE = 44;
+const int kMapSize = 44;
 
 // 作为整个地图的容器，允许整体缩放和移动
 class BaseMap : public cocos2d::Node {
@@ -44,7 +44,7 @@ public:
 
     void setInputEnabled(bool enabled);  // 禁用鼠标调用
 
-    cocos2d::Node* currentArchPanel_ = nullptr;  // 当前打开的建筑面板
+    cocos2d::Node* current_arch_panel_ = nullptr;  // 当前打开的建筑面板
 };
 
 #endif  // __BASE_MAP_H__

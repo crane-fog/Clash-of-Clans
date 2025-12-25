@@ -20,32 +20,32 @@ enum Rarity : int {
 };
 struct ShopItem {
     // 标签
-    int id;
+    int id_;
     // 建筑名称
-    std::string name;
+    std::string name_;
     // 所需资源
-    unsigned int price;
+    unsigned int price_;
     // 是否可购
-    bool isAvailable;
+    bool is_available_;
     // 不可购原因
-    std::string unavailableReason;
+    std::string unavailable_reason_;
     // 图片路径
-    std::string imagePath;
+    std::string image_path_;
     // 珍稀度
-    int rarity;  // 添加：0-N, 1-R, 2-SR, 3-SSR
+    int rarity_;  // 添加：0-N, 1-R, 2-SR, 3-SSR
     // 所需资源类型
-    bool p_type;
+    bool p_type_;
     // 构造函数
     ShopItem(int i, const std::string& n, unsigned int p, bool available, const std::string& reason,
              const std::string& path, int r = 0, bool type = GOLD)
-        : id(i),
-          name(n),
-          price(p),
-          isAvailable(available),
-          unavailableReason(reason),
-          imagePath(path),
-          rarity(r),
-          p_type(type)
+        : id_(i),
+          name_(n),
+          price_(p),
+          is_available_(available),
+          unavailable_reason_(reason),
+          image_path_(path),
+          rarity_(r),
+          p_type_(type)
     {}
 };
 // 定义三个板块的商品数据
@@ -150,13 +150,13 @@ public:
                                cocos2d::ui::ScrollView* scrollView, std::string reason);
 
     // 是否正在十连抽
-    bool isTenGachaRunning_ = false;
+    bool is_ten_gacha_running_ = false;
 
     // 当前是第几抽（0~9）
-    int currentTenIndex_ = 0;
+    int current_ten_index_ = 0;
 
     // 十连抽结果缓存（可选，但推荐）
-    std::vector<ShopItem> tenResults_;
+    std::vector<ShopItem> ten_results_;
     void ShopPopup::startTenGacha();
     void ShopPopup::runNextTenGacha();
     void ShopPopup::performSingleGacha(const std::function<void(ShopItem)>& onFinished);
@@ -169,11 +169,11 @@ private:
                                int tabIndex = 1);  // 显示商品函数
 
     // 成员变量
-    int currentTab_;                                           // 当前选中的标签：1-建筑，2-法术，3-抽卡
-    std::vector<ShopItem> buildingItems_;                      // 建筑商品
-    std::vector<ShopItem> magicItems_ = kShopItemsInfo.at(2);  // 法术商品
-    std::vector<ShopItem> gachaItems_;                         // 抽卡商品
-    cocos2d::ui::ScrollView* scrollView_;                      // 滚动容器引用
+    int current_tab_;                                           // 当前选中的标签：1-建筑，2-法术，3-抽卡
+    std::vector<ShopItem> building_items_;                      // 建筑商品
+    std::vector<ShopItem> magic_items_ = kShopItemsInfo.at(2);  // 法术商品
+    std::vector<ShopItem> gacha_items_;                         // 抽卡商品
+    cocos2d::ui::ScrollView* scroll_view_;                      // 滚动容器引用
 
     // void performGacha();                          // 执行抽卡
     void showGachaAnimation(int rarity);         // 显示抽卡动画
@@ -183,14 +183,14 @@ private:
     // 稀有度枚举
 
     // 添加抽卡相关变量
-    std::vector<ShopItem> gachaPool_;  // 抽卡池
-    Node* gachaResultNode_ = nullptr;  // 抽卡结果节点
+    std::vector<ShopItem> gacha_pool_;  // 抽卡池
+    Node* gacha_result_node_ = nullptr;  // 抽卡结果节点
 
     // 购买函数相关
 private:
-    Arch* pendingArch_ = nullptr;
-    cocos2d::EventListener* mapTouchListener_ = nullptr;
-    bool isPlacingArch_ = false;
+    Arch* pending_arch_ = nullptr;
+    cocos2d::EventListener* map_touch_listener_ = nullptr;
+    bool is_placing_arch_ = false;
 
 public:
     friend class Arch;

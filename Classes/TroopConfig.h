@@ -34,7 +34,7 @@ private:
     TroopConfig(const TroopConfig&) = delete;
     TroopConfig& operator=(const TroopConfig&) = delete;
     // 兵种等级
-    std::map<unsigned char, int> kTroopLevels = {{Troop::BARBARIAN, 1},    {Troop::ARCHER, 1}, {Troop::GIANT, 1},
+    std::map<unsigned char, int> k_troop_levels_ = {{Troop::BARBARIAN, 1},    {Troop::ARCHER, 1}, {Troop::GIANT, 1},
                                                  {Troop::WALL_BREAKER, 1}, {Troop::DRAGON, 1}, {Troop::BALLOON, 1}};
 
 public:
@@ -68,8 +68,8 @@ public:
     unsigned int getTroopCount(unsigned char troop_type) const { return config_.at(troop_type); }
 
     // 获取兵种的等级
-    int getTroopLevel(unsigned char troopname) { return kTroopLevels.at(troopname); }
-    void upgradeTroopLevel(unsigned char troopname) { kTroopLevels.at(troopname)++; }
+    int getTroopLevel(unsigned char troopname) { return k_troop_levels_.at(troopname); }
+    void upgradeTroopLevel(unsigned char troopname) { k_troop_levels_.at(troopname)++; }
 };
 
 #endif  // __TROOP_CONFIG_H__

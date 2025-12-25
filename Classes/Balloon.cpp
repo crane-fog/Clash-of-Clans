@@ -4,13 +4,13 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Balloon::research_costs_ = {0, 0, 100000, 400000, 720000, 1300000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Balloon::kResearchCosts = {0, 0, 100000, 400000, 720000, 1300000};
 
 // 升到level级所需时间 单位：小时
-const std::array<float, MAX_TROOP_LEVEL + 1> Balloon::research_times_ = {0, 0, 4, 6, 18, 24};
+const std::array<float, MAX_TROOP_LEVEL + 1> Balloon::kResearchTimes = {0, 0, 4, 6, 18, 24};
 
 // 升到level级所需实验室等级
-const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Balloon::laboratory_level_requireds_ = {0, 1, 2, 4, 5, 6};
+const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Balloon::kLaboratoryLevelRequireds = {0, 1, 2, 4, 5, 6};
 
 Balloon::Balloon(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, DEFENSE, RANGED_AOE_GROUND, 5, 6, 1.3f, 3.0f, 0.0f,
@@ -20,14 +20,14 @@ Balloon::Balloon(BaseMap* base_map, int level, cocos2d::Vec2 position)
 
 Balloon* Balloon::create(BaseMap* base_map, int level, cocos2d::Vec2 position)
 {
-    Balloon* pRet = new (std::nothrow) Balloon(base_map, level, position);
-    if (pRet && pRet->initWithFile(pics_balloon.at(level))) {
-        pRet->autorelease();
-        return pRet;
+    Balloon* p_ret = new (std::nothrow) Balloon(base_map, level, position);
+    if (p_ret && p_ret->initWithFile(kPicsBalloon.at(level))) {
+        p_ret->autorelease();
+        return p_ret;
     }
     else {
-        delete pRet;
-        pRet = nullptr;
+        delete p_ret;
+        p_ret = nullptr;
         return nullptr;
     }
 }
@@ -47,7 +47,7 @@ void Balloon::performAttack()
     float size;
     cocos2d::Vec2 center = current_target_->getCellPosition(size);
     std::vector<ITroopTarget*> targets =
-        TroopTargetManager::getInstance()->getTargetsInRange(center, area_splash_radius_);
+        TroopTargetManager::getInstance()->getTargetsInRange(center, kAreaSplashRadius);
     for (auto target : targets) {
         target->takeDamage(damage);
     }
@@ -70,36 +70,36 @@ void Balloon::onDeath()
 {
     // ====== 1. 视觉动画序列：弹跳 → 下落 → 缩小+淡出 ======
     auto jump = cocos2d::JumpBy::create(0.5f, cocos2d::Vec2(0, 0), 5.0f, 1);
-    auto scaleUp = cocos2d::ScaleTo::create(0.25f, 1.1f);
-    auto scaleDown = cocos2d::ScaleTo::create(0.25f, 1.0f);
-    auto scalePulse = cocos2d::Sequence::create(scaleUp, scaleDown, nullptr);
-    auto visualJump = cocos2d::Spawn::create(jump, scalePulse, nullptr);
+    auto scale_up = cocos2d::ScaleTo::create(0.25f, 1.1f);
+    auto scale_down = cocos2d::ScaleTo::create(0.25f, 1.0f);
+    auto scale_pulse = cocos2d::Sequence::create(scale_up, scale_down, nullptr);
+    auto visual_jump = cocos2d::Spawn::create(jump, scale_pulse, nullptr);
 
     // 下落偏移（请替换为你实际的值）
-    cocos2d::Vec2 fallOffset(0, -50);
-    auto fall = cocos2d::MoveBy::create(0.3f, fallOffset);
+    cocos2d::Vec2 fall_offset(0, -50);
+    auto fall = cocos2d::MoveBy::create(0.3f, fall_offset);
     auto shrink = cocos2d::ScaleTo::create(0.3f, 0.01f);
-    auto fadeOut = cocos2d::FadeTo::create(0.3f, 0);
-    auto vanish = cocos2d::Spawn::create(shrink, fadeOut, nullptr);
+    auto fade_out = cocos2d::FadeTo::create(0.3f, 0);
+    auto vanish = cocos2d::Spawn::create(shrink, fade_out, nullptr);
 
-    auto visualSequence = cocos2d::Sequence::create(visualJump, fall, vanish, nullptr);
+    auto visual_sequence = cocos2d::Sequence::create(visual_jump, fall, vanish, nullptr);
 
     // ====== 2. 攻击逻辑：延迟后触发 AOE ======
-    auto delay = cocos2d::DelayTime::create(death_damage_delay_);
-    auto triggerAoe = cocos2d::CallFunc::create(CC_CALLBACK_0(Balloon::triggerDeathDamage, this));
-    auto attackSequence = cocos2d::Sequence::create(delay, triggerAoe, nullptr);
+    auto delay = cocos2d::DelayTime::create(kDeathDamageDelay);
+    auto trigger_aoe = cocos2d::CallFunc::create(CC_CALLBACK_0(Balloon::triggerDeathDamage, this));
+    auto attack_sequence = cocos2d::Sequence::create(delay, trigger_aoe, nullptr);
 
     // ====== 同时启动两个动作 ======
-    this->runAction(visualSequence);
-    this->runAction(attackSequence);
+    this->runAction(visual_sequence);
+    this->runAction(attack_sequence);
     changeStatus(DEAD);
 }
 
 void Balloon::triggerDeathDamage()
 {
-    float damage = damages_upon_death_[level_];
+    float damage = kDamagesUponDeath[level_];
     std::vector<ITroopTarget*> targets =
-        TroopTargetManager::getInstance()->getTargetsInRange(getCellPosition(), death_damage_radius_);
+        TroopTargetManager::getInstance()->getTargetsInRange(getCellPosition(), kDeathDamageRadius);
     for (auto target : targets) {
         target->takeDamage(damage);
     }
