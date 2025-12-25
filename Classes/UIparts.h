@@ -1,5 +1,3 @@
-
-#pragma once
 #ifndef __UI_PARTS_H__
 #define __UI_PARTS_H__
 

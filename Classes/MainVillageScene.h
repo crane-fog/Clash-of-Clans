@@ -31,7 +31,6 @@ public:
     void onShopButtonClick(Ref* sender);
     bool addBuildingByNO(unsigned char no, int price);
 
-public:
     void MainVillage::createCancelButton(Arch* pendingArch_);
     void MainVillage::createConfirmButton(Arch* pendingArch_, int price, bool type_);
     void MainVillage::cancelBuildingPlacement(Arch* pendingArch_);

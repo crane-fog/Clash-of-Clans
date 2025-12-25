@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __REPLAY_ATTACK_H__
 #define __REPLAY_ATTACK_H__
 #include <cocos2d.h>

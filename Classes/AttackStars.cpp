@@ -3,6 +3,7 @@
 #include "cocos/ui/CocosGUI.h"
 #include "DataHelper.h"
 #include "MainVillageScene.h"
+#include "EnemyVillageScene.h"
 #include "UIparts.h"
 USING_NS_CC;
 using namespace ui;
@@ -157,7 +158,7 @@ void AttackStars::showVictoryScreen()
     this->unschedule("update_checker");
 
     // 4. 创建胜利提示文字
-    auto victory_label = Label::createWithSystemFont("胜利！所有建筑已被摧毁！", "Arial", 100);
+    auto victory_label = Label::createWithSystemFont("所有建筑已被摧毁！", "Arial", 100);
     victory_label->setColor(Color3B::YELLOW);
     victory_label->setPosition(Vec2(center.x + 100, center.y + 200));
     victory_label->setName("victory_label");
@@ -199,24 +200,28 @@ void AttackStars::showVictoryScreen()
         }
     }
 
-    // 6. 5秒后自动消失
-    auto delay = DelayTime::create(5.0f);
-    auto fade_out = FadeOut::create(0.8f);
-    auto cleanup = CallFunc::create([this]() {
-        // 移除遮盖层
-        auto mask = this->getChildByName("victory_mask");
-        if (mask) {
-            mask->removeFromParent();
+    // 6. 添加退出按钮
+    auto exit_label = Label::createWithSystemFont("退出", "Arial", 60);
+    auto exit_item = MenuItemLabel::create(exit_label, [this](Ref* sender) {
+        auto scene = Director::getInstance()->getRunningScene();
+        auto enemyVillage = dynamic_cast<EnemyVillage*>(scene);
+        if (enemyVillage) {
+            enemyVillage->onExitButtonClick(sender);
         }
-
-        // 重置UI位置到原始位置
-        resetUIPosition();
-
-        is_showing_victory_ = false;
-        CCLOG("胜利画面消失");
     });
+    exit_item->setPosition(Vec2(center.x, center.y - 300));
 
-    full_screen_mask->runAction(Sequence::create(delay, fade_out, cleanup, nullptr));
+    auto menu = Menu::create(exit_item, nullptr);
+    menu->setPosition(Vec2::ZERO);
+    full_screen_mask->addChild(menu);
+
+    // 7. 吞噬触摸事件，防止点击到后面的游戏内容
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->setSwallowTouches(true);
+    listener->onTouchBegan = [](Touch* touch, Event* event) {
+        return true;
+    };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, full_screen_mask);
 }
 
 // 重置UI到原始位置

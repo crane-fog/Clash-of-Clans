@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __ATTACKSTARS_H__
 #define __ATTACKSTARS_H__
 
@@ -48,7 +47,7 @@ public:
     }
 
     // 检查其他条件
-    bool someOtherConditionMet() { return progress_ > 75.0f; }
+    bool someOtherConditionMet() const { return progress_ > 75.0f; }
 
     // 点亮星星动画
     void showPopup(cocos2d::Sprite* targetStar, int progress);

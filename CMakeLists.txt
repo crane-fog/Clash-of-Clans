@@ -68,7 +68,7 @@ list(APPEND GAME_SOURCE
      Classes/DataHelper.cpp
      Classes/Dragon.cpp
      Classes/EnemyVillageScene.cpp
-     Classes/GameManager.cpp
+     Classes/ResourceManager.cpp
      Classes/Giant.cpp
      Classes/HealthBar.cpp
      Classes/MainVillageScene.cpp
@@ -96,12 +96,11 @@ list(APPEND GAME_HEADER
      Classes/DataHelper.h
      Classes/Dragon.h
      Classes/EnemyVillageScene.h
-     Classes/GameManager.h
+     Classes/ResourceManager.h
      Classes/Giant.h
      Classes/HealthBar.h
      Classes/IArchTarget.h
      Classes/ITroopTarget.h
-     Classes/LoadingScene.h
      Classes/MainVillageScene.h
      Classes/ReplayAttack.h
      Classes/ShopPopup.h

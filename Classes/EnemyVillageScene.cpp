@@ -81,21 +81,6 @@ bool EnemyVillage::myInit(int level)
         return Dragon::create(map, lvl, pos);
     };
 
-    /*auto dragon = Dragon::create(base_map_, 1, cocos2d::Vec2(30, 20));
-    if (!dragon)return false;
-    troop_list_.push_back(dragon);
-    dragon->takeDamage(5000);*/
-
-    /*auto balloon = Balloon::create(base_map_, 1, cocos2d::Vec2(27, 22));
-    if (!balloon)return false;
-    troop_list_.push_back(balloon);
-    balloon->takeDamage(500);*/
-
-    /*auto wall_breaker = WallBreaker::create(base_map_, 1, cocos2d::Vec2(22, 22));
-    if (!wall_breaker)return false;
-    troop_list_.push_back(wall_breaker);
-    wall_breaker->takeDamage(500);*/
-
     // 预计算所有建筑的距离场
     TroopTargetManager::getInstance()->precomputeDistanceFields();
 
@@ -139,9 +124,6 @@ bool EnemyVillage::myInit(int level)
     // 添加触摸监听器来检测玩家点击的位置
     auto touch_listener = cocos2d::EventListenerTouchOneByOne::create();
     touch_listener->onTouchBegan = CC_CALLBACK_2(EnemyVillage::onTouchBegan, this);
-    // touchListener->onTouchMoved = CC_CALLBACK_2(EnemyVillage::onTouchMoved, this);
-    // touchListener->onTouchEnded = CC_CALLBACK_2(EnemyVillage::onTouchEnded, this);
-    //  touchListener->onTouchCancelled = CC_CALLBACK_2(EnemyVillage::onTouchCancelled, this);
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touch_listener, this);
 
     ui_layer_ = UIBars::create();

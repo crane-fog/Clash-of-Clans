@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __SHOP_POPUP_H__
 #define __SHOP_POPUP_H__
 
