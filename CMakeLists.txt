@@ -59,6 +59,7 @@ list(APPEND GAME_SOURCE
      Classes/AppDelegate.cpp
      Classes/Arch.cpp
      Classes/Archer.cpp
+     Classes/ArchTargetManager.cpp
      Classes/AttackStars.cpp
      Classes/Balloon.cpp
      Classes/Barbarian.cpp

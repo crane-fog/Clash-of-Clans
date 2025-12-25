@@ -6,6 +6,7 @@
 #include "ui/CocosGUI.h"
 #include "AudioEngine.h"
 #include "MainVillageScene.h"
+#include "ArchTargetManager.h"
 
 USING_NS_CC;
 
@@ -93,6 +94,9 @@ void Arch::onEnter()
         touch_listener_->onTouchCancelled = CC_CALLBACK_2(Arch::onTouchCancel, this);
 
         _eventDispatcher->addEventListenerWithSceneGraphPriority(touch_listener_, this);
+    } else {
+        // 敌方建筑开启攻击逻辑
+        scheduleUpdate();
     }
 }
 
@@ -1027,9 +1031,7 @@ void ElixirCollector::createUpgradeComparisonPanel()
 
 Barracks::Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
 {
-    // 建筑对象的构造是在场景init时进行的，因此执行到这里的时候场景还没有切换
-    // 同时由于该游戏中只会有两个场景，因此以下if块中的代码当且仅当MainVillage场景init创建建筑时被执行
-    if (!dynamic_cast<MainVillage*>(cocos2d::Director::getInstance()->getRunningScene())) {
+    if (is_mine_) {
         TroopConfig::getInstance()->setBarrackLevel(level_);
     }
 }
@@ -1172,4 +1174,79 @@ void Bomb::showArchPanel()
     }
     str += "\n爆炸伤害: " + std::to_string(kArchInfo.at(BOMB)[level_ - 1].damage_) + "\n";
     label->setString(str);
+}
+
+void Arch::update(float dt) {
+    if (is_Destroyed) return;
+    
+    // 检查是否为防御建筑且有伤害
+    const auto& info = kArchInfo.at(no_)[level_ - 1];
+    if (info.damage_ > 0 && info.type_ == DEFENSE) {
+        tryAttack(dt);
+    }
+}
+
+void Arch::tryAttack(float dt) {
+    attack_timer_ += dt;
+    const auto& info = kArchInfo.at(no_)[level_ - 1];
+    float interval = info.attack_interval_ / 1000.0f;
+    
+    // 检查当前目标是否有效
+    if (current_target_) {
+        if (!current_target_->isAlive()) {
+            current_target_ = nullptr;
+        } else {
+             // 检查距离
+             float range = info.attack_range_ / 10.0f;
+             float size;
+             Vec2 myPos = getCellPosition(size);
+             // 简单的距离判断，未考虑目标体积
+             if (myPos.distance(current_target_->getCellPosition()) > range) {
+                 current_target_ = nullptr;
+             }
+        }
+    }
+    
+    // 如果没有目标，查找新目标
+    if (!current_target_) {
+        float range = info.attack_range_ / 10.0f;
+        float size;
+        Vec2 myPos = getCellPosition(size);
+        current_target_ = ArchTargetManager::getInstance()->getNearestArchTarget(myPos, range, info.target_type_);
+    }
+    
+    // 攻击
+    if (current_target_ && attack_timer_ >= interval) {
+        attack_timer_ = 0;
+        // 造成伤害
+        current_target_->takeDamage(static_cast<float>(info.damage_));
+        
+        // 播放音效等（可选）
+    }
+}
+
+void Bomb::update(float dt) {
+    if (is_Destroyed) return;
+    
+    const auto& info = kArchInfo.at(no_)[level_ - 1];
+    // 隐形炸弹逻辑：检测范围内是否有敌人
+    float range = info.attack_range_ / 10.0f;
+    float size;
+    Vec2 myPos = getCellPosition(size);
+    
+    // 查找范围内最近的敌人
+    IArchTarget* target = ArchTargetManager::getInstance()->getNearestArchTarget(myPos, range, info.target_type_);
+    
+    if (target) {
+        // 发现敌人，爆炸
+        // 对目标造成伤害（这里简化为只对最近目标造成伤害，理想情况应该是AOE）
+        // TODO: 实现AOE伤害，需要ArchTargetManager提供getTargetsInRange接口
+        target->takeDamage(static_cast<float>(info.damage_));
+        
+        // 自身销毁
+        takeDamage(static_cast<float>(current_hp_));
+        
+        // 播放爆炸特效和音效
+        // AudioEngine::play2d("music/bomb_explode.mp3");
+    }
 }

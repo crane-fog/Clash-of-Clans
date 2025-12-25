@@ -3,6 +3,7 @@
 #include "MainVillageScene.h"
 #include "CocController.h"
 #include "TroopTargetManager.h"
+#include "ArchTargetManager.h"
 #include "Arch.h"
 #include "CoordAdaptor.h"
 #include <set>
@@ -51,9 +52,9 @@ bool EnemyVillage::myInit(int level)
         TroopTargetManager::getInstance()->registerTroopTarget(p);
         //统计建筑总量
         int nowArch = TroopTargetManager::getInstance()->getlivingsum();
-        if (arch.no_ != WALL)TroopTargetManager::getInstance()->setlivingsum(nowArch+1);
+        if (arch.no_ != WALL && arch.no_ != BOMB)TroopTargetManager::getInstance()->setlivingsum(nowArch+1);
     }
-    
+    //todo:把建筑生成也工厂化
     troop_factories_[Troop::BARBARIAN] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Barbarian::create(map, lvl, pos); };
     troop_factories_[Troop::ARCHER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Archer::create(map, lvl, pos); };
     troop_factories_[Troop::GIANT] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) { return Giant::create(map, lvl, pos); };
@@ -185,6 +186,7 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
         troop->setDead();
     }
     TroopTargetManager::getInstance()->clear();
+    ArchTargetManager::getInstance()->clear();
     CocController::getInstance()->changeScene();
 
 }
@@ -263,6 +265,7 @@ bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Ve
         if (troop) {
             troop_list_.push_back(troop);
             base_map_->sprites_.push_back(troop);
+            ArchTargetManager::getInstance()->registerArchTarget(troop);
             return true;
         }
     }

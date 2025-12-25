@@ -72,6 +72,13 @@ protected:
 
     // 生命条指针
     HealthBar* health_bar_;
+
+    // 攻击相关
+    float attack_timer_ = 0.0f;
+    IArchTarget* current_target_ = nullptr;
+
+    virtual void update(float dt) override;
+    void tryAttack(float dt);
 public:
     //建筑是否被摧毁
     bool is_Destroyed = false;
@@ -112,6 +119,7 @@ public:
     // ITroopTarget 接口实现
     //我先改了调试用，你到时候调整一下
     virtual void onDeath() {
+        is_Destroyed = true;
         health_bar_->setVisible(false);
         TroopTargetManager::getInstance()->unregisterTroopTarget(this);
         this->setTexture("arch/Arch_Destroyed.png");
@@ -270,6 +278,7 @@ class Bomb : public Arch {
 public:
     Bomb(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void showArchPanel() override;
+    virtual void update(float dt) override;
 };
 
 class ArchFactory {

@@ -9,6 +9,9 @@ class ArchTargetManager {
     public:
         static ArchTargetManager* getInstance();
     
+        // 清除所有数据
+        void clear();
+
         // 士兵把自己注册为可攻击目标
         void registerArchTarget(IArchTarget* target);
         
