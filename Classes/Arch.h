@@ -2,6 +2,7 @@
 #define __ARCH_H__
 
 #include <string.h>
+#include <algorithm>
 
 #include "ArchInfo.h"
 #include "cocos2d.h"
@@ -114,12 +115,13 @@ public:
     {
         if (current_hp_ <= 0) return;
         if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE && !is_mine_) {
-            float p = damage / kArchInfo.at(no_)[level_ - 1].hp_;
-            unsigned long long resource_get = current_capacity_ * static_cast<unsigned long long>(p);
+            float actual_damage = std::min(damage, static_cast<float>(current_hp_));
+            float p = actual_damage / kArchInfo.at(no_)[level_ - 1].hp_;
+            unsigned long long resource_get = static_cast<unsigned long long>(current_capacity_ * p);
             if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
-                ResourceManager::getInstance()->setGold(ResourceManager::getInstance()->getGold() + resource_get);
+                ResourceManager::getInstance()->setGold(std::min(ResourceManager::getInstance()->getGold() + resource_get, ResourceManager::getInstance()->getMaxGold()));
             else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
-                ResourceManager::getInstance()->setElixir(ResourceManager::getInstance()->getElixir() + resource_get);
+                ResourceManager::getInstance()->setElixir(std::min(ResourceManager::getInstance()->getElixir() + resource_get, ResourceManager::getInstance()->getMaxElixir()));
             ;
         }
         health_bar_->takeDamage(damage);
