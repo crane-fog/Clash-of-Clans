@@ -138,3 +138,8 @@ void WallBreaker::playBlackSmokeAt(const cocos2d::Vec2& pos)
 
     smoke->runAction(cocos2d::Sequence::create(cocos2d::Spawn::create(scale, fade, nullptr), cleanup, nullptr));
 }
+
+cocos2d::Vec2 WallBreaker::getPixelPosition() const
+{
+    return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x + 0.1f, position_.y - 0.3f));
+}

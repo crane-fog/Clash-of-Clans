@@ -8,6 +8,36 @@
 #include "Troop.h"
 
 class TroopTargetManager {
+private:
+    TroopTargetManager() = default;
+    TroopTargetManager(const TroopTargetManager&) = delete;
+    TroopTargetManager& operator=(const TroopTargetManager&) = delete;
+
+    struct Compare {
+        bool operator()(const std::tuple<cocos2d::Vec2, float>& a, const std::tuple<cocos2d::Vec2, float>& b) const
+        {
+            return std::get<1>(a) > std::get<1>(b);  // 小顶堆示例
+        }
+    };
+
+    using DistancePQ =
+        std::priority_queue<std::tuple<cocos2d::Vec2, float>, std::vector<std::tuple<cocos2d::Vec2, float>>, Compare>;
+
+    // 初始化优先队列距离场
+    void pqInit(DistancePQ& pq, std::vector<std::vector<float>>& distance_field, ITroopTarget* target);
+
+    // 为单个目标计算距离场
+    void computeDistanceField(ITroopTarget* target);
+
+    // 将网格坐标转换为距离场数组索引
+    int posToIndex(const cocos2d::Vec2& pos) const;
+
+    // 检查坐标是否有效
+    bool isValidPosition(const cocos2d::Vec2& pos) const;
+
+    int living_arch_ = 0;
+    int dead_arch_ = 0;
+
 protected:
     /*  OTHER = 0, // 其它
         RESOURCE = 1, // 资源
@@ -83,39 +113,8 @@ public:
     // 为炸弹人查找最优的墙壁目标（周围至少有2个墙壁）
     ITroopTarget* getOptimalWallTarget(const cocos2d::Vec2& position);
 
-private:
-    struct Compare {
-        bool operator()(const std::tuple<cocos2d::Vec2, float>& a, const std::tuple<cocos2d::Vec2, float>& b) const
-        {
-            return std::get<1>(a) > std::get<1>(b);  // 小顶堆示例
-        }
-    };
-    using DistancePQ =
-        std::priority_queue<std::tuple<cocos2d::Vec2, float>, std::vector<std::tuple<cocos2d::Vec2, float>>, Compare>;
-
-    // 初始化优先队列距离场
-    void pqInit(DistancePQ& pq, std::vector<std::vector<float>>& distance_field, ITroopTarget* target);
-
-    // 为单个目标计算距离场
-    void computeDistanceField(ITroopTarget* target);
-
-    // 将网格坐标转换为距离场数组索引
-    int posToIndex(const cocos2d::Vec2& pos) const
-    {
-        return static_cast<int>(pos.y) * kMapWidth + static_cast<int>(pos.x);
-    }
-
-    // 检查坐标是否有效
-    bool isValidPosition(const cocos2d::Vec2& pos) const
-    {
-        return pos.x >= 0 && pos.x < kMapWidth && pos.y >= 0 && pos.y < kMapHeight;
-    }
-    int living_arch_ = 0;
-    int dead_arch_ = 0;
-
-public:
-    int getlivingsum() { return living_arch_; }
-    int getDeadsum() { return dead_arch_; }
+    int getlivingsum() const { return living_arch_; }
+    int getDeadsum() const { return dead_arch_; }
     void setlivingsum(int newArch) { this->living_arch_ = newArch; }
     void setdeadsum(int newArch) { this->dead_arch_ = newArch; }
 };

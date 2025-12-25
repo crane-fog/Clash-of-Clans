@@ -5,7 +5,6 @@
 #include <algorithm>
 
 #include "ArchInfo.h"
-#include "cocos2d.h"
 #include "ResourceManager.h"
 #include "HealthBar.h"
 #include "ITroopTarget.h"
@@ -52,11 +51,13 @@ protected:
     IArchTarget* current_target_ = nullptr;
 
     virtual void update(float dt) override;
+
     void tryAttack(float dt);
 
 public:
     // 建筑是否被摧毁
     bool is_destroyed_ = false;
+
     // 拖动相关
     bool is_dragging_ = false;
     cocos2d::Vec2 touch_start_pos_;
@@ -97,63 +98,40 @@ public:
     // 为城墙状态更新预留的接口
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) {}
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) {}
+
     // 升级完成回调
     virtual void onUpgradeFinished() {}
 
     // ITroopTarget 接口实现
-    // 我先改了调试用，你到时候调整一下
-    virtual void onDeath()
-    {
-        is_destroyed_ = true;
-        health_bar_->setVisible(false);
-        TroopTargetManager::getInstance()->unregisterTroopTarget(this);
-        this->setTexture("arch/Arch_Destroyed.png");
-
-        this->setLocalZOrder(5);
-    }
-    virtual void takeDamage(float damage) override
-    {
-        if (current_hp_ <= 0) return;
-        if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE && !is_mine_) {
-            float actual_damage = std::min(damage, static_cast<float>(current_hp_));
-            float p = actual_damage / kArchInfo.at(no_)[level_ - 1].hp_;
-            unsigned long long resource_get = static_cast<unsigned long long>(current_capacity_ * p);
-            if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
-                ResourceManager::getInstance()->setGold(std::min(ResourceManager::getInstance()->getGold() + resource_get, ResourceManager::getInstance()->getMaxGold()));
-            else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
-                ResourceManager::getInstance()->setElixir(std::min(ResourceManager::getInstance()->getElixir() + resource_get, ResourceManager::getInstance()->getMaxElixir()));
-            ;
-        }
-        health_bar_->takeDamage(damage);
-        current_hp_ -= static_cast<UI>(damage);
-        if (current_hp_ <= 0) onDeath();
-    }
-    virtual cocos2d::Vec2 getCellPosition(float& size) const override
-    {
-        size = static_cast<float>(kArchInfo.at(no_)[level_ - 1].size_);
-        return cocos2d::Vec2(x_ + size / 2.0f, y_ + size / 2.0f);
-    }
+    virtual void onDeath();
+    virtual void takeDamage(float damage) override;
+    virtual cocos2d::Vec2 getCellPosition(float& size) const override;
     virtual bool isAlive() const override { return current_hp_ > 0; }
     virtual UC getTargetType() const override { return kArchInfo.at(no_)[level_ - 1].type_; }
 
     // 建筑面板UI相关
     virtual void showArchPanel();
     bool is_upgrading_ = false;
+
     // 关闭建筑信息面板
     void closeArchPanel();
-    // 升级按钮
-    void Arch::archUpgrade();
+
     // 创建显示的弹窗
-    void Arch::showRefusePopup(std::string text_);
+    void showRefusePopup(std::string text_);
+
     static std::string getArchNameFromEnum(unsigned char archNo);
-    virtual void Arch::createUpgradeComparisonPanel();
-    void Arch::onUpgradeCancel(Ref* sender);
-    void Arch::buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
+
+    // 升级相关
+    void archUpgrade();
+    virtual void createUpgradeComparisonPanel();
+    void onUpgradeCancel(Ref* sender);
+    void buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
                                  bool type);
     // 资源生产
-    void Arch::startResourceProduction();
+    void startResourceProduction();
+
     // 更新建筑的显示
-    void Arch::updateBuildingDisplay();
+    void updateBuildingDisplay();
 
     // 开始升级动画
     void startUpgradeAnimation(unsigned int time, const std::string& notice);
@@ -189,10 +167,7 @@ public:
 
 class GoldStorage : public Arch {
 public:
-    GoldStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
-    {
-        ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
-    }
+    GoldStorage(const ArchData& data, BaseMap* base_map, bool is_mine);
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override;
@@ -200,10 +175,7 @@ public:
 
 class ElixirStorage : public Arch {
 public:
-    ElixirStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
-    {
-        ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
-    }
+    ElixirStorage(const ArchData& data, BaseMap* base_map, bool is_mine);
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override;
@@ -271,13 +243,6 @@ private:
 
 public:
     static void registerCreater(unsigned char no, const Creater& creater) { creaters[no] = creater; }
-    static Arch* createArch(const ArchData& data, BaseMap* base_map, bool is_mine)
-    {
-        auto it = creaters.find(data.no_);
-        if (it != creaters.end()) {
-            return it->second(data, base_map, is_mine);
-        }
-        return nullptr;
-    }
+    static Arch* createArch(const ArchData& data, BaseMap* base_map, bool is_mine);
 };
 #endif  // __ARCH_H__

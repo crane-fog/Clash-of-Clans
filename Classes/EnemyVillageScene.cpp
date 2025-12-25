@@ -119,7 +119,6 @@ bool EnemyVillage::myInit(int level)
     auto barbarian2 = Barbarian::create(base_map_, 1, cocos2d::Vec2(0.5, 0.5));
     if (!barbarian2) return false;
     barbarian2->takeDamage(500);
-    base_map_->sprites_.push_back(barbarian2);
 
     // 添加触摸监听器来检测玩家点击的位置
     auto touch_listener = cocos2d::EventListenerTouchOneByOne::create();
@@ -260,7 +259,6 @@ bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Ve
         Troop* troop = it->second(base_map_, lvl, position);
         if (troop) {
             troop_list_.push_back(troop);
-            base_map_->sprites_.push_back(troop);
             ArchTargetManager::getInstance()->registerArchTarget(troop);
             return true;
         }

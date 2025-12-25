@@ -15,6 +15,10 @@ private:
     cocos2d::ui::Scale9Sprite* bar_bg_ = nullptr;
     cocos2d::ui::Scale9Sprite* bar_fg_ = nullptr;
 
+    void updateDisplay();
+    void resetHideTimer();
+    void hideBar(float dt);
+
 public:
     static HealthBar* create(float max_hp, float max_width = 50.0f, bool is_troop = true);
 
@@ -44,11 +48,6 @@ public:
 
     // 设置血条位置（相对于父节点）
     void setHealthBarPosition(const cocos2d::Vec2& position) { this->setPosition(position); }
-
-private:
-    void updateDisplay();
-    void resetHideTimer();
-    void hideBar(float dt);
 };
 
 #endif  // __HEALTH_BAR_H__

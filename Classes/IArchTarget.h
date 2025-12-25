@@ -14,6 +14,7 @@ public:
     virtual cocos2d::Vec2 getCellPosition() const = 0;
 
     enum ArchTargetType : unsigned char { GROUND = 0, AIR = 1, OTHER = 2 };
+
     // 获取士兵类型（用于建筑选择目标，如是否为空中兵种，具体返回值见todo-士兵）
     virtual ArchTargetType getTargetType() const = 0;
 

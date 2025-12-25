@@ -10,6 +10,7 @@
 #include "cocos2d.h"
 #include "TroopTargetManager.h"
 #include "UIcommon.h"
+
 // 进度条结构体
 struct ProgressBarData {
     cocos2d::ui::LoadingBar* loading_bar_;
@@ -58,7 +59,7 @@ public:
     void onMaxGoldUpdated(cocos2d::EventCustom* event);
     // 更新最大圣水的回调函数
     void onMaxElixirUpdated(cocos2d::EventCustom* event);
-    // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
+
     CREATE_FUNC(UIBars);
 };
 
@@ -86,12 +87,15 @@ class UICommonHelper : public cocos2d::Node {
 private:
     int can_confirm_ = -1;
     cocos2d::LayerColor* selected_item_bg_ = nullptr;  // 当前选中的按钮背景
+
 public:
     CREATE_FUNC(UICommonHelper);
+
     virtual bool init() { return Node::init(); }
 
     // 显示挑战场景选择面板
     void showChallengeSelectionPanel(cocos2d::Node* parent);
+
     // 选项点击事件处理
     void onOptionClick(cocos2d::LayerColor* item_bg, int index, cocos2d::ui::Button* confirm_button);
 

@@ -10,6 +10,16 @@
 
 #include "CalculateHelper.h"
 
+int TroopTargetManager::posToIndex(const cocos2d::Vec2& pos) const
+{
+    return static_cast<int>(pos.y) * kMapWidth + static_cast<int>(pos.x);
+}
+
+bool TroopTargetManager::isValidPosition(const cocos2d::Vec2& pos) const
+{
+    return pos.x >= 0 && pos.x < kMapWidth && pos.y >= 0 && pos.y < kMapHeight;
+}
+
 TroopTargetManager* TroopTargetManager::getInstance()
 {
     static TroopTargetManager instance;

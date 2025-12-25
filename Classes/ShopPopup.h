@@ -6,17 +6,18 @@
 #include "Arch.h"
 #include "BaseMap.h"
 #include "CocController.h"
-#include "cocos2d.h"
 #include "TroopTargetManager.h"
 #include "ui/CocosGUI.h"
-#include "UIcommon.h"
+
 enum ShopType : int { buildingItems = 1, magicItems = 2, gachaItems = 3 };
+
 enum Rarity : int {
     RARITY_N = 0,   // 普通
     RARITY_R = 1,   // 稀有
     RARITY_SR = 2,  // 超级稀有
     RARITY_SSR = 3  // 特级稀有
 };
+
 struct ShopItem {
     // 标签
     int id_;
@@ -47,6 +48,7 @@ struct ShopItem {
           p_type_(type)
     {}
 };
+
 // 定义三个板块的商品数据
 const std::map<int, std::vector<ShopItem>> kShopItemsInfo = {
     {buildingItems,
@@ -134,16 +136,56 @@ const std::map<int, std::vector<ShopItem>> kGachaItemsInfo = {
 };
 
 class ShopPopup : public cocos2d::Layer {
+private:
+    // 关闭动画
+    void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
+
+    // 切换标签
+    void switchToTab(int tabIndex);
+
+    // 显示商品
+    void showItemsInScrollView(const std::vector<ShopItem>& items, cocos2d::ui::ScrollView* scrollView,
+                               int tabIndex = 1);
+
+    int current_tab_;                                           // 当前选中的标签：1-建筑，2-法术，3-抽卡
+    std::vector<ShopItem> building_items_;                      // 建筑商品
+    std::vector<ShopItem> magic_items_ = kShopItemsInfo.at(2);  // 法术商品
+    std::vector<ShopItem> gacha_items_;                         // 抽卡商品
+    cocos2d::ui::ScrollView* scroll_view_;                      // 滚动容器引用
+
+    // void performGacha();                          // 执行抽卡
+    void showGachaAnimation(int rarity);         // 显示抽卡动画
+    void showGachaResult(const ShopItem& item);  // 显示抽卡结果
+    void createGachaItem();                      // 创建抽卡商品界面
+    void initGachaPool();
+
+    // 抽卡相关变量
+    std::vector<ShopItem> gacha_pool_;   // 抽卡池
+    Node* gacha_result_node_ = nullptr;  // 抽卡结果节点
+
+    Arch* pending_arch_ = nullptr;
+
+    cocos2d::EventListener* map_touch_listener_ = nullptr;
+
+    bool is_placing_arch_ = false;
+
 public:
+    friend class Arch;
+
     CREATE_FUNC(ShopPopup);
     virtual bool init();
+
     // 展示商店面板
     void show(cocos2d::Node* parent);
+
     // 关闭商店面板
     void close();
+
     void onShopButtonClick(cocos2d::Ref* sender);
+
     // 面板背景遮盖
     void setupBackground();
+
     // 添加显示气泡提示的函数
     void showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode,
                                cocos2d::ui::ScrollView* scrollView, std::string reason);
@@ -156,42 +198,11 @@ public:
 
     // 十连抽结果缓存（可选，但推荐）
     std::vector<ShopItem> ten_results_;
+
     void ShopPopup::startTenGacha();
+
     void ShopPopup::runNextTenGacha();
+
     void ShopPopup::performSingleGacha(const std::function<void(ShopItem)>& onFinished);
-
-private:
-    // 关闭动画
-    void onClose(Ref* sender, cocos2d::ui::Widget::TouchEventType type);
-    void switchToTab(int tabIndex);  // 切换标签函数
-    void showItemsInScrollView(const std::vector<ShopItem>& items, cocos2d::ui::ScrollView* scrollView,
-                               int tabIndex = 1);  // 显示商品函数
-
-    // 成员变量
-    int current_tab_;                                           // 当前选中的标签：1-建筑，2-法术，3-抽卡
-    std::vector<ShopItem> building_items_;                      // 建筑商品
-    std::vector<ShopItem> magic_items_ = kShopItemsInfo.at(2);  // 法术商品
-    std::vector<ShopItem> gacha_items_;                         // 抽卡商品
-    cocos2d::ui::ScrollView* scroll_view_;                      // 滚动容器引用
-
-    // void performGacha();                          // 执行抽卡
-    void showGachaAnimation(int rarity);         // 显示抽卡动画
-    void showGachaResult(const ShopItem& item);  // 显示抽卡结果
-    void createGachaItem();                      // 创建抽卡商品界面
-    void initGachaPool();
-    // 稀有度枚举
-
-    // 添加抽卡相关变量
-    std::vector<ShopItem> gacha_pool_;  // 抽卡池
-    Node* gacha_result_node_ = nullptr;  // 抽卡结果节点
-
-    // 购买函数相关
-private:
-    Arch* pending_arch_ = nullptr;
-    cocos2d::EventListener* map_touch_listener_ = nullptr;
-    bool is_placing_arch_ = false;
-
-public:
-    friend class Arch;
 };
 #endif  // __SHOP_POPUP_H__#pragma once

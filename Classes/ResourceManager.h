@@ -1,15 +1,14 @@
 #ifndef __GAME_MANAGER_H__
 #define __GAME_MANAGER_H__
-#include "cocos2d.h"
 
-// 把资源单独出来一个类单例
-// 使用例子：
-//  unsigned long long currentGold = ResourceManager::getInstance()->getGold();
-// ResourceManager::getInstance()->setGold(currentGold - item.price);
 class ResourceManager {
     typedef unsigned long long ULL;
 
 private:
+    ResourceManager() = default;
+    ResourceManager(const ResourceManager&) = delete;
+    ResourceManager& operator=(const ResourceManager&) = delete;
+
     ULL my_gold_;
     ULL my_elixir_;
     ULL my_jewel_ = 10;
@@ -18,11 +17,7 @@ private:
     ULL max_jewel_ = 0;
 
 public:
-    static ResourceManager* getInstance()
-    {
-        static ResourceManager instance;
-        return &instance;
-    }
+    static ResourceManager* getInstance();
 
     void setGold(ULL gold);
     void setMaxGold(ULL max_gold);

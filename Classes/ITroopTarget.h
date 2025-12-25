@@ -1,6 +1,8 @@
 #ifndef __ITROOPTARGET_H__
 #define __ITROOPTARGET_H__
+
 #include "cocos2d.h"
+
 class ITroopTarget {
 public:
     virtual ~ITroopTarget() = default;

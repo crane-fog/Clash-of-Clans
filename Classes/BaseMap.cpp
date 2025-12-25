@@ -14,30 +14,30 @@ bool BaseMap::init()
     }
 
     // 创建背景图 Sprite
-    sprites_.push_back(Sprite::create("BaseMap.jpg"));
-    if (!sprites_.front()) {
+    unlined_map_ = Sprite::create("BaseMap.jpg");
+    if (!unlined_map_) {
         return false;
     }
     // 背景图左下角对齐容器左下角
-    sprites_.front()->setAnchorPoint(Vec2::ZERO);
-    sprites_.front()->setPosition(Vec2::ZERO);
+    unlined_map_->setAnchorPoint(Vec2::ZERO);
+    unlined_map_->setPosition(Vec2::ZERO);
     // 将背景图设定为 BaseMap 的子对象
-    this->addChild(sprites_.front(), -1);
+    this->addChild(unlined_map_, -1);
 
     // 容器的 ContentSize 设置为背景图大小
-    this->setContentSize(sprites_.front()->getContentSize());
+    this->setContentSize(unlined_map_->getContentSize());
     // 锚点(0,0)
     this->setAnchorPoint(Vec2::ZERO);
 
     // 创建线框背景图 Sprite
-    sprites_.push_back(Sprite::create("LinedBaseMap.jpg"));
-    if (!sprites_.back()) {
+    lined_map_ = Sprite::create("LinedBaseMap.jpg");
+    if (!lined_map_) {
         return false;
     }
-    sprites_.back()->setAnchorPoint(Vec2::ZERO);
-    sprites_.back()->setPosition(Vec2::ZERO);
-    this->addChild(sprites_.back(), -1);
-    sprites_.back()->setVisible(false);  // 默认隐藏线框图
+    lined_map_->setAnchorPoint(Vec2::ZERO);
+    lined_map_->setPosition(Vec2::ZERO);
+    this->addChild(lined_map_, -1);
+    lined_map_->setVisible(false);  // 默认隐藏线框图
 
     // 初始化变量
     is_dragging_ = false;
@@ -52,7 +52,7 @@ void BaseMap::onEnter()
     // 获取屏幕大小
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-    Size map_size = sprites_.front()->getContentSize();
+    Size map_size = unlined_map_->getContentSize();
     // 计算并应用最小缩放 (填满屏幕)
     float scale_x = visible_size.width / map_size.width;
     float scale_y = visible_size.height / map_size.height;
@@ -90,8 +90,8 @@ void BaseMap::onExit()
 
 void BaseMap::changeLinedMap()
 {
-    sprites_[0]->setVisible(!sprites_[0]->isVisible());
-    sprites_[1]->setVisible(!sprites_[1]->isVisible());
+    unlined_map_->setVisible(!unlined_map_->isVisible());
+    lined_map_->setVisible(!lined_map_->isVisible());
 }
 
 void BaseMap::checkAndClampPosition()
@@ -101,7 +101,7 @@ void BaseMap::checkAndClampPosition()
 
     // 当前容器的缩放比例
     float scale = this->getScale();
-    Size map_size = sprites_.front()->getContentSize();
+    Size map_size = unlined_map_->getContentSize();
     float actual_width = map_size.width * scale;
     float actual_height = map_size.height * scale;
 
@@ -152,7 +152,7 @@ void BaseMap::onMouseScroll(Event* event)
 
     // 动态计算最小缩放
     auto visible_size = Director::getInstance()->getVisibleSize();
-    Size map_size = sprites_.front()->getContentSize();
+    Size map_size = unlined_map_->getContentSize();
     float min_scale = std::max(visible_size.width / map_size.width, visible_size.height / map_size.height);
 
     new_scale = std::max(min_scale, std::min(new_scale, 3.0f));

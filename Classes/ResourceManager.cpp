@@ -2,6 +2,12 @@
 
 #include "cocos2d.h"
 
+ResourceManager* ResourceManager::getInstance()
+{
+    static ResourceManager instance;
+    return &instance;
+}
+
 void ResourceManager::setGold(ULL gold)
 {
     this->my_gold_ = gold;

@@ -10,7 +10,7 @@ class Village : public cocos2d::Scene {
 protected:
     // 用于所有场景中非固定对象的容器，允许界面整体缩放、移动
     BaseMap* base_map_;
-    UIBars* ui_layer_;  // 在基类中添加UI层
+    UIBars* ui_layer_;
     // 村庄中的建筑状态数据
     ArchData arch_status_[kMapSize][kMapSize];
 

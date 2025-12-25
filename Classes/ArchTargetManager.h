@@ -2,9 +2,14 @@
 #define __ARCHTARGETMANAGER_H__
 #include <vector>
 
-#include "cocos2d.h"
 #include "IArchTarget.h"
+
 class ArchTargetManager {
+private:
+    ArchTargetManager() = default;
+    ArchTargetManager(const ArchTargetManager&) = delete;
+    ArchTargetManager& operator=(const ArchTargetManager&) = delete;
+
 protected:
     std::vector<IArchTarget*> targets_;
 

@@ -104,3 +104,9 @@ void Balloon::triggerDeathDamage()
         target->takeDamage(damage);
     }
 }
+
+cocos2d::Vec2 Balloon::getPixelPosition() const
+{
+    cocos2d::Vec2 pixel_ground = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
+    return cocos2d::Vec2(pixel_ground.x, pixel_ground.y + 20.0f);
+}

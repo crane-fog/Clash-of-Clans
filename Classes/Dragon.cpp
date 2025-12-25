@@ -87,3 +87,9 @@ void Dragon::onDeath()
     this->runAction(cocos2d::Sequence::create(fade_out, setup_tomb, nullptr));
     changeStatus(DEAD);
 }
+
+cocos2d::Vec2 Dragon::getPixelPosition() const
+{
+    cocos2d::Vec2 pixel_ground = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
+    return cocos2d::Vec2(pixel_ground.x, pixel_ground.y + 10.0f);
+}

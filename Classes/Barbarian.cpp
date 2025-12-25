@@ -61,3 +61,8 @@ void Barbarian::performAttack()
         },
         0.1f, "stop_audio_key");
 }
+
+cocos2d::Vec2 Barbarian::getPixelPosition() const
+{
+    return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x + 0.1f, position_.y - 0.3f));
+}

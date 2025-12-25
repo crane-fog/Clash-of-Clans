@@ -15,6 +15,7 @@ private:
     void onMouseDown(cocos2d::Event* event);
     void onMouseUp(cocos2d::Event* event);
     void onMouseMove(cocos2d::Event* event);
+
     // 检查边界并修正位置
     void checkAndClampPosition();
 
@@ -23,28 +24,34 @@ private:
     cocos2d::Vec2 last_mouse_pos_;
     cocos2d::EventListenerMouse* mouse_listener_ = nullptr;
 
+    // 背景图
+    cocos2d::Sprite* lined_map_ = nullptr;
+    cocos2d::Sprite* unlined_map_ = nullptr;
+
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
+
     // 当对象被渲染时被自动调用
     virtual void onEnter() override;
+
     // 当对象退出时被自动调用
     virtual void onExit() override;
+
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(BaseMap);
 
     // 切换有线框/无线框背景图
     void changeLinedMap();
 
-    // todo: 索引与管理
-    // 用于存储地图上精灵的容器，其中0和1固定为两张背景图
-    std::vector<cocos2d::Sprite*> sprites_;
     // 存储地图上所有建筑的容器
     std::vector<Arch*> archs_;
 
-    void setInputEnabled(bool enabled);  // 禁用鼠标调用
+    // 鼠标调用
+    void setInputEnabled(bool enabled);
 
-    cocos2d::Node* current_arch_panel_ = nullptr;  // 当前打开的建筑面板
+    // 当前打开的建筑面板
+    cocos2d::Node* current_arch_panel_ = nullptr;
 };
 
 #endif  // __BASE_MAP_H__

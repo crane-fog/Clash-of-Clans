@@ -9,6 +9,7 @@
 #include "MainVillageScene.h"
 #include "UIcommon.h"
 #include "UIparts.h"
+
 USING_NS_CC;
 using namespace ui;
 

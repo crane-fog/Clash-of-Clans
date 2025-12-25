@@ -4,10 +4,12 @@
 #include <vector>
 
 #include "Troop.h"
+
 const std::vector<std::string> kPicsBarbarian = {
     "troop/Barbarian1-2.webp", "troop/Barbarian1-2.webp", "troop/Barbarian1-2.webp",
     "troop/Barbarian3-4.webp", "troop/Barbarian3-4.webp", "troop/Barbarian5.webp",
 };
+
 class Barbarian : public Troop {
 private:
 public:
@@ -36,10 +38,7 @@ public:
     virtual ArchTargetType getTargetType() const override { return GROUND; }
 
     // 获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
-    virtual cocos2d::Vec2 getPixelPosition() const override
-    {
-        return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x + 0.1f, position_.y - 0.3f));
-    }
+    virtual cocos2d::Vec2 getPixelPosition() const override;
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return BARBARIAN; }

@@ -8,21 +8,29 @@
 #include "HealthBar.h"
 #include "IArchTarget.h"
 #include "ITroopTarget.h"
+
 #define MAX_TROOP_LEVEL 5  // 目前做到5级
 #define TROOP_TYPE_NUM 6   // 兵种种类数量
+
 class Troop : public cocos2d::Sprite, public IArchTarget {
 protected:
     typedef unsigned char uchar;
+
     // 被创建的场景地图
     BaseMap* base_map_;
+
     // 血条
     HealthBar* health_bar_;
+
     // 当前等级
     int level_;
+
     // 当前网格逻辑位置
     cocos2d::Vec2 position_;
+
     // 当前生命值
     float current_hitpoints_;
+
     enum Status : uchar {
         IDLE = 0,         // 空闲
         MOVING = 1,       // 移动
@@ -30,18 +38,22 @@ protected:
         TARGET_LOST = 3,  // 目标丢失
         DEAD = 4          // 死亡
     };
+
     // 当前状态
     Status status_;
+
     // 当前目标
     ITroopTarget* current_target_;
+
     // 当前移动方向
     cocos2d::Vec2 current_path_direction_;
+
     // 攻击计时器
     float attack_timer_;
+
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     // 每次伤害
     const std::array<float, MAX_TROOP_LEVEL + 1> kDamagePerAttacks;
-
     // 生命值
     const std::array<float, MAX_TROOP_LEVEL + 1> kHitpoints;
 
@@ -56,6 +68,7 @@ public:
         WALLT = 3,                  // 城墙
         NONE = 255                  // 无
     };
+
     // 攻击偏好建筑类型
     const PreferredTarget kPreferredTarget;
 
@@ -66,10 +79,10 @@ public:
         RANGED_AOE_GROUND = 3,         // 远程范围地面-Balloon
         RANGED_SINGLE_AIR_GROUND = 4,  // 远程单体空中地面-Archer
         RANGED_AOE_AIR_GROUND = 5      // 远程范围空中地面-Dragon
-        // TODO:问一下机制：
         // 空中单位都不能攻击城墙?-平时没必要，死亡溅射有可能。
         // 范围伤害的中心是什么？士兵or目标建筑？-平时目标中心，死亡溅射士兵中心。
     };
+
     // 伤害类型(近战或远程,单体或范围,仅地面目标或地面和空中目标etc)
     const AttackType kAttackType;
     // 占据人口
@@ -84,7 +97,6 @@ public:
     // 攻击距离 格
     const float kRange;
 
-public:
     // 构造函数相关
     Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarget preferred_target,
           AttackType attack_type, uchar housing_space, uchar barracks_level_required, float movement_speed,

@@ -73,6 +73,22 @@ bool AttackStars::init()
     return true;
 }
 
+void AttackStars::setProgress(float progress)
+{
+    progress_ = progress;
+    progress_bar_->setPercent(progress_);
+}
+
+void AttackStars::setStarColor(cocos2d::Sprite* star, bool isAchieved)
+{
+    if (isAchieved) {
+        star->setColor(cocos2d::Color3B(255, 255, 255));  // 恢复原来的颜色
+    }
+    else {
+        star->setColor(cocos2d::Color3B(169, 169, 169));  // 灰色
+    }
+}
+
 // 检查更新的函数
 void AttackStars::checkForUpdates(float dt)
 {
@@ -324,4 +340,10 @@ AttackStars::~AttackStars()
     if (dead_arch_update_listener_) {
         cocos2d::Director::getInstance()->getEventDispatcher()->removeEventListener(dead_arch_update_listener_);
     }
+}
+
+// 创建星星
+cocos2d::Sprite* AttackStars::createStar()
+{
+    return cocos2d::Sprite::create("attack_scene/star.png");  // 星星图片
 }

@@ -76,6 +76,7 @@ list(APPEND GAME_SOURCE
      Classes/Troop.cpp
      Classes/TroopConfig.cpp
      Classes/TroopTargetManager.cpp
+     Classes/UIcommon.cpp
      Classes/UIparts.cpp
      Classes/VillageScene.cpp
      Classes/WallBreaker.cpp

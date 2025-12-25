@@ -5,12 +5,12 @@
 
 #include "ArchInfo.h"
 
-// todo: 发现没有人口占用的常量，临时写了一个，待整合进具体兵种的构造函数
+// 人口占用
 const std::map<unsigned char, unsigned char> kNoHousingSpace = {{Troop::BARBARIAN, 1}, {Troop::ARCHER, 1},
                                                                 {Troop::GIANT, 5},     {Troop::WALL_BREAKER, 2},
                                                                 {Troop::DRAGON, 20},   {Troop::BALLOON, 5}};
 
-// 同上，这个主要为了解决顺序和it问题
+// 主要为了解决顺序和it问题 todo
 const std::vector<unsigned char> kTroopTypes = {Troop::BARBARIAN,    Troop::ARCHER,  Troop::GIANT,
                                                 Troop::WALL_BREAKER, Troop::BALLOON, Troop::DRAGON};
 
@@ -24,25 +24,21 @@ static const std::map<unsigned char, std::string> kIconPaths = {
 class TroopConfig {
 private:
     unsigned int capacity_;
+
     unsigned char unlocked_troop_type_;
+
     std::map<unsigned char, unsigned int> config_;
 
-    TroopConfig() : capacity_(0), unlocked_troop_type_(0)
-    {
-        for (auto it : kTroopTypes) config_.emplace(it, 0);
-    }
+    TroopConfig();
     TroopConfig(const TroopConfig&) = delete;
     TroopConfig& operator=(const TroopConfig&) = delete;
+
     // 兵种等级
     std::map<unsigned char, int> k_troop_levels_ = {{Troop::BARBARIAN, 1},    {Troop::ARCHER, 1}, {Troop::GIANT, 1},
                                                  {Troop::WALL_BREAKER, 1}, {Troop::DRAGON, 1}, {Troop::BALLOON, 1}};
 
 public:
-    static TroopConfig* getInstance()
-    {
-        static TroopConfig instance;
-        return &instance;
-    }
+    static TroopConfig* getInstance();
 
     // 设置训练营等级
     void setBarrackLevel(unsigned char level);
@@ -51,12 +47,7 @@ public:
     void setArmyCampCapacity(unsigned int capacity) { capacity_ = capacity; }
 
     // 配置兵种数量
-    void setTroopCount(unsigned char troop_type, unsigned int count)
-    {
-        if (troop_type <= unlocked_troop_type_) {
-            config_.at(troop_type) = count;
-        }
-    }
+    void setTroopCount(unsigned char troop_type, unsigned int count);
 
     // 获取人口容量
     unsigned int getArmyCampCapacity() const { return capacity_; }
@@ -69,6 +60,8 @@ public:
 
     // 获取兵种的等级
     int getTroopLevel(unsigned char troopname) { return k_troop_levels_.at(troopname); }
+
+    // 升级兵种等级
     void upgradeTroopLevel(unsigned char troopname) { k_troop_levels_.at(troopname)++; }
 };
 

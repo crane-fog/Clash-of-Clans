@@ -942,6 +942,11 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
     }
 }
 
+GoldStorage::GoldStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
+{
+    ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+}
+
 void GoldStorage::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
@@ -973,6 +978,11 @@ void GoldStorage::createUpgradeComparisonPanel()
 void GoldStorage::onUpgradeFinished()
 {
     ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+}
+
+ElixirStorage::ElixirStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
+{
+    ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
 }
 
 void ElixirStorage::showArchPanel()
@@ -1289,3 +1299,49 @@ void Bomb::update(float dt)
     }
 }
 // todo: 建筑攻击音效
+
+void Arch::onDeath()
+{
+    is_destroyed_ = true;
+    health_bar_->setVisible(false);
+    TroopTargetManager::getInstance()->unregisterTroopTarget(this);
+    this->setTexture("arch/Arch_Destroyed.png");
+
+    this->setLocalZOrder(5);
+}
+
+void Arch::takeDamage(float damage)
+{
+    if (current_hp_ <= 0) return;
+    if (kArchInfo.at(no_)[level_ - 1].type_ == RESOURCE && !is_mine_) {
+        float actual_damage = std::min(damage, static_cast<float>(current_hp_));
+        float p = actual_damage / kArchInfo.at(no_)[level_ - 1].hp_;
+        unsigned long long resource_get = static_cast<unsigned long long>(current_capacity_ * p);
+        if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
+            ResourceManager::getInstance()->setGold(std::min(ResourceManager::getInstance()->getGold() + resource_get,
+                                                             ResourceManager::getInstance()->getMaxGold()));
+        else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
+            ResourceManager::getInstance()->setElixir(
+                std::min(ResourceManager::getInstance()->getElixir() + resource_get,
+                         ResourceManager::getInstance()->getMaxElixir()));
+        ;
+    }
+    health_bar_->takeDamage(damage);
+    current_hp_ -= static_cast<UI>(damage);
+    if (current_hp_ <= 0) onDeath();
+}
+
+cocos2d::Vec2 Arch::getCellPosition(float& size) const
+{
+    size = static_cast<float>(kArchInfo.at(no_)[level_ - 1].size_);
+    return cocos2d::Vec2(x_ + size / 2.0f, y_ + size / 2.0f);
+}
+
+Arch* ArchFactory::createArch(const ArchData& data, BaseMap* base_map, bool is_mine)
+{
+    auto it = creaters.find(data.no_);
+    if (it != creaters.end()) {
+        return it->second(data, base_map, is_mine);
+    }
+    return nullptr;
+}
