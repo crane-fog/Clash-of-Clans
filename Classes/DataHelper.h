@@ -38,13 +38,13 @@ public:
 
     // 读数据文件
     static bool readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize]);
-    static bool readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir);
+    static bool readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir, unsigned long long& jewel);
     static bool readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list);
 
     // 写数据文件
     static bool writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize]);
-    static bool writeSourceData(const std::string& file_name, const unsigned long long kGold,
-                                const unsigned long long kElixir);
+    static bool writeSourceData(const std::string& file_name, const unsigned long long gold,
+                                const unsigned long long elixir, const unsigned long long jewel);
     static bool writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list);
 };
 #endif  // __DATA_HELPER_H__

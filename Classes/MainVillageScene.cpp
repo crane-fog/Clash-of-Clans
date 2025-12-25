@@ -26,13 +26,14 @@ bool MainVillage::init()
         return false;
     }
 
-    unsigned long long gold = 0, elixir = 0;
+    unsigned long long gold = 0, elixir = 0, jewel = 0;
     // 从数据文件中读取资源数据
-    if (!DataHelper::readSourceData(kSourceDataFile, gold, elixir)) {
+    if (!DataHelper::readSourceData(kSourceDataFile, gold, elixir, jewel)) {
         return false;
     }
     GameManager::getInstance()->setGold(gold);
     GameManager::getInstance()->setElixir(elixir);
+    GameManager::getInstance()->setJewel(jewel);
 
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time =
@@ -48,21 +49,21 @@ bool MainVillage::init()
     time_t time_diff = current_time - data_time;
     last_exit_time_ = 0;
 
-    ArchFactory::registerCreater(TOWN_HALL, [](const ArchData& data, BaseMap* map) { return new TownHall(data, map); });
-    ArchFactory::registerCreater(WALL, [](const ArchData& data, BaseMap* map) { return new Wall(data, map); });
+    ArchFactory::registerCreater(TOWN_HALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new TownHall(data, map, is_mine); });
+    ArchFactory::registerCreater(WALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Wall(data, map, is_mine); });
     ArchFactory::registerCreater(GOLD_STORAGE,
-                                 [](const ArchData& data, BaseMap* map) { return new GoldStorage(data, map); });
+                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new GoldStorage(data, map, is_mine); });
     ArchFactory::registerCreater(ELIXIR_STORAGE,
-                                 [](const ArchData& data, BaseMap* map) { return new ElixirStorage(data, map); });
-    ArchFactory::registerCreater(GOLD_MINE, [](const ArchData& data, BaseMap* map) { return new GoldMine(data, map); });
+                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new ElixirStorage(data, map, is_mine); });
+    ArchFactory::registerCreater(GOLD_MINE, [](const ArchData& data, BaseMap* map, bool is_mine) { return new GoldMine(data, map, is_mine); });
     ArchFactory::registerCreater(ELIXIR_COLLECTOR,
-                                 [](const ArchData& data, BaseMap* map) { return new ElixirCollector(data, map); });
-    ArchFactory::registerCreater(BARRACKS, [](const ArchData& data, BaseMap* map) { return new Barracks(data, map); });
-    ArchFactory::registerCreater(ARMY_CAMP, [](const ArchData& data, BaseMap* map) { return new ArmyCamp(data, map); });
-    ArchFactory::registerCreater(CANNON, [](const ArchData& data, BaseMap* map) { return new Cannon(data, map); });
+                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new ElixirCollector(data, map, is_mine); });
+    ArchFactory::registerCreater(BARRACKS, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Barracks(data, map, is_mine); });
+    ArchFactory::registerCreater(ARMY_CAMP, [](const ArchData& data, BaseMap* map, bool is_mine) { return new ArmyCamp(data, map, is_mine); });
+    ArchFactory::registerCreater(CANNON, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Cannon(data, map, is_mine); });
     ArchFactory::registerCreater(ARCHER_TOWER,
-                                 [](const ArchData& data, BaseMap* map) { return new ArcherTower(data, map); });
-    ArchFactory::registerCreater(BOMB, [](const ArchData& data, BaseMap* map) { return new Bomb(data, map); });
+                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new ArcherTower(data, map, is_mine); });
+    ArchFactory::registerCreater(BOMB, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Bomb(data, map, is_mine); });
 
     for (auto& arch : arch_list) {
         // 更新剩余升级时间
@@ -266,7 +267,7 @@ void MainVillage::cleanup()
     }
     DataHelper::listToMap(arch_list, arch_status_);
     DataHelper::writeSourceData(kSourceDataFile, GameManager::getInstance()->getGold(),
-                                GameManager::getInstance()->getElixir());
+                                GameManager::getInstance()->getElixir(), GameManager::getInstance()->getJewel());
     DataHelper::writeArchData(
         kMainVillageDataFile,
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(),

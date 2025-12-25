@@ -205,7 +205,7 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
 
 bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
 {
-    if (GameManager::getInstance()->is_replay_) return false;
+    // if (GameManager::getInstance()->is_replay_) return false;
     cocos2d::Vec2 cell_pos = CoordAdaptor::pixelToCell(base_map_, base_map_->convertToNodeSpace(touch->getLocation()));
 
     // 边界检查
@@ -376,8 +376,8 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 // 点击按钮时的处理函数
 void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
 {
-    bool is_c = GameManager::getInstance()->is_replay_;
-    if (!is_c) {
+    // bool is_c = GameManager::getInstance()->is_replay_;
+    if (1) {
         // 如果点击的是同一个按钮，取消选中状态
         if (selected_item_bg_ == itemBg) {
             selected_item_bg_->setColor(cocos2d::Color3B(140, 150, 200));  // 恢复原始颜色

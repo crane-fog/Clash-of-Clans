@@ -28,7 +28,7 @@ bool UIBars::init()
                                     visible_size.height - 50, max_gold);
     createProgressBarWithBackground("圣水", Color3B(128, 0, 158), "Elixir.png", elixir, visible_size.width - 500,
                                     visible_size.height - 150, max_elixir);
-    createProgressBarWithBackground("宝石", Color3B::GREEN, "jewel.png", jewel, visible_size.width - 500,
+    createProgressBarWithBackground("宝石", Color3B(255, 0, 255), "Jewel.jpg", jewel, visible_size.width - 500,
                                     visible_size.height - 250, max_jewel);
 
     // 创建返回按钮 - 固定在左上角
@@ -77,14 +77,11 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
 {
     ProgressBarData data;
     data.title_ = title;
-    float percent = 0;
-    if (UpperLimit > 0) {
-        percent = (float)nowAmount * 100.0f / UpperLimit;
-    }
+
     // 创建图像图标
     data.icon_ = Sprite::create(iconPath);  // 图标图片
     if (data.icon_) {
-        data.icon_->setPosition(Vec2(x + 450, y));  // 滑动条右边
+        data.icon_->setPosition(Vec2(x + (UpperLimit == 0 ? 20 : 450), y));  // 滑动条右边
         data.icon_->setScale(1.0f);                 // 调整图标大小
         this->addChild(data.icon_);
     }
@@ -96,29 +93,40 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
     this->addChild(title_label);
 
     // 创建背景框
-    auto background = LayerColor::create(Color4B(255, 255, 255, 150), 500, 40);  // 黑色半透明
+    auto background = LayerColor::create(Color4B(255, 255, 255, 150), (UpperLimit == 0 ? 70.0f : 500.0f), 40.0f);  // 黑色半透明
     background->setPosition(Vec2(x - 100, y - 24.0f));                           // 设置位置
     this->addChild(background, 0);
     data.background_ = nullptr;  // 由于使用LayerColor，这里设为null
 
-    // 创建进度条
-    data.loading_bar_ = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
-    if (data.loading_bar_) {
-        data.loading_bar_->setDirection(cocos2d::ui::LoadingBar::Direction::RIGHT);
-        data.loading_bar_->setPercent(percent);
-        data.loading_bar_->setPosition(Vec2(x + 150, y - 4));
-        data.loading_bar_->setScaleX(2.4f);
-        data.loading_bar_->setScaleY(2.0f);
-        data.loading_bar_->setColor(barColor);
-        this->addChild(data.loading_bar_, 1);
-    }
+    if (UpperLimit > 0) {
+        float percent = nowAmount * 100.0f / UpperLimit;
+    
+        // 创建进度条
+        data.loading_bar_ = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
+        if (data.loading_bar_) {
+            data.loading_bar_->setDirection(cocos2d::ui::LoadingBar::Direction::RIGHT);
+            data.loading_bar_->setPercent(percent);
+            data.loading_bar_->setPosition(Vec2(x + 150, y - 4));
+            data.loading_bar_->setScaleX(2.4f);
+            data.loading_bar_->setScaleY(2.0f);
+            data.loading_bar_->setColor(barColor);
+            this->addChild(data.loading_bar_, 1);
+        }
 
-    // 创建数量标签
-    data.percent_label_ =
-        Label::createWithSystemFont(StringUtils::format("%llu / %llu", nowAmount, UpperLimit), "Arial", 30);
-    data.percent_label_->setPosition(Vec2(x + 150, y - 5));
-    data.percent_label_->setTextColor(Color4B::BLACK);
-    this->addChild(data.percent_label_, 2);
+        // 创建数量标签
+        data.percent_label_ =
+            Label::createWithSystemFont(StringUtils::format("%llu / %llu", nowAmount, UpperLimit), "Arial", 30);
+        data.percent_label_->setPosition(Vec2(x + 150, y - 5));
+        data.percent_label_->setTextColor(Color4B::BLACK);
+        this->addChild(data.percent_label_, 2);
+    }
+    else {
+        // 创建数量标签 (仅显示数字)
+        data.percent_label_ = Label::createWithSystemFont(StringUtils::format("%llu", nowAmount), "Arial", 30);
+        data.percent_label_->setPosition(Vec2(x - 80, y - 5));
+        data.percent_label_->setTextColor(Color4B::BLACK);
+        this->addChild(data.percent_label_, 2);
+    }
 
     // 保存到容器
     progress_bars_.push_back(data);
@@ -129,13 +137,14 @@ void UIBars::updateProgressBar(const std::string& title, unsigned long long nowA
     for (auto& data : progress_bars_) {
         if (data.title_ == title) {
             if (data.loading_bar_ && data.percent_label_) {
-                float percent = 0;
                 if (maxAmount > 0) {
-                    percent = (float)nowAmount * 100.0f / maxAmount;
+                    float percent = (float)nowAmount * 100.0f / maxAmount;
+                    data.loading_bar_->setPercent(percent);
+                    data.percent_label_->setString(StringUtils::format("%llu / %llu", nowAmount, maxAmount));
                 }
-                if (percent > 100.0f) percent = 100.0f;
-                data.loading_bar_->setPercent(percent);
-                data.percent_label_->setString(StringUtils::format("%llu / %llu", nowAmount, maxAmount));
+                else {
+                    data.percent_label_->setString(StringUtils::format("%llu", nowAmount));
+                }
             }
             break;
         }
@@ -157,8 +166,7 @@ void UIBars::onElixirUpdated(cocos2d::EventCustom* event)
 void UIBars::onJewelUpdated(cocos2d::EventCustom* event)
 {
     unsigned long long jewel = *static_cast<unsigned long long*>(event->getUserData());
-    unsigned long long max_jewel = GameManager::getInstance()->getMaxJewel();
-    updateProgressBar("宝石", jewel, max_jewel);
+    updateProgressBar("宝石", jewel, 0);
 }
 void UIBars::onMaxGoldUpdated(cocos2d::EventCustom* event)
 {

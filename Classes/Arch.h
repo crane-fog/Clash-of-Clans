@@ -104,7 +104,7 @@ public:
     void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
 
-    Arch(const ArchData& data, BaseMap* base_map)
+    Arch(const ArchData& data, BaseMap* base_map, bool is_mine)
         : no_(data.no_),
           level_(data.level_),
           x_(data.x_),
@@ -112,7 +112,8 @@ public:
           current_hp_(kArchInfo.at(no_)[level_ - 1].hp_),
           remaining_upgrade_time_(data.remaining_upgrade_time_),
           current_capacity_(data.current_capacity_),
-          base_map_(base_map)
+          base_map_(base_map),
+          is_mine_(is_mine)
     {}
     static Arch* create(const ArchData& data, BaseMap* base_map, bool is_mine = true);
     virtual bool initWithFile(const std::string& filename) override;
@@ -197,7 +198,7 @@ public:
 
 class TownHall : public Arch {
 public:
-    TownHall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    TownHall(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void onDeath() override;
 };
 
@@ -206,14 +207,14 @@ private:
     std::vector<cocos2d::Node*> connection_nodes_;
 
 public:
-    Wall(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    Wall(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
 };
 
 class GoldStorage : public Arch {
 public:
-    GoldStorage(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    GoldStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
     {
         GameManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
     }
@@ -224,7 +225,7 @@ public:
 
 class ElixirStorage : public Arch {
 public:
-    ElixirStorage(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    ElixirStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
     {
         GameManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
     }
@@ -235,7 +236,7 @@ public:
 
 class GoldMine : public Arch {
 public:
-    GoldMine(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    GoldMine(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override { startResourceProduction(); }
@@ -243,7 +244,7 @@ public:
 
 class ElixirCollector : public Arch {
 public:
-    ElixirCollector(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    ElixirCollector(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override { startResourceProduction(); }
@@ -251,7 +252,7 @@ public:
 
 class Barracks : public Arch {
 public:
-    Barracks(const ArchData& data, BaseMap* base_map);
+    Barracks(const ArchData& data, BaseMap* base_map, bool is_mine);
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
     virtual void onUpgradeFinished() override;
@@ -259,7 +260,7 @@ public:
 
 class ArmyCamp : public Arch {
 public:
-    ArmyCamp(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+    ArmyCamp(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
     {
         TroopConfig::getInstance()->setArmyCampCapacity(kArmyCampCapacity[level_ - 1]);
     }
@@ -270,36 +271,36 @@ public:
 
 class Cannon : public Arch {
 public:
-    Cannon(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    Cannon(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void showArchPanel() override;
 };
 
 class ArcherTower : public Arch {
 public:
-    ArcherTower(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    ArcherTower(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void showArchPanel() override;
 };
 
 class Bomb : public Arch {
 public:
-    Bomb(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
+    Bomb(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void showArchPanel() override;
     virtual void update(float dt) override;
 };
 
 class ArchFactory {
-    using Creater = std::function<Arch*(const ArchData&, BaseMap*)>;
+    using Creater = std::function<Arch*(const ArchData&, BaseMap*, bool)>;
 
 private:
     static std::map<unsigned char, Creater> creaters;
 
 public:
     static void registerCreater(unsigned char no, const Creater& creater) { creaters[no] = creater; }
-    static Arch* createArch(const ArchData& data, BaseMap* base_map)
+    static Arch* createArch(const ArchData& data, BaseMap* base_map, bool is_mine)
     {
         auto it = creaters.find(data.no_);
         if (it != creaters.end()) {
-            return it->second(data, base_map);
+            return it->second(data, base_map, is_mine);
         }
         return nullptr;
     }

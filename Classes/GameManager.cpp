@@ -44,11 +44,3 @@ void GameManager::setJewel(ULL Jewel)
     event.setUserData(&my_jewel_);
     cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
 }
-
-void GameManager::setMaxJewel(ULL max_jewel)
-{
-    max_jewel_ = max_jewel;
-    cocos2d::EventCustom event("update_max_jewel_event");
-    event.setUserData(&max_jewel_);
-    cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
-}

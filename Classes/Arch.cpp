@@ -12,7 +12,7 @@
 
 USING_NS_CC;
 
-std::map<unsigned char, std::function<Arch*(const ArchData&, BaseMap*)>> ArchFactory::creaters;
+std::map<unsigned char, std::function<Arch*(const ArchData&, BaseMap*, bool)>> ArchFactory::creaters;
 
 ArchData::ArchData(Arch* a)
     : no_(a->no_),
@@ -26,9 +26,8 @@ ArchData::ArchData(Arch* a)
 
 Arch* Arch::create(const ArchData& data, BaseMap* base_map, bool is_mine)
 {
-    Arch* p_ret = ArchFactory::createArch(data, base_map);
+    Arch* p_ret = ArchFactory::createArch(data, base_map, is_mine);
     if (p_ret) {
-        p_ret->is_mine_ = is_mine;
         if (p_ret->initWithFile(kArchInfo.at(data.no_)[data.level_ - 1].image_)) {
             p_ret->autorelease();
             return p_ret;
@@ -1073,9 +1072,9 @@ void ElixirCollector::createUpgradeComparisonPanel()
     label->setString(str);
 }
 
-Barracks::Barracks(const ArchData& data, BaseMap* base_map) : Arch(data, base_map)
+Barracks::Barracks(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
 {
-    if (is_mine_) {
+    if (is_mine) {
         TroopConfig::getInstance()->setBarrackLevel(level_);
     }
 }

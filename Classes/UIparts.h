@@ -42,6 +42,10 @@ public:
     void createProgressBarWithBackground(const std::string& title, const cocos2d::Color3B& barColor,
                                          const std::string& iconPath, unsigned long long nowAmount, float x, float y,
                                          unsigned long long UpperLimit);
+
+    // 创建仅显示数字的资源标签（用于宝石）
+    void createResourceLabel(const std::string& title, const std::string& iconPath, unsigned long long nowAmount, float x, float y);
+
     // 更新指定进度条
     void updateProgressBar(const std::string& title, unsigned long long nowAmount, unsigned long long maxAmount);
 
