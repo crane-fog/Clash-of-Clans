@@ -7,10 +7,14 @@ USING_NS_CC;
 
 CocController::CocController()
 {
+    current_scene_ = 0;  // 0=MainVillage
+}
+
+void CocController::run()
+{
     // 创建并运行主村庄场景
     auto scene = MainVillage::create();
     Director::getInstance()->runWithScene(scene);
-    current_scene_ = 0;  // 0=MainVillage
 }
 
 CocController* CocController::getInstance()
@@ -25,11 +29,11 @@ void CocController::changeScene(int level_no)
 {
     // 在自己的村庄时
     if (current_scene_ == 0) {
-        current_scene_ = 1;
+        current_scene_ = level_no;
         Director::getInstance()->pushScene(EnemyVillage::create(level_no));
     }
     // 在敌人村庄时
-    else if (current_scene_ == 1) {
+    else {
         current_scene_ = 0;
         Director::getInstance()->popScene();
     }

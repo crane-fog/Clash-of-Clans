@@ -142,6 +142,10 @@ void AttackStars::showVictoryScreen()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     Vec2 center = Vec2(visible_size.width / 2, visible_size.height / 2);
 
+    // 设置进度
+    int level = CocController::getInstance()->getCurrentScene();
+    CocController::getInstance()->level_info_list_.at(level - 1).progress_ = 100;
+
     // 1. 创建全屏黑色半透明遮盖
     auto full_screen_mask = LayerColor::create(Color4B(0, 0, 0, 200));
     full_screen_mask->setContentSize(visible_size);

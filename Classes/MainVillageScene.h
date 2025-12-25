@@ -5,6 +5,7 @@
 #include "AudioEngine.h"
 #include "cocos2d.h"
 #include "VillageScene.h"
+#include "DataHelper.h"
 
 // 主村庄场景类
 class MainVillage : public Village {

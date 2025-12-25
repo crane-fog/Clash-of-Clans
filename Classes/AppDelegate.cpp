@@ -119,7 +119,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     //// run
     // director->runWithScene(scene);
 
-    CocController::getInstance();
+    CocController::getInstance()->run();
 
     return true;
 }

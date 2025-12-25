@@ -98,7 +98,7 @@ public:
 private:
     // 创建单个选项
     void createOptionItem(cocos2d::Node* panel, int index, const std::string& name, const std::string& image_path,
-                          cocos2d::ui::Button* confirm_button);
+                          cocos2d::ui::Button* confirm_button, int progress = -1);
 };
 
 #endif  // __UI_PARTS_H__

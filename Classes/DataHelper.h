@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Arch.h"
+#include "ArchInfo.h"
 #include "BaseMap.h"
 
 const std::string kSourceDataFile = "data/SourceData.dat";

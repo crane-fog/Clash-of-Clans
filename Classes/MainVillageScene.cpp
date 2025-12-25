@@ -11,7 +11,6 @@
 #include "CocController.h"
 #include "cocos/ui/CocosGUI.h"
 #include "CoordAdaptor.h"
-#include "DataHelper.h"
 #include "Dragon.h"
 #include "Giant.h"
 #include "ShopPopup.h"
@@ -34,6 +33,10 @@ bool MainVillage::init()
     ResourceManager::getInstance()->setGold(gold);
     ResourceManager::getInstance()->setElixir(elixir);
     ResourceManager::getInstance()->setJewel(jewel);
+    // 从数据文件中读取关卡数据
+    if (!DataHelper::readLevelData(kOfflineDataFile[0], CocController::getInstance()->level_info_list_)) {
+        return false;
+    }
 
     // 从数据文件中读取建筑数据并创建建筑对象
     time_t current_time =
@@ -272,6 +275,7 @@ void MainVillage::cleanup()
         kMainVillageDataFile,
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
         arch_status_);
+    DataHelper::writeLevelData(kOfflineDataFile[0], CocController::getInstance()->level_info_list_);
     Village::cleanup();
 }
 

@@ -298,13 +298,21 @@ void UICommonHelper::showChallengeSelectionPanel(cocos2d::Node* parent)
     const std::array<std::string, 4> kSceneImages = {"attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp",
                                                      "attack_scene/Scenery3.webp", "attack_scene/Scenery4.webp"};
 
-    for (size_t i = 0; i < kSceneNames.size(); i++) {
-        createOptionItem(panel, i, kSceneNames[i], kSceneImages[i], confirm_button);
+    for (unsigned int i = 0; i < kSceneNames.size(); i++) {
+        int progress = 0;
+        // 查找对应关卡的进度 (Level ID 1-based)
+        for (const auto& info : CocController::getInstance()->level_info_list_) {
+            if (info.level_ == i + 1) {
+                progress = info.progress_;
+                break;
+            }
+        }
+        createOptionItem(panel, i, kSceneNames[i], kSceneImages[i], confirm_button, progress);
     }
 }
 
 void UICommonHelper::createOptionItem(cocos2d::Node* panel, int index, const std::string& name,
-                                      const std::string& image_path, cocos2d::ui::Button* confirm_button)
+                                      const std::string& image_path, cocos2d::ui::Button* confirm_button, int progress)
 {
     float button_width = 350;
     float button_height = 400;
@@ -330,6 +338,14 @@ void UICommonHelper::createOptionItem(cocos2d::Node* panel, int index, const std
     name_label->setPosition(cocos2d::Vec2(button_width / 2, 25));
     name_label->setColor(cocos2d::Color3B::BLACK);
     item_bg->addChild(name_label, 150);
+
+    // 显示进度
+    if (progress >= 0) {
+        auto progress_label = cocos2d::Label::createWithSystemFont(StringUtils::format("进度: %d%%", progress), "Arial", 28);
+        progress_label->setPosition(cocos2d::Vec2(button_width / 2, 65));
+        progress_label->setColor(cocos2d::Color3B(cocos2d::Color3B::WHITE));
+        item_bg->addChild(progress_label, 150);
+    }
 
     panel->addChild(item_bg);
 

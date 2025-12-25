@@ -13,33 +13,6 @@
 #include "UIparts.h"
 
 class BaseMap;
-class Arch;
-
-// 建筑数据
-struct ArchData {
-    typedef unsigned int UI;
-    typedef unsigned char UC;
-    // 建筑种类的编号
-    UC no_;
-    // 建筑等级
-    UC level_;
-    // 建筑位置
-    UC x_;
-    UC y_;
-
-    // 当前剩余升级时间
-    UI remaining_upgrade_time_;
-
-    // 当前生命值
-    UI current_hp_;
-
-    // 资源建筑
-    // 当前容量
-    UI current_capacity_;
-
-    ArchData() = default;
-    explicit ArchData(Arch* a);
-};
 
 class Arch : public cocos2d::Sprite, public ITroopTarget {
     typedef unsigned int UI;
