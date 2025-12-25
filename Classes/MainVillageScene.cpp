@@ -74,6 +74,18 @@ bool MainVillage::init()
                 arch.remaining_upgrade_time_ = 0;
             }
         }
+
+        // 离线资源生产
+        const ArchInfo& info = kArchInfo.at(arch.no_)[arch.level_ - 1];
+        if (info.produce_speed_ > 0) {
+            float produceSpeedPerSecond = info.produce_speed_ / 60.0f;
+            unsigned int producedAmount = static_cast<unsigned int>(produceSpeedPerSecond * time_diff);
+            arch.current_capacity_ += producedAmount;
+            if (arch.current_capacity_ > info.max_capacity_) {
+                arch.current_capacity_ = info.max_capacity_;
+            }
+        }
+
         Arch::create(arch, base_map_);
     }
 

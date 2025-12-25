@@ -776,7 +776,7 @@ void Arch::updateBuildingDisplay()
     const auto& info = kArchInfo.at(no_)[level_ - 1];
 
     // 如果容量大于一定值，显示资源转移图标
-    if (current_capacity_ > info.max_capacity_ / 100 && !this->getChildByName("resource_icon")) {
+    if (current_capacity_ > info.max_capacity_ / 20 && !this->getChildByName("resource_icon")) {
         auto icon = cocos2d::ui::Button::create();
         if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR) {
             icon->loadTextureNormal("ElixirPop.png");
@@ -805,22 +805,46 @@ void Arch::updateBuildingDisplay()
         icon->setTouchEnabled(true);
         icon->addClickEventListener([=](Ref*) {
             // 点击后将资源转移到总资源
-            if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD) {
+            unsigned int collected = 0;
+            const ArchInfo& archInfo = kArchInfo.at(no_)[level_ - 1];
+
+            if (archInfo.produce_type_ == GOLD) {
                 unsigned long long currentGold = GameManager::getInstance()->getGold();
-                unsigned long long max_gold = GameManager::getInstance()->getMaxGold();
-                max_gold = (max_gold > current_capacity_ + currentGold) ? (current_capacity_ + currentGold) : max_gold;
-                GameManager::getInstance()->setGold(max_gold);  // 资源是金币
+                unsigned long long maxGoldStorage = GameManager::getInstance()->getMaxGold();
+
+                unsigned long long canAdd = (maxGoldStorage > currentGold) ? (maxGoldStorage - currentGold) : 0;
+                if (canAdd >= current_capacity_) {
+                    collected = current_capacity_;
+                }
+                else {
+                    collected = static_cast<unsigned int>(canAdd);
+                }
+
+                GameManager::getInstance()->setGold(currentGold + collected);
             }
             else {
                 unsigned long long currentElixir = GameManager::getInstance()->getElixir();
-                unsigned long long max_Elixir = GameManager::getInstance()->getMaxElixir();
-                max_Elixir =
-                    (max_Elixir > current_capacity_ + currentElixir) ? (current_capacity_ + currentElixir) : max_Elixir;
-                GameManager::getInstance()->setElixir(max_Elixir);  // 资源是金币
+                unsigned long long maxElixirStorage = GameManager::getInstance()->getMaxElixir();
+
+                unsigned long long canAdd = (maxElixirStorage > currentElixir) ? (maxElixirStorage - currentElixir) : 0;
+                if (canAdd >= current_capacity_) {
+                    collected = current_capacity_;
+                }
+                else {
+                    collected = static_cast<unsigned int>(canAdd);
+                }
+
+                GameManager::getInstance()->setElixir(currentElixir + collected);
             }
-            current_capacity_ = 0;                     // 清空当前建筑的容量
-            this->removeChildByName("resource_icon");  // 移除资源图标
-            updateBuildingDisplay();                   // 更新建筑显示
+
+            current_capacity_ -= collected;
+
+            // 只有当资源被收集到低于阈值时才移除图标
+            if (current_capacity_ <= archInfo.max_capacity_ / 20) {
+                this->removeChildByName("resource_icon");
+            }
+
+            updateBuildingDisplay();  // 更新建筑显示
         });
     }
 }
@@ -1244,8 +1268,6 @@ void Arch::tryAttack(float dt)
         attack_timer_ = 0;
         // 造成伤害
         current_target_->takeDamage(static_cast<float>(info.damage_));
-
-        // 播放音效等（可选）
     }
 }
 
@@ -1263,15 +1285,10 @@ void Bomb::update(float dt)
     IArchTarget* target = ArchTargetManager::getInstance()->getNearestArchTarget(myPos, range, info.target_type_);
 
     if (target) {
-        // 发现敌人，爆炸
-        // 对目标造成伤害（这里简化为只对最近目标造成伤害，理想情况应该是AOE）
-        // TODO: 实现AOE伤害，需要ArchTargetManager提供getTargetsInRange接口
+        // 发现敌人，爆炸对目标造成伤害（理想情况应该是AOE，未实现）
         target->takeDamage(static_cast<float>(info.damage_));
-
         // 自身销毁
-        takeDamage(static_cast<float>(current_hp_));
-
-        // 播放爆炸特效和音效
-        // AudioEngine::play2d("music/bomb_explode.mp3");
+        takeDamage(static_cast<float>(current_hp_ + 1));
     }
 }
+// todo: 建筑攻击音效

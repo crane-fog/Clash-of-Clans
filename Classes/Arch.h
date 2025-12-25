@@ -238,6 +238,7 @@ public:
     GoldMine(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override { startResourceProduction(); }
 };
 
 class ElixirCollector : public Arch {
@@ -245,6 +246,7 @@ public:
     ElixirCollector(const ArchData& data, BaseMap* base_map) : Arch(data, base_map) {}
     virtual void showArchPanel() override;
     virtual void createUpgradeComparisonPanel() override;
+    virtual void onUpgradeFinished() override { startResourceProduction(); }
 };
 
 class Barracks : public Arch {
