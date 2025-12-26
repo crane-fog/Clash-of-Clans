@@ -58,7 +58,7 @@ bool EnemyVillage::myInit(int level)
     Arch* p = nullptr;
     for (auto& arch : arch_list) {
         p = Arch::create(arch, base_map_, false);
-        TroopTargetManager::getInstance()->registerTroopTarget(p);
+        if (arch.no_ != BOMB) TroopTargetManager::getInstance()->registerTroopTarget(p);
         // 统计建筑总量
         int now_arch = TroopTargetManager::getInstance()->getlivingsum();
         if (arch.no_ != WALL && arch.no_ != BOMB) TroopTargetManager::getInstance()->setlivingsum(now_arch + 1);
@@ -71,6 +71,7 @@ bool EnemyVillage::myInit(int level)
     // 包裹的范围是所有地方建筑向外延伸1格
     occupied_cells_.clear();
     for (auto arch : base_map_->archs_) {
+        if (arch->getNo() == BOMB) continue;
         float size_f;
         arch->getCellPosition(size_f);
         int size = static_cast<int>(size_f);

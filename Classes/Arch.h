@@ -246,9 +246,10 @@ public:
 
 class Bomb : public Arch {
 public:
-    Bomb(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
+    Bomb(const ArchData& data, BaseMap* base_map, bool is_mine);
     virtual void showArchPanel() override;
     virtual void update(float dt) override;
+    virtual void onDeath() override;
 };
 
 // 建筑工厂类

@@ -1312,6 +1312,13 @@ void ArcherTower::showArchPanel()
     label->setString(str);
 }
 
+Bomb::Bomb(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) 
+{
+    if (!is_mine) {
+        setVisible(false);
+    }
+}
+
 void Bomb::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
@@ -1395,7 +1402,7 @@ void Arch::tryAttack(float dt)
 void Bomb::update(float dt)
 {
     if (is_destroyed_) return;
-
+    
     const auto& info = kArchInfo.at(no_)[level_ - 1];
     // 隐形炸弹逻辑：检测范围内是否有敌人
     float range = info.attack_range_ / 10.0f;
@@ -1406,6 +1413,7 @@ void Bomb::update(float dt)
     IArchTarget* target = ArchTargetManager::getInstance()->getNearestArchTarget(my_pos, range, info.target_type_);
 
     if (target) {
+        setVisible(true);
         // 发现敌人，爆炸对目标造成伤害（理想情况应该是AOE，未实现）
         target->takeDamage(static_cast<float>(info.damage_));
         // 自身销毁
@@ -1425,6 +1433,14 @@ void Bomb::update(float dt)
     }
 }
 
+void Bomb::onDeath()
+{
+    setVisible(true);
+    //等待1s后执行Arch::onDeath()
+    this->runAction(
+        Sequence::create(DelayTime::create(1.0f), CallFunc::create([this]() { Arch::onDeath(); }), nullptr));
+}
+// todo: 建筑攻击音效
 
 void Arch::onDeath()
 {
