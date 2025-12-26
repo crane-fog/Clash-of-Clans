@@ -54,6 +54,7 @@ void Dragon::performAttack()
         target->takeDamage(damage);
     }
     // 播放攻击动画
+    playFlameEffect();
     // 播放攻击音效
     int fire_hit = cocos2d::AudioEngine::play2d("music/fire_hit.mp3", false, 0.7f);
     // 检查音频的状态，直到播放完成
@@ -93,4 +94,54 @@ cocos2d::Vec2 Dragon::getPixelPosition() const
 {
     cocos2d::Vec2 pixel_ground = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
     return cocos2d::Vec2(pixel_ground.x, pixel_ground.y + 10.0f);
+}
+
+void Dragon::playFlameEffect()
+{
+    // 创建火焰精灵
+    auto flame = cocos2d::Sprite::create("troop/flame2.png");  // 假设"flame.png"是你的火焰图片资源
+    if (!flame) {
+        CCLOG("无法加载火焰图片");
+        return;
+    }
+    cocos2d::Vec2 start_position,end_delta;
+    flame->setAnchorPoint(cocos2d::Vec2(0.0f, 1.0f));
+    // 设置火焰起始位置
+    if (_flippedX) {
+        flame->setFlippedX(true);
+        start_position = cocos2d::Vec2(20.0f,0.0f);
+        end_delta = cocos2d::Vec2(-50.0f,-0.5f);
+    }
+    else {
+        /*start_position = cocos2d::Vec2(70.0f, 0.0f);
+        end_delta = cocos2d::Vec2(100.0f,-0.5f);*/
+        start_position = cocos2d::Vec2(150.0f, 0.0f);
+        end_delta = cocos2d::Vec2(50.0f, -0.5f);
+    }
+    auto parent = base_map_;
+    auto flame_world_position = this->convertToWorldSpace(start_position);
+    auto flame_parent_position = parent->convertToNodeSpace(flame_world_position);
+
+    parent->addChild(flame,96);
+    flame->setPosition(flame_parent_position);
+    flame->setScale(0.5);
+
+
+    // 移动：向右下移动（例如 x+200, y-200），根据需要调整数值
+    auto moveAction = cocos2d::MoveBy::create(2.0f, end_delta);
+
+    // 淡出：2秒内透明度变为0
+    auto fadeOutAction = cocos2d::FadeOut::create(1.0f);
+
+    // 同时执行两个动作
+    auto spawnAction = cocos2d::Spawn::createWithTwoActions(moveAction, fadeOutAction);
+
+    // 执行完后移除精灵
+    auto removeSelfAction = cocos2d::RemoveSelf::create();
+
+    // 创建序列动作
+    auto sequence = cocos2d::Sequence::create(spawnAction, removeSelfAction, nullptr);
+
+    // 运行动作
+    flame->runAction(sequence);
 }
