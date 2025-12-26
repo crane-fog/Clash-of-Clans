@@ -42,7 +42,7 @@ protected:
     Status status_;
 
     // 当前目标
-    ITroopTarget* current_target_;
+    ITroopTarget* current_target_=nullptr;
 
     // 当前移动方向
     cocos2d::Vec2 current_path_direction_;

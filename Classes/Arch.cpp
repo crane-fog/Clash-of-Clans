@@ -250,6 +250,18 @@ void Arch::onTouchUp(Touch* touch, Event* event)
             x_ = original_x_;
             y_ = original_y_;
             this->setPosition(CoordAdaptor::cellToPixel(base_map_, Vec2(x_ + my_size / 2.0f, y_ + my_size / 2.0f)));
+            // 播放音效
+            int colliide_hit = cocos2d::AudioEngine::play2d("music/fail.mp3", false, 0.7f);
+            // 检查音频的状态，直到播放完成
+            this->schedule(
+                [colliide_hit, this](float dt) {
+                    if (cocos2d::AudioEngine::getState(colliide_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                        // 停止音效播放并释放资源
+                        cocos2d::AudioEngine::uncache("music/fail.mp3");
+                        this->unschedule("stop_audio_key");  // 停止检查
+                    }
+                },
+                0.1f, "stop_audio_key");
         }
         unsigned char size = kArchInfo.at(no_)[level_ - 1].size_;
         this->setLocalZOrder(CoordAdaptor::calcOrder(Vec2(x_ + size / 2.0f, y_ + size / 2.0f)));  // 恢复并设置新层级
@@ -625,6 +637,18 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice)
             auto new_img = kArchInfo.at(no_)[level_ - 1].image_;
             this->setTexture(new_img);
             is_upgrading_ = false;
+            // 播放音效
+            int upgraded = cocos2d::AudioEngine::play2d("music/upgraded.mp3", false, 0.7f);
+            // 检查音频的状态，直到播放完成
+            this->schedule(
+                [upgraded, this](float dt) {
+                    if (cocos2d::AudioEngine::getState(upgraded) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                        // 停止音效播放并释放资源
+                        cocos2d::AudioEngine::uncache("music/upgraded.mp3");
+                        this->unschedule("stop_audio_key");  // 停止检查
+                    }
+                },
+                0.1f, "stop_audio_key"); 
             // 更新UI显示
             showArchPanel();
             // 移除加速按钮
@@ -686,7 +710,18 @@ void Arch::buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, 
                 if (ResourceManager::getInstance()->getJewel() > 0) {
                     ResourceManager::getInstance()->setJewel(ResourceManager::getInstance()->getJewel() - 1);
                     arch->remaining_upgrade_time_ = 0;  // 立即完成升级
-
+                                                        // 播放音效
+                    int upgraded = cocos2d::AudioEngine::play2d("music/upgraded.mp3", false, 0.7f);
+                    // 检查音频的状态，直到播放完成
+                    this->schedule(
+                        [upgraded, this](float dt) {
+                            if (cocos2d::AudioEngine::getState(upgraded) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                                // 停止音效播放并释放资源
+                                cocos2d::AudioEngine::uncache("music/upgraded.mp3");
+                                this->unschedule("stop_audio_key");  // 停止检查
+                            }
+                        },
+                        0.1f, "stop_audio_key");
                     // 完成升级
                     auto new_img = kArchInfo.at(arch->no_)[arch->level_ - 1].image_;
                     arch->setTexture(new_img);
@@ -725,6 +760,18 @@ void Arch::buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, 
             arch->setTexture(new_img);
             arch->showArchPanel();
             arch->onUpgradeFinished();
+            // 播放音效
+            int upgraded = cocos2d::AudioEngine::play2d("music/upgraded.mp3", false, 0.7f);
+            // 检查音频的状态，直到播放完成
+            this->schedule(
+                [upgraded, this](float dt) {
+                    if (cocos2d::AudioEngine::getState(upgraded) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                        // 停止音效播放并释放资源
+                        cocos2d::AudioEngine::uncache("music/upgraded.mp3");
+                        this->unschedule("stop_audio_key");  // 停止检查
+                    }
+                },
+                0.1f, "stop_audio_key");
         }
     }
 }
@@ -742,6 +789,18 @@ void Arch::updateUpgradeTime(long long elapsed)
             this->setTexture(new_img);
             // 恢复透明度
             this->setOpacity(255);
+            // 播放音效
+            int upgraded = cocos2d::AudioEngine::play2d("music/upgraded.mp3", false, 0.7f);
+            // 检查音频的状态，直到播放完成
+            this->schedule(
+                [upgraded, this](float dt) {
+                    if (cocos2d::AudioEngine::getState(upgraded) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                        // 停止音效播放并释放资源
+                        cocos2d::AudioEngine::uncache("music/upgraded_add.mp3");
+                        this->unschedule("stop_audio_key");  // 停止检查
+                    }
+                },
+                0.1f, "stop_audio_key");
         }
     }
 }
@@ -804,9 +863,9 @@ void Arch::updateBuildingDisplay()
 
         // 给图标添加点击事件
         icon->setTouchEnabled(true);
+        // 点击后将资源转移到总资源
         icon->addClickEventListener([=](Ref*) {
-            // 点击后将资源转移到总资源
-            unsigned int collected = 0;
+             unsigned int collected = 0;
             const ArchInfo& arch_info = kArchInfo.at(no_)[level_ - 1];
 
             if (arch_info.produce_type_ == GOLD) {
@@ -816,6 +875,19 @@ void Arch::updateBuildingDisplay()
                 unsigned long long can_add = (max_gold_storage > current_gold) ? (max_gold_storage - current_gold) : 0;
                 if (can_add >= current_capacity_) {
                     collected = current_capacity_;
+                    // 播放音效
+                    int resources_add = cocos2d::AudioEngine::play2d("music/resources_add.mp3", false, 0.7f);
+                    // 检查音频的状态，直到播放完成
+                    this->schedule(
+                        [resources_add, this](float dt) {
+                            if (cocos2d::AudioEngine::getState(resources_add) ==
+                                cocos2d::AudioEngine::AudioState::PAUSED) {
+                                // 停止音效播放并释放资源
+                                cocos2d::AudioEngine::uncache("music/resources_add.mp3");
+                                this->unschedule("stop_audio_key");  // 停止检查
+                            }
+                        },
+                        0.1f, "stop_audio_key");
                 }
                 else {
                     collected = static_cast<unsigned int>(can_add);
@@ -831,6 +903,19 @@ void Arch::updateBuildingDisplay()
                     (max_elixir_storage > current_elixir) ? (max_elixir_storage - current_elixir) : 0;
                 if (can_add >= current_capacity_) {
                     collected = current_capacity_;
+                    // 播放音效
+                    int resources_add = cocos2d::AudioEngine::play2d("music/resources_add.mp3", false, 0.7f);
+                    // 检查音频的状态，直到播放完成
+                    this->schedule(
+                        [resources_add, this](float dt) {
+                            if (cocos2d::AudioEngine::getState(resources_add) ==
+                                cocos2d::AudioEngine::AudioState::PAUSED) {
+                                // 停止音效播放并释放资源
+                                cocos2d::AudioEngine::uncache("music/resources_add.mp3");
+                                this->unschedule("stop_audio_key");  // 停止检查
+                            }
+                        },
+                        0.1f, "stop_audio_key");
                 }
                 else {
                     collected = static_cast<unsigned int>(can_add);
@@ -1288,6 +1373,18 @@ void Arch::tryAttack(float dt)
         attack_timer_ = 0;
         // 造成伤害
         current_target_->takeDamage(static_cast<float>(info.damage_));
+        // 播放音效
+        int arch_hit = cocos2d::AudioEngine::play2d("music/arch_hit.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule(
+            [arch_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(arch_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/arch_hit.mp3");
+                    this->unschedule("stop_audio_key");  // 停止检查
+                }
+            },
+            0.1f, "stop_audio_key");
     }
 }
 
@@ -1309,9 +1406,21 @@ void Bomb::update(float dt)
         target->takeDamage(static_cast<float>(info.damage_));
         // 自身销毁
         takeDamage(static_cast<float>(current_hp_ + 1));
+        // 播放音效
+        int arch_hit = cocos2d::AudioEngine::play2d("music/arch_hit.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule(
+            [arch_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(arch_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/arch_hit.mp3");
+                    this->unschedule("stop_audio_key");  // 停止检查
+                }
+            },
+            0.1f, "stop_audio_key");
     }
 }
-// todo: 建筑攻击音效
+
 
 void Arch::onDeath()
 {

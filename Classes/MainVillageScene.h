@@ -6,7 +6,7 @@
 #include "cocos2d.h"
 #include "CocUtility.h"
 #include "VillageScene.h"
-
+#include "Barbarian.h"
 // 主村庄场景类
 class MainVillage : public Village {
 private:
@@ -68,5 +68,58 @@ public:
     int getBuildingCount(unsigned char archNo);
 
     // void onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_, bool isReplay = 1);
-};
+     cocos2d::Vec2 barracksPosition = cocos2d::Vec2::ZERO;
+    // 定义巡逻类型枚举
+    enum PatrolType {
+        PATROL_SEQUENCE = 0,  // 顺序巡逻
+        PATROL_CIRCULAR = 1,  // 圆形巡逻
+        PATROL_BEZIER = 2,    // 贝塞尔曲线巡逻
+        PATROL_RANDOM = 3     // 随机巡逻
+    };
+
+    // 巡逻半径参数
+    float patrolRadius = 80.0f;
+    // 创建顺序巡逻动作
+    cocos2d::Action* createSequencePatrol(const cocos2d::Vec2& center, float radius);
+
+    // 创建圆形巡逻动作
+    cocos2d::Action* createCircularPatrol(const cocos2d::Vec2& center, float radius);
+
+    // 创建贝塞尔曲线巡逻动作
+    cocos2d::Action* createBezierPatrol(const cocos2d::Vec2& center, float radius);
+
+    // 创建随机巡逻动作
+    cocos2d::Action* createRandomPatrol(const cocos2d::Vec2& center, float radius);
+
+    // 通用巡逻选择函数
+    cocos2d::Action* createPatrolAction(PatrolType patrolType, const cocos2d::Vec2& center, float radius = 80.0f);
+
+    // 添加巡逻动画效果
+    void addPatrolEffects(cocos2d::Node* target, bool addScaleEffect = true, bool addParticles = false);
+
+    // 生成巡逻点列表（辅助函数）
+    std::vector<cocos2d::Vec2> generatePatrolPoints(const cocos2d::Vec2& center, float radius, int pointCount,
+                                                    bool isCircle = true);
+
+    // 根据点列表创建巡逻动作
+    cocos2d::Action* createPatrolFromPoints(const std::vector<cocos2d::Vec2>& points, float moveTime, float waitTime);
+
+
+    // 设置野蛮人巡逻
+    void setupBarbarianPatrol(Barbarian* barbarian, const cocos2d::Vec2& barracksPosition,
+                              PatrolType patrolType = PATROL_BEZIER, float patrolRadius = 80.0f)
+    {
+        if (!barbarian) return;
+
+        // 创建巡逻动作
+        cocos2d::Action* patrolAction = createPatrolAction(patrolType, barracksPosition, patrolRadius);
+
+        if (patrolAction) {
+            barbarian->runAction(patrolAction);
+        }
+
+        // 添加巡逻效果
+        addPatrolEffects(barbarian, true, false);
+    }
+    };
 #endif  // __MAIN_VILLAGE_SCENE_H__
