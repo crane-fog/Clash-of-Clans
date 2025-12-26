@@ -63,7 +63,7 @@ bool MainVillage::init()
     last_exit_time_ = 0;
 
     // 找到兵营的位置
-    bool foundBarracks = false;
+    //bool foundBarracks = false;
 
     for (auto& arch : arch_list) {
         // 更新剩余升级时间
@@ -88,17 +88,17 @@ bool MainVillage::init()
         }
 
         Arch::create(arch, base_map_);
-        if (arch.no_ == BARRACKS) {  // 假设BARRACKS是兵营的类型枚举值
-            // 假设ArchData中有位置信息
-            barracksPosition = cocos2d::Vec2(arch.x_, arch.y_);
-            foundBarracks = true;
-        }
+        //if (arch.no_ == BARRACKS) {  // 假设BARRACKS是兵营的类型枚举值
+        //    // 假设ArchData中有位置信息
+        //    barracksPosition = cocos2d::Vec2(arch.x_, arch.y_);
+        //    foundBarracks = true;
+        //}
     }
 
     // 如果没有找到兵营，使用默认位置
-    if (!foundBarracks) {
-        barracksPosition = cocos2d::Vec2(22, 22);  // 使用原来的默认位置
-    }
+    //if (!foundBarracks) {
+    //    barracksPosition = cocos2d::Vec2(22, 22);  // 使用原来的默认位置
+    //}
     /*
     // 野蛮人巡逻,从战斗场景回来的时候有目标指针问题
     auto barbarian1 = Barbarian::create(base_map_, 1, barracksPosition);
@@ -1021,217 +1021,227 @@ int MainVillage::getBuildingCount(unsigned char archNo)
     return count;
 }
 
-// void MainVillage::onReplayButtonClick(cocos2d::Ref* sender,int gold_,int elixir_,bool isReplay) {
+
+//// 创建顺序巡逻动作
+//cocos2d::Action* MainVillage::createSequencePatrol(const cocos2d::Vec2& center, float radius)
+//{
+//    // 计算4个巡逻点（围绕中心的正方形）
+//    std::vector<cocos2d::Vec2> patrolPoints;
+//    patrolPoints.push_back(center + cocos2d::Vec2(radius, 0));   // 右
+//    patrolPoints.push_back(center + cocos2d::Vec2(0, radius));   // 上
+//    patrolPoints.push_back(center + cocos2d::Vec2(-radius, 0));  // 左
+//    patrolPoints.push_back(center + cocos2d::Vec2(0, -radius));  // 下
 //
-//     CocManager::getInstance()->changeScene(1, gold_, elixir_);
-// }
-
-
-// 创建顺序巡逻动作
-cocos2d::Action* MainVillage::createSequencePatrol(const cocos2d::Vec2& center, float radius)
-{
-    // 计算4个巡逻点（围绕中心的正方形）
-    std::vector<cocos2d::Vec2> patrolPoints;
-    patrolPoints.push_back(center + cocos2d::Vec2(radius, 0));   // 右
-    patrolPoints.push_back(center + cocos2d::Vec2(0, radius));   // 上
-    patrolPoints.push_back(center + cocos2d::Vec2(-radius, 0));  // 左
-    patrolPoints.push_back(center + cocos2d::Vec2(0, -radius));  // 下
-
-    cocos2d::Vector<cocos2d::FiniteTimeAction*> sequence;
-
-    // 移动到第一个点
-    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[0]));
-    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
-
-    // 移动到第二个点
-    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[1]));
-    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
-
-    // 移动到第三个点
-    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[2]));
-    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
-
-    // 移动到第四个点
-    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[3]));
-    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
-
-    // 返回第三个点
-    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[2]));
-    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
-
-    // 返回第二个点
-    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[1]));
-    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
-
-    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(sequence));
-}
-
-// 创建圆形巡逻动作
-cocos2d::Action* MainVillage::createCircularPatrol(const cocos2d::Vec2& center, float radius)
-{
-    cocos2d::Vector<cocos2d::FiniteTimeAction*> actions;
-    int segments = 8;  // 圆形分为8段
-    float angleStep = 2 * M_PI / segments;
-
-    for (int i = 0; i <= segments; i++) {
-        float angle = i * angleStep;
-        cocos2d::Vec2 point = center + cocos2d::Vec2(radius * cos(angle), radius * sin(angle));
-        actions.pushBack(cocos2d::MoveTo::create(0.5f, point));
-    }
-
-    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(actions));
-}
-
-// 创建贝塞尔曲线巡逻动作
-cocos2d::Action* MainVillage::createBezierPatrol(const cocos2d::Vec2& center, float radius)
-{
-    // 创建贝塞尔控制点
-    cocos2d::ccBezierConfig bezierConfig1;
-    bezierConfig1.controlPoint_1 = center + cocos2d::Vec2(radius, 0);
-    bezierConfig1.controlPoint_2 = center + cocos2d::Vec2(radius, radius);
-    bezierConfig1.endPosition = center + cocos2d::Vec2(0, radius);
-
-    cocos2d::ccBezierConfig bezierConfig2;
-    bezierConfig2.controlPoint_1 = center + cocos2d::Vec2(-radius, radius);
-    bezierConfig2.controlPoint_2 = center + cocos2d::Vec2(-radius, 0);
-    bezierConfig2.endPosition = center + cocos2d::Vec2(0, -radius);
-
-    cocos2d::ccBezierConfig bezierConfig3;
-    bezierConfig3.controlPoint_1 = center + cocos2d::Vec2(radius, -radius);
-    bezierConfig3.controlPoint_2 = center + cocos2d::Vec2(radius, 0);
-    bezierConfig3.endPosition = center + cocos2d::Vec2(radius, 0);
-
-    auto bezier1 = cocos2d::BezierTo::create(3.0f, bezierConfig1);
-    auto bezier2 = cocos2d::BezierTo::create(3.0f, bezierConfig2);
-    auto bezier3 = cocos2d::BezierTo::create(3.0f, bezierConfig3);
-
-    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(bezier1, cocos2d::DelayTime::create(0.5f), bezier2,
-                                                                    cocos2d::DelayTime::create(0.5f), bezier3,
-                                                                    cocos2d::DelayTime::create(0.5f), nullptr));
-}
-
-// 创建随机巡逻动作
-cocos2d::Action* MainVillage::createRandomPatrol(const cocos2d::Vec2& center, float radius)
-{
-    cocos2d::Vector<cocos2d::FiniteTimeAction*> actions;
-
-    // 创建8个随机巡逻点
-    for (int i = 0; i < 8; i++) {
-        // 随机角度
-        float randomAngle = (rand() % 360) * M_PI / 180.0f;
-        // 随机半径（在0.5倍到1.5倍之间）
-        float randomRadius = radius * (0.5f + (rand() % 100) / 100.0f);
-
-        cocos2d::Vec2 randomPoint =
-            center + cocos2d::Vec2(randomRadius * cos(randomAngle), randomRadius * sin(randomAngle));
-
-        // 随机移动时间（1-3秒）
-        float randomTime = 1.0f + (rand() % 200) / 100.0f;
-
-        actions.pushBack(cocos2d::MoveTo::create(randomTime, randomPoint));
-
-        // 随机等待时间（0.5-1.5秒）
-        float randomWait = 0.5f + (rand() % 100) / 100.0f;
-        actions.pushBack(cocos2d::DelayTime::create(randomWait));
-    }
-
-    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(actions));
-}
-
-// 通用巡逻选择函数
-cocos2d::Action* MainVillage::createPatrolAction(PatrolType patrolType, const cocos2d::Vec2& center, float radius)
-{
-    switch (patrolType) {
-        case PATROL_SEQUENCE:
-            return createSequencePatrol(center, radius);
-        case PATROL_CIRCULAR:
-            return createCircularPatrol(center, radius);
-        case PATROL_BEZIER:
-            return createBezierPatrol(center, radius);
-        case PATROL_RANDOM:
-            return createRandomPatrol(center, radius);
-        default:
-            return createSequencePatrol(center, radius);  // 默认顺序巡逻
-    }
-}
-
-// 添加巡逻动画效果
-void MainVillage::addPatrolEffects(cocos2d::Node* target, bool addScaleEffect, bool addParticles)
-{
-    if (!target) return;
-
-    // 添加缩放动画效果（呼吸效果）
-    if (addScaleEffect) {
-        auto scaleUp = cocos2d::ScaleTo::create(0.8f, 1.05f);
-        auto scaleDown = cocos2d::ScaleTo::create(0.8f, 1.0f);
-        auto scaleSequence = cocos2d::Sequence::create(scaleUp, scaleDown, nullptr);
-        target->runAction(cocos2d::RepeatForever::create(scaleSequence));
-    }
-
-    // 添加粒子效果
-    if (addParticles) {
-        auto emitter = cocos2d::ParticleSystemQuad::create("particles/patrol_trail.plist");
-        if (emitter) {
-            emitter->setPosition(cocos2d::Vec2::ZERO);
-            emitter->setScale(0.3f);
-            target->addChild(emitter);
-        }
-    }
-}
-
-// 生成巡逻点列表（辅助函数）
-std::vector<cocos2d::Vec2> MainVillage::generatePatrolPoints(const cocos2d::Vec2& center, float radius, int pointCount,
-                                                             bool isCircle)
-{
-    std::vector<cocos2d::Vec2> points;
-
-    if (isCircle) {
-        // 生成圆形点
-        float angleStep = 2 * M_PI / pointCount;
-        for (int i = 0; i < pointCount; i++) {
-            float angle = i * angleStep;
-            points.push_back(center + cocos2d::Vec2(radius * cos(angle), radius * sin(angle)));
-        }
-    }
-    else {
-        // 生成方形点
-        for (int i = 0; i < pointCount; i++) {
-            float angle = (i * 2 * M_PI) / pointCount;
-            float x = center.x + radius * cos(angle);
-            float y = center.y + radius * sin(angle);
-            points.push_back(cocos2d::Vec2(x, y));
-        }
-    }
-
-    return points;
-}
-
-// 根据点列表创建巡逻动作
-cocos2d::Action* MainVillage::createPatrolFromPoints(const std::vector<cocos2d::Vec2>& points, float moveTime,
-                                                     float waitTime)
-{
-    if (points.empty()) {
-        return nullptr;
-    }
-
-    cocos2d::Vector<cocos2d::FiniteTimeAction*> actions;
-
-    // 首先移动到第一个点
-    actions.pushBack(cocos2d::MoveTo::create(moveTime, points[0]));
-    actions.pushBack(cocos2d::DelayTime::create(waitTime));
-
-    // 遍历所有点
-    for (size_t i = 1; i < points.size(); i++) {
-        actions.pushBack(cocos2d::MoveTo::create(moveTime, points[i]));
-        actions.pushBack(cocos2d::DelayTime::create(waitTime));
-    }
-
-    // 返回到起点，形成循环
-    actions.pushBack(cocos2d::MoveTo::create(moveTime, points[0]));
-    actions.pushBack(cocos2d::DelayTime::create(waitTime));
-
-    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(actions));
-}
-
-
-// 设置野蛮人巡逻
+//    cocos2d::Vector<cocos2d::FiniteTimeAction*> sequence;
+//
+//    // 移动到第一个点
+//    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[0]));
+//    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
+//
+//    // 移动到第二个点
+//    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[1]));
+//    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
+//
+//    // 移动到第三个点
+//    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[2]));
+//    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
+//
+//    // 移动到第四个点
+//    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[3]));
+//    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
+//
+//    // 返回第三个点
+//    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[2]));
+//    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
+//
+//    // 返回第二个点
+//    sequence.pushBack(cocos2d::MoveTo::create(2.0f, patrolPoints[1]));
+//    sequence.pushBack(cocos2d::DelayTime::create(1.0f));
+//
+//    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(sequence));
+//}
+//
+//// 创建圆形巡逻动作
+//cocos2d::Action* MainVillage::createCircularPatrol(const cocos2d::Vec2& center, float radius)
+//{
+//    cocos2d::Vector<cocos2d::FiniteTimeAction*> actions;
+//    int segments = 8;  // 圆形分为8段
+//    float angleStep = 2 * M_PI / segments;
+//
+//    for (int i = 0; i <= segments; i++) {
+//        float angle = i * angleStep;
+//        cocos2d::Vec2 point = center + cocos2d::Vec2(radius * cos(angle), radius * sin(angle));
+//        actions.pushBack(cocos2d::MoveTo::create(0.5f, point));
+//    }
+//
+//    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(actions));
+//}
+//
+//// 创建贝塞尔曲线巡逻动作
+//cocos2d::Action* MainVillage::createBezierPatrol(const cocos2d::Vec2& center, float radius)
+//{
+//    // 创建贝塞尔控制点
+//    cocos2d::ccBezierConfig bezierConfig1;
+//    bezierConfig1.controlPoint_1 = center + cocos2d::Vec2(radius, 0);
+//    bezierConfig1.controlPoint_2 = center + cocos2d::Vec2(radius, radius);
+//    bezierConfig1.endPosition = center + cocos2d::Vec2(0, radius);
+//
+//    cocos2d::ccBezierConfig bezierConfig2;
+//    bezierConfig2.controlPoint_1 = center + cocos2d::Vec2(-radius, radius);
+//    bezierConfig2.controlPoint_2 = center + cocos2d::Vec2(-radius, 0);
+//    bezierConfig2.endPosition = center + cocos2d::Vec2(0, -radius);
+//
+//    cocos2d::ccBezierConfig bezierConfig3;
+//    bezierConfig3.controlPoint_1 = center + cocos2d::Vec2(radius, -radius);
+//    bezierConfig3.controlPoint_2 = center + cocos2d::Vec2(radius, 0);
+//    bezierConfig3.endPosition = center + cocos2d::Vec2(radius, 0);
+//
+//    auto bezier1 = cocos2d::BezierTo::create(3.0f, bezierConfig1);
+//    auto bezier2 = cocos2d::BezierTo::create(3.0f, bezierConfig2);
+//    auto bezier3 = cocos2d::BezierTo::create(3.0f, bezierConfig3);
+//
+//    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(bezier1, cocos2d::DelayTime::create(0.5f), bezier2,
+//                                                                    cocos2d::DelayTime::create(0.5f), bezier3,
+//                                                                    cocos2d::DelayTime::create(0.5f), nullptr));
+//}
+//
+//// 创建随机巡逻动作
+//cocos2d::Action* MainVillage::createRandomPatrol(const cocos2d::Vec2& center, float radius)
+//{
+//    cocos2d::Vector<cocos2d::FiniteTimeAction*> actions;
+//
+//    // 创建8个随机巡逻点
+//    for (int i = 0; i < 8; i++) {
+//        // 随机角度
+//        float randomAngle = (rand() % 360) * M_PI / 180.0f;
+//        // 随机半径（在0.5倍到1.5倍之间）
+//        float randomRadius = radius * (0.5f + (rand() % 100) / 100.0f);
+//
+//        cocos2d::Vec2 randomPoint =
+//            center + cocos2d::Vec2(randomRadius * cos(randomAngle), randomRadius * sin(randomAngle));
+//
+//        // 随机移动时间（1-3秒）
+//        float randomTime = 1.0f + (rand() % 200) / 100.0f;
+//
+//        actions.pushBack(cocos2d::MoveTo::create(randomTime, randomPoint));
+//
+//        // 随机等待时间（0.5-1.5秒）
+//        float randomWait = 0.5f + (rand() % 100) / 100.0f;
+//        actions.pushBack(cocos2d::DelayTime::create(randomWait));
+//    }
+//
+//    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(actions));
+//}
+//
+//// 通用巡逻选择函数
+//cocos2d::Action* MainVillage::createPatrolAction(PatrolType patrolType, const cocos2d::Vec2& center, float radius)
+//{
+//    switch (patrolType) {
+//        case PATROL_SEQUENCE:
+//            return createSequencePatrol(center, radius);
+//        case PATROL_CIRCULAR:
+//            return createCircularPatrol(center, radius);
+//        case PATROL_BEZIER:
+//            return createBezierPatrol(center, radius);
+//        case PATROL_RANDOM:
+//            return createRandomPatrol(center, radius);
+//        default:
+//            return createSequencePatrol(center, radius);  // 默认顺序巡逻
+//    }
+//}
+//
+//// 添加巡逻动画效果
+//void MainVillage::addPatrolEffects(cocos2d::Node* target, bool addScaleEffect, bool addParticles)
+//{
+//    if (!target) return;
+//
+//    // 添加缩放动画效果（呼吸效果）
+//    if (addScaleEffect) {
+//        auto scaleUp = cocos2d::ScaleTo::create(0.8f, 1.05f);
+//        auto scaleDown = cocos2d::ScaleTo::create(0.8f, 1.0f);
+//        auto scaleSequence = cocos2d::Sequence::create(scaleUp, scaleDown, nullptr);
+//        target->runAction(cocos2d::RepeatForever::create(scaleSequence));
+//    }
+//
+//    // 添加粒子效果
+//    if (addParticles) {
+//        auto emitter = cocos2d::ParticleSystemQuad::create("particles/patrol_trail.plist");
+//        if (emitter) {
+//            emitter->setPosition(cocos2d::Vec2::ZERO);
+//            emitter->setScale(0.3f);
+//            target->addChild(emitter);
+//        }
+//    }
+//}
+//
+//// 生成巡逻点列表（辅助函数）
+//std::vector<cocos2d::Vec2> MainVillage::generatePatrolPoints(const cocos2d::Vec2& center, float radius, int pointCount,
+//                                                             bool isCircle)
+//{
+//    std::vector<cocos2d::Vec2> points;
+//
+//    if (isCircle) {
+//        // 生成圆形点
+//        float angleStep = 2 * M_PI / pointCount;
+//        for (int i = 0; i < pointCount; i++) {
+//            float angle = i * angleStep;
+//            points.push_back(center + cocos2d::Vec2(radius * cos(angle), radius * sin(angle)));
+//        }
+//    }
+//    else {
+//        // 生成方形点
+//        for (int i = 0; i < pointCount; i++) {
+//            float angle = (i * 2 * M_PI) / pointCount;
+//            float x = center.x + radius * cos(angle);
+//            float y = center.y + radius * sin(angle);
+//            points.push_back(cocos2d::Vec2(x, y));
+//        }
+//    }
+//
+//    return points;
+//}
+//
+//// 根据点列表创建巡逻动作
+//cocos2d::Action* MainVillage::createPatrolFromPoints(const std::vector<cocos2d::Vec2>& points, float moveTime,
+//                                                     float waitTime)
+//{
+//    if (points.empty()) {
+//        return nullptr;
+//    }
+//
+//    cocos2d::Vector<cocos2d::FiniteTimeAction*> actions;
+//
+//    // 首先移动到第一个点
+//    actions.pushBack(cocos2d::MoveTo::create(moveTime, points[0]));
+//    actions.pushBack(cocos2d::DelayTime::create(waitTime));
+//
+//    // 遍历所有点
+//    for (size_t i = 1; i < points.size(); i++) {
+//        actions.pushBack(cocos2d::MoveTo::create(moveTime, points[i]));
+//        actions.pushBack(cocos2d::DelayTime::create(waitTime));
+//    }
+//
+//    // 返回到起点，形成循环
+//    actions.pushBack(cocos2d::MoveTo::create(moveTime, points[0]));
+//    actions.pushBack(cocos2d::DelayTime::create(waitTime));
+//
+//    return cocos2d::RepeatForever::create(cocos2d::Sequence::create(actions));
+//}
+//
+//
+//// 设置野蛮人巡逻
+//void MainVillage::setupBarbarianPatrol(Barbarian* barbarian, const cocos2d::Vec2& barracksPosition,
+//                          PatrolType patrolType = PATROL_BEZIER, float patrolRadius = 80.0f)
+//{
+//    if (!barbarian) return;
+//
+//    // 创建巡逻动作
+//    cocos2d::Action* patrolAction = createPatrolAction(patrolType, barracksPosition, patrolRadius);
+//
+//    if (patrolAction) {
+//        barbarian->runAction(patrolAction);
+//    }
+//
+//    // 添加巡逻效果
+//    addPatrolEffects(barbarian, true, false);
+//}
