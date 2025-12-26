@@ -198,6 +198,8 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
     }
     else {
         CocManager::getInstance()->changeScene();
+        unsigned long long current_elixir = ResourceManager::getInstance()->getElixir();
+        ResourceManager::getInstance()->setElixir(current_elixir);
     }
 }
 

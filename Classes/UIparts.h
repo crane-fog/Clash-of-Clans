@@ -13,23 +13,28 @@
 
 // 进度条结构体
 struct ProgressBarData {
+    //进度条
     cocos2d::ui::LoadingBar* loading_bar_;
+    //进度条背景
     cocos2d::LayerColor* background_;
+    //百分比标签
     cocos2d::Label* percent_label_;
+    //资源图标
     cocos2d::Sprite* icon_;
+    //资源名称
     std::string title_;
 };
 
-// UI部分基类
+// 进度条管理
 class UIBars : public cocos2d::Node {
 private:
     std::vector<ProgressBarData> progress_bars_;                // 存储多个进度条
-    cocos2d::EventListenerCustom* gold_update_listener_;        // 存储监听器
-    cocos2d::EventListenerCustom* elixir_update_listener_;      // 存储监听器
-    cocos2d::EventListenerCustom* max_gold_update_listener_;    // 存储监听器
-    cocos2d::EventListenerCustom* max_elixir_update_listener_;  // 存储监听器
-    cocos2d::EventListenerCustom* jewel_update_listener_;       // 存储监听器
-    cocos2d::EventListenerCustom* max_jewel_update_listener_;   // 存储监听器
+    cocos2d::EventListenerCustom* gold_update_listener_;        // 存储金币更新监听器
+    cocos2d::EventListenerCustom* elixir_update_listener_;      // 存储圣水更新监听器
+    cocos2d::EventListenerCustom* max_gold_update_listener_;    // 存储最大金币更新监听器
+    cocos2d::EventListenerCustom* max_elixir_update_listener_;  // 存储最大圣水更新监听器
+    cocos2d::EventListenerCustom* jewel_update_listener_;       // 存储宝石更新监听器
+    cocos2d::EventListenerCustom* max_jewel_update_listener_;   // 存储最大宝石数量监听器
 
 public:
     // 初始化，当对象被创建时被自动调用
@@ -46,7 +51,7 @@ public:
     void createResourceLabel(const std::string& title, const std::string& iconPath, unsigned long long nowAmount,
                              float x, float y);
 
-    // 更新指定进度条
+    // 更新指定名称的进度条
     void updateProgressBar(const std::string& title, unsigned long long nowAmount, unsigned long long maxAmount);
 
     // 更新金币进度条的回调函数
@@ -73,21 +78,25 @@ public:
                std::function<void()> onComplete = nullptr);
 
 private:
+    //剩余施工时间
     unsigned int remaining_time_;
+    //总施工时间
     unsigned int total_time_;
+    //是否正在施工
     bool is_running_;
     std::function<void(int)> on_tick_;
+    //是否完工
     std::function<void()> on_complete_;
-
+    //更新时间
     void updateTimer(float dt);
 };
-
+//施工中的建筑类型
 enum Buidlingtype : bool { NEW_BUIDING = 0, UPGRADING = 1 };
 
 class UICommonHelper : public cocos2d::Node {
 private:
-    int can_confirm_ = -1;
-    cocos2d::LayerColor* selected_item_bg_ = nullptr;  // 当前选中的按钮背景
+    int can_confirm_ = -1;//是否有选中
+    cocos2d::LayerColor* selected_item_bg_ = nullptr;  // 当前选中的战斗场景
 
 public:
     CREATE_FUNC(UICommonHelper);

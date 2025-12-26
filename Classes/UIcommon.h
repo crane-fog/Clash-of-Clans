@@ -7,11 +7,15 @@
 
 using namespace cocos2d::ui;
 
-// 边框绘制，bg：当前框；borderWidth = 3.0f:边框宽度；Color4F colorBorder:边框颜色
+// 为指定节点绘制边框
+//
+// @param bg 需要绘制边框的目标节点
+// @param borderWidth 边框的宽度
+// @param colorBorder 边框的颜色，使用Color4F格式
 void drawBorder(cocos2d::LayerColor* bg, float borderWidth = 3.0f,
                 cocos2d::Color4F colorBorder = cocos2d::Color4F(1.0f, 0.8f, 0.0f, 1.0f), int gap = 0);
 
-// 去除边框
+// 为指定节点去除边框
 void removeBorder(cocos2d::LayerColor* bg);
 
 #endif  // __UICOMMON_H__

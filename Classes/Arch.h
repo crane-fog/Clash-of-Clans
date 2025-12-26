@@ -110,8 +110,9 @@ public:
     virtual bool isAlive() const override { return current_hp_ > 0; }
     virtual UC getTargetType() const override { return kArchInfo.at(no_)[level_ - 1].type_; }
 
-    // 建筑面板UI相关
+    // 显示建筑信息面板
     virtual void showArchPanel();
+    //建筑是否在升级
     bool is_upgrading_ = false;
 
     // 关闭建筑信息面板
@@ -122,27 +123,33 @@ public:
 
     static std::string getArchNameFromEnum(unsigned char archNo);
 
-    // 升级相关
+    // 检查是否可以升级
     void archUpgrade();
+    //显示升级信息对比面板
     virtual void createUpgradeComparisonPanel();
+    //取消升级
     void onUpgradeCancel(Ref* sender);
+    //检查升级资源并显示升级效果
     void buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
                           bool type);
     // 资源生产
     void startResourceProduction();
 
-    // 更新建筑的显示
+    // 更新建筑的信息面板
     void updateBuildingDisplay();
 
-    // 开始升级动画
+    // 升级施工动画
     void startUpgradeAnimation(unsigned int time, const std::string& notice);
 
     // 更新剩余升级时间
     void updateUpgradeTime(long long elapsed);
-
+    //获取x坐标
     UI getx() const { return this->x_; }
+    //获取y坐标
     UI gety() const { return this->y_; }
+    //获取建筑编号
     UC getNo() const { return no_; }
+    //获取建筑等级
     UC getLevel() const { return level_; }
 
     friend class ShopPopup;
