@@ -10,9 +10,12 @@ class CocManager {
 private:
     CocManager();
     CocManager(const CocManager&) = delete;
+    CocManager& operator=(const CocManager&) = delete;
 
     // 一个记录当前正在运行的场景的变量，0=MainVillage，n=当前level
     int current_scene_;
+
+    // 是否是播放回放的状态
     bool is_replay_ = false;
 
 public:
@@ -30,6 +33,7 @@ public:
 
     int getCurrentScene() const { return current_scene_; }
 
+    // 设置/检查回放状态
     void setReplay(bool is_replay) { is_replay_ = is_replay; }
     bool isReplay() const { return is_replay_; }
 

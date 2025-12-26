@@ -22,15 +22,15 @@ private:
     cocos2d::LayerColor* selected_item_bg_ = nullptr;
 
 public:
-    int attacking_bgm_ = cocos2d::AudioEngine::play2d("music/attacking.mp3");
-
     virtual bool myInit(int level);
     static EnemyVillage* create(int level);
-    static EnemyVillage* createReplay(const ReplayData& data);
 
-    void onExitButtonClick(cocos2d::Ref* sender);
 
-    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
+    /* 士兵部署相关 */
+    std::vector<unsigned int> troop_placed_counts_;    // 已放置数量
+    std::vector<cocos2d::LayerColor*> troop_buttons_;  // 按钮
+    std::vector<cocos2d::Label*> troop_count_labels_;  // 数量标签
+    unsigned char selected_troop_type_;                // 255表示未选择任何兵种
 
     bool spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Vec2 position);
 
@@ -42,19 +42,27 @@ public:
 
     void createTroopSelectionPanel(cocos2d::LayerColor* bg);
 
-    void onButtonClick(cocos2d::LayerColor* itemBg, int index);
+    void onTroopButtonClick(cocos2d::LayerColor* itemBg, int index);
 
-    std::vector<unsigned int> troop_placed_counts_;    // 已放置数量
-    std::vector<cocos2d::LayerColor*> troop_buttons_;  // 按钮
-    std::vector<cocos2d::Label*> troop_count_labels_;  // 数量标签
-    unsigned char selected_troop_type_;                // 255表示未选择任何兵种
+    bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
 
+
+    /* 回放相关 */
+    static EnemyVillage* createReplay(const ReplayData& data);
+
+    void startReplaySequence();
+
+    // 回放数据记录
     ReplayData current_replay_data_;
     std::chrono::steady_clock::time_point first_deployment_time_;
     bool has_deployed_troop_ = false;
 
-    // 回放
-    void startReplaySequence();
+
+    // 背景音乐
+    int attacking_bgm_ = cocos2d::AudioEngine::play2d("music/attacking.mp3");
+
+    // 退出按钮回调
+    void onExitButtonClick(cocos2d::Ref* sender);
 };
 
 #endif  // __ENEMY_VILLAGE_SCENE_H__

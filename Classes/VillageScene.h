@@ -10,13 +10,17 @@ class Village : public cocos2d::Scene {
 protected:
     // 用于所有场景中非固定对象的容器，允许界面整体缩放、移动
     BaseMap* base_map_;
+
+    // ui层
     UIBars* ui_layer_;
+
     // 村庄中的建筑状态数据
     ArchData arch_status_[kMapSize][kMapSize];
 
 public:
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
+
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(Village);
 };

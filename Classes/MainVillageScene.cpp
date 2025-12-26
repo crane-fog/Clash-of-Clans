@@ -890,10 +890,6 @@ void MainVillage::cancelBuildingPlacement(Arch* pendingArch_)
     // 删除已创建的建筑
     pendingArch_->removeFromParent();
     pendingArch_ = nullptr;
-
-    // 显示提示并返回商店面板
-    CCLOG("建筑放置已取消，返回商店面板");
-    showShopPopupWithDelay(1.0f);
 }
 
 void MainVillage::confirmBuildingPlacement(Arch* pendingArch_)
@@ -948,21 +944,6 @@ void MainVillage::playBuildingDropEffect(Arch* arch)
     });
     auto glow_sequence = Sequence::create(glow_scale_up, glow_fade_in, remove_glow, fade_in, nullptr);
     glow_effect->runAction(glow_sequence);
-}
-
-void MainVillage::showShopPopupWithDelay(float sec)
-{
-    // 创建商店面板的延迟回调函数
-    this->scheduleOnce(
-        [this](float dt) {
-            // 创建商店面板
-            auto shop_popup = ShopPopup::create();  // 创建商店面板
-            if (shop_popup) {
-                shop_popup->setGlobalZOrder(9999);  // 确保商店面板显示在最上层
-                shop_popup->show(this);             // 将商店面板显示到当前场景（this 即为当前场景）
-            }
-        },
-        sec, "show_shop_popup_key");  // 延迟 2 秒调用
 }
 
 void MainVillage::onExit()

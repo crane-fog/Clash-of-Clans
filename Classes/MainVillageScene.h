@@ -17,9 +17,6 @@ private:
     time_t last_exit_time_ = 0;
 
 public:
-    // 背景音乐
-    int mainhome_bgm_ = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
-
     // 初始化，当对象被创建时被自动调用
     virtual bool init() override;
 
@@ -35,7 +32,22 @@ public:
     // 静态创建函数，替代构造函数，会将创建的对象自动放入自动释放池
     CREATE_FUNC(MainVillage);
 
+
+    /* 按钮回调函数 */
     void onShopButtonClick(Ref* sender);
+    void onAttackButtonClick(Ref* sender);
+    void onTroopButtonClick(Ref* sender);
+    void onLabButtonClick(Ref* sender);
+    void onMessageButtonClick(Ref* sender);
+    void onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, unsigned char& it, cocos2d::LayerColor* panel);
+
+
+    /* 建筑建造相关 */
+    // 获取大本营等级
+    unsigned char getTownHallLevel();
+
+    // 获取指定建筑数量，用于在建造建筑时限制建筑数量
+    int getBuildingCount(unsigned char archNo);
 
     bool addBuildingByNO(unsigned char no, int price);
 
@@ -51,8 +63,11 @@ public:
 
     void MainVillage::playBuildingDropEffect(Arch* arch);
 
-    // 延迟调用商店面板，sec为延迟秒数
-    void MainVillage::showShopPopupWithDelay(float sec);
+
+    // 背景音乐
+    int mainhome_bgm_ = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
+};
+
 
     // 按钮回调函数
     void onAttackButtonClick(Ref* sender);

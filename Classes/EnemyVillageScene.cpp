@@ -365,7 +365,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
         touch_listener->onTouchBegan = [this, item_bg, i](cocos2d::Touch* touch, cocos2d::Event* event) {
             cocos2d::Rect button_rect = item_bg->getBoundingBox();
             if (button_rect.containsPoint(touch->getLocation())) {
-                this->onButtonClick(item_bg, i);
+                this->onTroopButtonClick(item_bg, i);
                 return true;
             }
             return false;
@@ -374,7 +374,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
     }
 }
 // 点击按钮时的处理函数
-void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
+void EnemyVillage::onTroopButtonClick(cocos2d::LayerColor* itemBg, int index)
 {
     // bool is_c = ResourceManager::getInstance()->is_replay_;
     if (1) {

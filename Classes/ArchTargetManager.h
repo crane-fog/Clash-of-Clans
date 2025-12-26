@@ -10,7 +10,6 @@ private:
     ArchTargetManager(const ArchTargetManager&) = delete;
     ArchTargetManager& operator=(const ArchTargetManager&) = delete;
 
-protected:
     std::vector<IArchTarget*> targets_;
 
 public:
