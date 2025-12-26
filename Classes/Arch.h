@@ -37,7 +37,6 @@ protected:
     // 当前容量（仅适用于资源生产建筑，储存建筑的容量在游戏中由ResourceManager类管理）
     UI current_capacity_;
 
-
     /* 攻击相关 */
     // 计时器
     float attack_timer_ = 0.0f;
@@ -47,7 +46,6 @@ protected:
     virtual void update(float dt) override;
 
     void tryAttack(float dt);
-
 
     /* 杂项 */
     // 所在的地图指针
@@ -78,7 +76,6 @@ public:
     virtual void onEnter() override;
     virtual void onExit() override;
 
-
     /* 建筑拖动相关 */
     bool is_dragging_ = false;
     cocos2d::Vec2 touch_start_pos_;
@@ -98,13 +95,11 @@ public:
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) {}
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) {}
 
-
     /* 触摸事件回调 */
     bool onTouchDown(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchUp(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchMove(cocos2d::Touch* touch, cocos2d::Event* event);
     void onTouchCancel(cocos2d::Touch* touch, cocos2d::Event* event);
-
 
     /* ITroopTarget 接口实现 */
     virtual void onDeath();
@@ -112,7 +107,6 @@ public:
     virtual cocos2d::Vec2 getCellPosition(float& size) const override;
     virtual bool isAlive() const override { return current_hp_ > 0; }
     virtual UC getTargetType() const override { return kArchInfo.at(no_)[level_ - 1].type_; }
-
 
     /* 建筑面板及升级相关 */
     virtual void showArchPanel();
@@ -124,11 +118,11 @@ public:
 
     // 检查是否可以升级
     void archUpgrade();
-    //显示升级信息对比面板
+    // 显示升级信息对比面板
     virtual void createUpgradeComparisonPanel();
-    //取消升级
+    // 取消升级
     void onUpgradeCancel(Ref* sender);
-    //检查升级资源并显示升级效果
+    // 检查升级资源并显示升级效果
     void buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
                           bool type);
     // 开始升级动画
@@ -143,7 +137,6 @@ public:
     // 更新建筑的信息面板
     void updateBuildingDisplay();
 
-
     /* 杂项 */
     // 资源生产
     void startResourceProduction();
@@ -152,11 +145,11 @@ public:
     bool is_destroyed_ = false;
 
     UI getx() const { return this->x_; }
-    //获取y坐标
+    // 获取y坐标
     UI gety() const { return this->y_; }
-    //获取建筑编号
+    // 获取建筑编号
     UC getNo() const { return no_; }
-    //获取建筑等级
+    // 获取建筑等级
     UC getLevel() const { return level_; }
 
     friend class ShopPopup;

@@ -13,15 +13,15 @@
 
 // 进度条结构体
 struct ProgressBarData {
-    //进度条
+    // 进度条
     cocos2d::ui::LoadingBar* loading_bar_;
-    //进度条背景
+    // 进度条背景
     cocos2d::LayerColor* background_;
-    //百分比标签
+    // 百分比标签
     cocos2d::Label* percent_label_;
-    //资源图标
+    // 资源图标
     cocos2d::Sprite* icon_;
-    //资源名称
+    // 资源名称
     std::string title_;
 };
 
@@ -78,24 +78,24 @@ public:
                std::function<void()> onComplete = nullptr);
 
 private:
-    //剩余施工时间
+    // 剩余施工时间
     unsigned int remaining_time_;
-    //总施工时间
+    // 总施工时间
     unsigned int total_time_;
-    //是否正在施工
+    // 是否正在施工
     bool is_running_;
     std::function<void(int)> on_tick_;
-    //是否完工
+    // 是否完工
     std::function<void()> on_complete_;
-    //更新时间
+    // 更新时间
     void updateTimer(float dt);
 };
-//施工中的建筑类型
+// 施工中的建筑类型
 enum Buidlingtype : bool { NEW_BUIDING = 0, UPGRADING = 1 };
 
 class UICommonHelper : public cocos2d::Node {
 private:
-    int can_confirm_ = -1;//是否有选中
+    int can_confirm_ = -1;                             // 是否有选中
     cocos2d::LayerColor* selected_item_bg_ = nullptr;  // 当前选中的战斗场景
 
 public:

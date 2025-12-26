@@ -209,10 +209,7 @@ void BaseMap::onTouchesEnded(const std::vector<Touch*>& touches, Event* event)
     }
 }
 
-void BaseMap::onTouchesCancelled(const std::vector<Touch*>& touches, Event* event)
-{
-    onTouchesEnded(touches, event);
-}
+void BaseMap::onTouchesCancelled(const std::vector<Touch*>& touches, Event* event) { onTouchesEnded(touches, event); }
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 void BaseMap::onMouseScroll(Event* event)

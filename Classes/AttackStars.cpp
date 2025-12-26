@@ -92,7 +92,7 @@ void AttackStars::setStarColor(cocos2d::Sprite* star, bool isAchieved)
 void AttackStars::checkForUpdates(float dt)
 {
     if (is_showing_victory_) return;  // 正在显示胜利画面，不再更新
-     
+
     CCLOG("=== 进度检查开始 ===");
 
     // 1. 检查建筑死亡数量

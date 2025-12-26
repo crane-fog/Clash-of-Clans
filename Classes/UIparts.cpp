@@ -447,7 +447,8 @@ void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
     std::vector<ReplayData> replays;
     try {
         DataHelper::readReplayData(kReplayDataFile, replays);
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         CCLOG("Failed to read replay data in UICommonHelper::showReplayPanel(): %s", e.what());
     }
 

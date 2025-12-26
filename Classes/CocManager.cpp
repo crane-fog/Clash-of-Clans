@@ -1,16 +1,16 @@
 #include "CocManager.h"
 
-#include "EnemyVillageScene.h"
-#include "MainVillageScene.h"
 #include "Arch.h"
-#include "ArchInfo.h"
-#include "Troop.h"
-#include "Barbarian.h"
 #include "Archer.h"
-#include "Giant.h"
-#include "WallBreaker.h"
+#include "ArchInfo.h"
 #include "Balloon.h"
+#include "Barbarian.h"
 #include "Dragon.h"
+#include "EnemyVillageScene.h"
+#include "Giant.h"
+#include "MainVillageScene.h"
+#include "Troop.h"
+#include "WallBreaker.h"
 
 USING_NS_CC;
 

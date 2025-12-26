@@ -25,7 +25,6 @@ public:
     virtual bool myInit(int level);
     static EnemyVillage* create(int level);
 
-
     /* 士兵部署相关 */
     std::vector<unsigned int> troop_placed_counts_;    // 已放置数量
     std::vector<cocos2d::LayerColor*> troop_buttons_;  // 按钮
@@ -46,7 +45,6 @@ public:
 
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
 
-
     /* 回放相关 */
     static EnemyVillage* createReplay(const ReplayData& data);
 
@@ -56,7 +54,6 @@ public:
     ReplayData current_replay_data_;
     std::chrono::steady_clock::time_point first_deployment_time_;
     bool has_deployed_troop_ = false;
-
 
     // 背景音乐
     int attacking_bgm_ = cocos2d::AudioEngine::play2d("music/attacking.mp3");

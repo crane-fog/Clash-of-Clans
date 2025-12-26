@@ -47,7 +47,8 @@ bool EnemyVillage::myInit(int level)
     time_t data_time = 0;
     try {
         DataHelper::readArchData(kOfflineDataFile[level], data_time, arch_status_);
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         CCLOG("Failed to read arch data in EnemyVillage::myInit(): %s", e.what());
         return false;
     }
@@ -169,7 +170,8 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
     if (!is_replay && !current_replay_data_.deployments_.empty()) {
         try {
             DataHelper::addReplayData(kReplayDataFile, current_replay_data_);
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             CCLOG("Failed to add replay data in EnemyVillage::onExitButtonClick(): %s", e.what());
         }
     }
@@ -180,7 +182,7 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
         int total_arch = TroopTargetManager::getInstance()->getlivingsum();
         int dead_arch = TroopTargetManager::getInstance()->getDeadsum();
         unsigned char progress = std::max(static_cast<unsigned char>((dead_arch * 100) / total_arch),
-                                CocManager::getInstance()->level_info_list_.at(level - 1).progress_);
+                                          CocManager::getInstance()->level_info_list_.at(level - 1).progress_);
         CocManager::getInstance()->level_info_list_.at(level - 1).progress_ = progress;
     }
 
@@ -504,7 +506,5 @@ void EnemyVillage::update(float dt)
     showInvalidSpawnMessage("进攻失败！", 3.0f);
 
     // 延迟退出
-    this->scheduleOnce([this](float dt) {
-        this->onExitButtonClick(nullptr);
-    }, 3.0f, "defeat_exit");
+    this->scheduleOnce([this](float dt) { this->onExitButtonClick(nullptr); }, 3.0f, "defeat_exit");
 }

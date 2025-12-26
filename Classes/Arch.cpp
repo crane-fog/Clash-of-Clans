@@ -645,7 +645,7 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice)
                         this->unschedule("stop_audio_key");  // 停止检查
                     }
                 },
-                0.1f, "stop_audio_key"); 
+                0.1f, "stop_audio_key");
             // 更新UI显示
             showArchPanel();
             // 移除加速按钮
@@ -862,7 +862,7 @@ void Arch::updateBuildingDisplay()
         icon->setTouchEnabled(true);
         // 点击后将资源转移到总资源
         icon->addClickEventListener([=](Ref*) {
-             unsigned int collected = 0;
+            unsigned int collected = 0;
             const ArchInfo& arch_info = kArchInfo.at(no_)[level_ - 1];
 
             if (arch_info.produce_type_ == GOLD) {
@@ -1309,7 +1309,7 @@ void ArcherTower::showArchPanel()
     label->setString(str);
 }
 
-Bomb::Bomb(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) 
+Bomb::Bomb(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
 {
     if (!is_mine) {
         setVisible(false);
@@ -1395,7 +1395,7 @@ void Arch::tryAttack(float dt)
 void Bomb::update(float dt)
 {
     if (is_destroyed_) return;
-    
+
     const auto& info = kArchInfo.at(no_)[level_ - 1];
     // 隐形炸弹逻辑：检测范围内是否有敌人
     float range = info.attack_range_ / 10.0f;
@@ -1419,7 +1419,7 @@ void Bomb::update(float dt)
 void Bomb::onDeath()
 {
     setVisible(true);
-    //等待1s后执行Arch::onDeath()
+    // 等待1s后执行Arch::onDeath()
     this->runAction(
         Sequence::create(DelayTime::create(1.0f), CallFunc::create([this]() { Arch::onDeath(); }), nullptr));
 }

@@ -4,7 +4,7 @@
 #include "CocUtility.h"
 #include "TroopTargetManager.h"
 
-std::map <unsigned char, std::function<Troop*(BaseMap*, unsigned char, cocos2d::Vec2)>> TroopFactory::creaters;
+std::map<unsigned char, std::function<Troop*(BaseMap*, unsigned char, cocos2d::Vec2)>> TroopFactory::creaters;
 
 Troop::Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarget preferred_target,
              AttackType attack_type, uchar housing_space, uchar barracks_level_required, float movement_speed,
@@ -215,10 +215,10 @@ void Troop::updateMovingState(float dt)
         current_path_direction_.normalize();
 
         // 根据方向调整朝向
-        if (current_path_direction_.y > 0 ) {
+        if (current_path_direction_.y > 0) {
             this->setFlippedX(false);
         }
-        else if ( current_path_direction_.y < 0) {
+        else if (current_path_direction_.y < 0) {
             this->setFlippedX(true);
         }
         cocos2d::Vec2 new_position;

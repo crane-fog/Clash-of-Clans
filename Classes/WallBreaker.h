@@ -51,7 +51,7 @@ public:
 
     // 死亡动画&溅射伤害
     virtual void onDeath() override;
-    
+
     // 在以士兵为原点，像素坐标为pos的位置播放黑烟特效
     void playBlackSmokeAt(const cocos2d::Vec2& pos);
 };
