@@ -94,6 +94,18 @@ void Balloon::onDeath()
     this->runAction(visual_sequence);
     this->runAction(attack_sequence);
     changeStatus(DEAD);
+    // 播放攻击音效
+    int bomb_hit = cocos2d::AudioEngine::play2d("music/bomb_hit.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule(
+        [bomb_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(bomb_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/bomb_hit.mp3");
+                this->unschedule("stop_audio_key");  // 停止检查
+            }
+        },
+        0.1f, "stop_audio_key");
 }
 
 void Balloon::triggerDeathDamage()
