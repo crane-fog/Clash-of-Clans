@@ -49,10 +49,10 @@ public:
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return WALL_BREAKER; }
 
+    // 死亡动画&溅射伤害
     virtual void onDeath() override;
-
-    // virtual bool isAlive() const override { return status_!=DEAD; }
-
+    
+    // 在以士兵为原点，像素坐标为pos的位置播放黑烟特效
     void playBlackSmokeAt(const cocos2d::Vec2& pos);
 };
 

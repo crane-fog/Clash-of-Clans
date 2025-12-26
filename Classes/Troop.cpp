@@ -211,6 +211,14 @@ void Troop::updateMovingState(float dt)
         // 归一化方向向量，确保所有方向的移动速度一致
         // 斜向向量（如{1,1}）的模长为sqrt(2)，需要归一化为单位向量
         current_path_direction_.normalize();
+
+        // 根据方向调整朝向
+        if (current_path_direction_.y > 0 ) {
+            this->setFlippedX(false);
+        }
+        else if ( current_path_direction_.y < 0) {
+            this->setFlippedX(true);
+        }
         cocos2d::Vec2 new_position;
         new_position = getCellPosition() + current_path_direction_ * kMovementSpeed * dt;
         // 撞到墙上了

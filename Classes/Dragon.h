@@ -46,6 +46,9 @@ public:
     virtual TroopType getTroopTypeIndex() const override { return DRAGON; }
 
     void onDeath() override;
+
+    // 喷火动画
+    void playFlameEffect();
 };
 
 #endif  // __DRAGON_H__

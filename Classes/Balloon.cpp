@@ -17,7 +17,9 @@ Balloon::Balloon(BaseMap* base_map, int level, cocos2d::Vec2 position)
     : Troop(base_map, level, position, DEFENSE, RANGED_AOE_GROUND, 5, 6, 1.3f, 3.0f, 0.0f,
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 75, 96, 144, 216, 324}),
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 150, 180, 216, 280, 390}))
-{}
+{
+    attack_timer_ = kAttackSpeed - 0.75f;  // 初始延迟0.75秒攻击
+}
 
 Balloon* Balloon::create(BaseMap* base_map, int level, cocos2d::Vec2 position)
 {
@@ -53,6 +55,7 @@ void Balloon::performAttack()
         target->takeDamage(damage);
     }
     // 播放攻击动画
+    this->throwBomb();
     // 播放攻击音效
     int bomb_hit = cocos2d::AudioEngine::play2d("music/bomb_hit.mp3", false, 0.7f);
     // 检查音频的状态，直到播放完成
@@ -94,6 +97,18 @@ void Balloon::onDeath()
     this->runAction(visual_sequence);
     this->runAction(attack_sequence);
     changeStatus(DEAD);
+    // 播放攻击音效
+    int bomb_hit = cocos2d::AudioEngine::play2d("music/bomb_hit.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule(
+        [bomb_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(bomb_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/bomb_hit.mp3");
+                this->unschedule("stop_audio_key");  // 停止检查
+            }
+        },
+        0.1f, "stop_audio_key");
 }
 
 void Balloon::triggerDeathDamage()
@@ -109,5 +124,44 @@ void Balloon::triggerDeathDamage()
 cocos2d::Vec2 Balloon::getPixelPosition() const
 {
     cocos2d::Vec2 pixel_ground = CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
-    return cocos2d::Vec2(pixel_ground.x, pixel_ground.y + 20.0f);
+    return cocos2d::Vec2(pixel_ground.x, pixel_ground.y + kPixelYOffset);
+}
+
+void Balloon::throwBomb()
+{
+    // === 创建炸弹 ===
+    auto bomb = cocos2d::Sprite::create("troop/bomb.png");
+    if (!bomb) return;
+
+    bomb->setScale(0.75f);
+    float center_x = this->getContentSize().width * 0.5f;
+    bomb->setPosition(cocos2d::Vec2(center_x, 0));
+    this->addChild(bomb, 10);
+
+    // === 垂直下落：直接移动到目标位置 ===
+    float distance = kPixelYOffset;
+    float fall_speed = 300.0f;                  // 像素/秒
+    float duration = (distance > 0) ? distance / fall_speed : 0.5f;
+    duration = std::max(0.1f, std::min(duration, 2.0f));  // 限制合理范围
+
+    auto move_action = cocos2d::MoveTo::create(duration, cocos2d::Vec2(center_x, -distance));
+    auto cleanup = cocos2d::RemoveSelf::create();
+    auto on_arrived = cocos2d::CallFunc::create([=]() {
+        // === 播放黑烟 ===
+        auto smoke = cocos2d::Sprite::create("troop/smoke.png");
+        if (!smoke) return;
+
+        smoke->setColor(cocos2d::Color3B(100, 100, 100));
+        smoke->setPosition(cocos2d::Vec2(center_x, -distance));
+        smoke->setScale(2.0f);
+        smoke->setOpacity(255);
+        this->addChild(smoke, 10);
+
+        auto scale_action = cocos2d::ScaleTo::create(0.6f, 1.2f);
+        auto fade_action = cocos2d::FadeOut::create(1.0f);
+        auto cleanup_action = cocos2d::RemoveSelf::create();
+        smoke->runAction(cocos2d::Sequence::create(cocos2d::Spawn::create(scale_action, fade_action, nullptr),
+                                                   cleanup_action, nullptr));
+    });
+    bomb->runAction(cocos2d::Sequence::create(move_action, cleanup, on_arrived, nullptr));
 }
