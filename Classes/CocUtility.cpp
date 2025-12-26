@@ -210,6 +210,29 @@ bool DataHelper::readSourceData(const std::string& file_name, unsigned long long
     return true;
 }
 
+bool DataHelper::readReplayData(const std::string& filename, std::vector<ReplayData>& data)
+{
+    std::ifstream infile(filename, std::ios::binary);
+    if (!infile) {
+        return false;
+    }
+    size_t count = 0;
+    infile.read(reinterpret_cast<char*>(&count), sizeof(count));
+    data.resize(count);
+    for (size_t i = 0; i < count; ++i) {
+        size_t deploy_count = 0;
+        infile.read(reinterpret_cast<char*>(&deploy_count), sizeof(deploy_count));
+        data[i].deployments_.resize(deploy_count);
+        if (deploy_count > 0) {
+            infile.read(reinterpret_cast<char*>(data[i].deployments_.data()), deploy_count * sizeof(DeploymentInfo));
+        }
+        infile.read(reinterpret_cast<char*>(&data[i].level_), sizeof(data[i].level_));
+        infile.read(reinterpret_cast<char*>(&data[i].timestamp_), sizeof(data[i].timestamp_));
+    }
+    infile.close();
+    return true;
+}
+
 bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
                                  const unsigned long long elixir, const unsigned long long jewel)
 {
@@ -248,5 +271,22 @@ bool DataHelper::writeLevelData(const std::string& file_name, const std::vector<
     if (num > 0) {
         outfile.write(reinterpret_cast<const char*>(level_info_list.data()), sizeof(LevelInfo) * num);
     }
+    return true;
+}
+
+bool DataHelper::addReplayData(const std::string& filename, const ReplayData& data)
+{
+    std::ofstream outfile(filename, std::ios::binary | std::ios::app);
+    if (!outfile.is_open()) {
+        return false;
+    }
+    size_t deploy_count = data.deployments_.size();
+    outfile.write(reinterpret_cast<const char*>(&deploy_count), sizeof(deploy_count));
+    if (deploy_count > 0) {
+        outfile.write(reinterpret_cast<const char*>(data.deployments_.data()), deploy_count * sizeof(DeploymentInfo));
+    }
+    outfile.write(reinterpret_cast<const char*>(&data.level_), sizeof(data.level_));
+    outfile.write(reinterpret_cast<const char*>(&data.timestamp_), sizeof(data.timestamp_));
+    outfile.close();
     return true;
 }

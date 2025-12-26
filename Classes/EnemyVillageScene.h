@@ -2,10 +2,12 @@
 #define __ENEMY_VILLAGE_SCENE_H__
 
 #include <vector>
+#include <chrono>
 
 #include "AudioEngine.h"
 #include "Troop.h"
 #include "VillageScene.h"
+#include "CocUtility.h"
 
 // 敌人村庄场景类
 class EnemyVillage : public Village {
@@ -48,6 +50,10 @@ public:
     std::vector<cocos2d::LayerColor*> troop_buttons_;  // 按钮
     std::vector<cocos2d::Label*> troop_count_labels_;  // 数量标签
     unsigned char selected_troop_type_;                // 255表示未选择任何兵种
+
+    ReplayData current_replay_data_;
+    std::chrono::steady_clock::time_point first_deployment_time_;
+    bool has_deployed_troop_ = false;
 
 public:
     // 回放

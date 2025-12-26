@@ -114,9 +114,9 @@ bool EnemyVillage::myInit(int level)
         }
     }
 
-    auto barbarian2 = Barbarian::create(base_map_, 1, cocos2d::Vec2(0.5, 0.5));
-    if (!barbarian2) return false;
-    barbarian2->takeDamage(500);
+
+    has_deployed_troop_ = false;
+    current_replay_data_.level_ = level;
 
     // 添加触摸监听器来检测玩家点击的位置
     auto touch_listener = cocos2d::EventListenerTouchOneByOne::create();
@@ -173,6 +173,11 @@ bool EnemyVillage::myInit(int level)
 void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
 {
     cocos2d::AudioEngine::stop(attacking_bgm_);
+
+    // 保存回放数据
+    if (!current_replay_data_.deployments_.empty()) {
+        DataHelper::addReplayData(kReplayDataFile, current_replay_data_);
+    }
 
     for (auto troop : troop_list_) {
         troop->setDead();
@@ -258,6 +263,23 @@ bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Ve
         if (troop) {
             troop_list_.push_back(troop);
             ArchTargetManager::getInstance()->registerArchTarget(troop);
+
+            // 记录回放数据
+            if (!has_deployed_troop_) {
+                first_deployment_time_ = std::chrono::steady_clock::now();
+                has_deployed_troop_ = true;
+            }
+
+            auto now = std::chrono::steady_clock::now();
+            float time_diff = std::chrono::duration<float>(now - first_deployment_time_).count();
+
+            DeploymentInfo info;
+            info.type_ = type;
+            info.time_ = time_diff;
+            info.x_ = position.x;
+            info.y_ = position.y;
+            current_replay_data_.deployments_.push_back(info);
+
             return true;
         }
     }

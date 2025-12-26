@@ -14,6 +14,7 @@ const std::string kMainVillageDataFile = "data/MainVillageData.dat";
 const std::string kOfflineDataFile[] = {
     "data/LevelInfo.dat", "data/Level1.dat", "data/Level2.dat", "data/Level3.dat", "data/Level4.dat",
 };
+const std::string kReplayDataFile = "data/ReplayData.dat";
 
 struct LevelInfo {
     // 关卡ID
@@ -22,9 +23,22 @@ struct LevelInfo {
     // 关卡最大进度(0-100)
     unsigned char progress_;
 
-    // 剩余可获取的资源量
+    // 剩余可获取的资源量（弃用）
     unsigned int gold_;
     unsigned int elixir_;
+};
+
+struct DeploymentInfo {
+    int type_;
+    float time_;
+    float x_;
+    float y_;
+};
+
+struct ReplayData {
+    std::vector<DeploymentInfo> deployments_;
+    int level_;
+    time_t timestamp_;
 };
 
 namespace CalculateHelper {
@@ -60,12 +74,14 @@ bool readArchData(const std::string& file_name, time_t& time, ArchData target[kM
 bool readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
                            unsigned long long& jewel);
 bool readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list);
+bool readReplayData(const std::string& filename, std::vector<ReplayData>& data);
 
 // 写数据文件
 bool writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize]);
 bool writeSourceData(const std::string& file_name, const unsigned long long gold,
                             const unsigned long long elixir, const unsigned long long jewel);
 bool writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list);
+bool addReplayData(const std::string& filename, const ReplayData& data);
 }
 
 #endif  // __COC_UTILITY_H__
