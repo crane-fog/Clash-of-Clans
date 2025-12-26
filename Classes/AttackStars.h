@@ -70,7 +70,7 @@ public:
     void showPopup(cocos2d::Sprite* targetStar, int progress);
 
     // 更新摧毁进度条的回调函数
-    void checkForUpdates(float dt = 1.0f);
+    void checkForUpdates(float dt = 0);
 
     // 重置UI到原始位置
     void resetUIPosition();

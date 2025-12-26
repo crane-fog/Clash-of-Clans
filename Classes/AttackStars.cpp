@@ -67,7 +67,7 @@ bool AttackStars::init()
     }
 
     // 启动定时检查
-    this->schedule(CC_CALLBACK_1(AttackStars::checkForUpdates, this), 0.5f, "update_checker");
+    this->schedule(CC_CALLBACK_1(AttackStars::checkForUpdates, this), 0, "update_checker");
 
     return true;
 }
@@ -156,12 +156,6 @@ void AttackStars::showVictoryScreen()
     auto visible_size = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     Vec2 center = Vec2(visible_size.width / 2, visible_size.height / 2);
-
-    // 设置进度
-    if (!CocManager::getInstance()->isReplay()) {
-        int level = CocManager::getInstance()->getCurrentScene();
-        CocManager::getInstance()->level_info_list_.at(level - 1).progress_ = 100;
-    }
 
     // 1. 创建全屏黑色半透明遮盖
     auto full_screen_mask = LayerColor::create(Color4B(0, 0, 0, 200));

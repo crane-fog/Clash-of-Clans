@@ -34,7 +34,7 @@ public:
 
     bool spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Vec2 position);
 
-    void showInvalidSpawnMessage(std::string text = "不可以把士兵放在这里");
+    void showInvalidSpawnMessage(std::string text = "不可以把士兵放在这里", float time = 1.0f);
 
     void updateTroopCountLabel(unsigned int index);
 
@@ -63,6 +63,12 @@ public:
 
     // 退出按钮回调
     void onExitButtonClick(cocos2d::Ref* sender);
+
+    // 游戏结束标志
+    bool is_game_over_ = false;
+
+    // 每帧更新
+    virtual void update(float dt) override;
 };
 
 #endif  // __ENEMY_VILLAGE_SCENE_H__

@@ -153,6 +153,8 @@ bool EnemyVillage::myInit(int level)
 
     selected_troop_type_ = 0;
     // UnitManager::getInstance()->clearUnits();
+
+    this->scheduleUpdate();
     return true;
 }
 
@@ -169,6 +171,16 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
         } catch (const std::exception& e) {
             CCLOG("Failed to add replay data in EnemyVillage::onExitButtonClick(): %s", e.what());
         }
+    }
+
+    // 设置进度
+    if (!CocManager::getInstance()->isReplay()) {
+        int level = CocManager::getInstance()->getCurrentScene();
+        int total_arch = TroopTargetManager::getInstance()->getlivingsum();
+        int dead_arch = TroopTargetManager::getInstance()->getDeadsum();
+        unsigned char progress = std::max(static_cast<unsigned char>((dead_arch * 100) / total_arch),
+                                CocManager::getInstance()->level_info_list_.at(level - 1).progress_);
+        CocManager::getInstance()->level_info_list_.at(level - 1).progress_ = progress;
     }
 
     if (is_replay) {
@@ -292,16 +304,17 @@ bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Ve
     return false;
 }
 
-void EnemyVillage::showInvalidSpawnMessage(std::string text)
+void EnemyVillage::showInvalidSpawnMessage(std::string text, float time)
 {
     // 显示消息提示玩家不能在该位置生成士兵（可以使用弹窗或标签）
-    auto label = cocos2d::Label::createWithSystemFont(text, "Arial", 36);
+    auto label = cocos2d::Label::createWithSystemFont(text, "Arial", 60);
+    label->setColor(cocos2d::Color3B::RED);
     label->setPosition(cocos2d::Vec2(cocos2d::Director::getInstance()->getVisibleSize().width / 2,
                                      cocos2d::Director::getInstance()->getVisibleSize().height / 2));
     this->addChild(label, 100);
 
     // 在短时间后隐藏消息
-    auto delay = cocos2d::DelayTime::create(1.0f);
+    auto delay = cocos2d::DelayTime::create(time);
     auto remove = cocos2d::CallFunc::create([label]() { label->removeFromParent(); });
     auto sequence = cocos2d::Sequence::create(delay, remove, nullptr);
     label->runAction(sequence);
@@ -458,4 +471,39 @@ void EnemyVillage::startReplaySequence()
             }
         },
         0.1f, "replay_update");
+}
+
+void EnemyVillage::update(float dt)
+{
+    if (is_game_over_) return;
+
+    // 检查是否所有兵种都已用完
+    bool all_troops_deployed = true;
+    for (size_t i = 0; i < TROOP_TYPE_NUM; ++i) {
+        if (troop_placed_counts_[i] < TroopConfig::getInstance()->getTroopCount(kTroopTypes[i])) {
+            all_troops_deployed = false;
+            break;
+        }
+    }
+
+    if (!all_troops_deployed) return;
+
+    // 检查场上是否有存活士兵
+    bool has_alive_troops = false;
+    for (auto troop : troop_list_) {
+        if (troop->isAlive()) {
+            has_alive_troops = true;
+            break;
+        }
+    }
+    if (has_alive_troops) return;
+
+    // 如果兵放完了，且场上无存活士兵，判定失败
+    is_game_over_ = true;
+    showInvalidSpawnMessage("进攻失败！", 3.0f);
+
+    // 延迟退出
+    this->scheduleOnce([this](float dt) {
+        this->onExitButtonClick(nullptr);
+    }, 3.0f, "defeat_exit");
 }
