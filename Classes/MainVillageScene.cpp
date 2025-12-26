@@ -132,13 +132,6 @@ bool MainVillage::init()
     // base_map_->sprites_.push_back(barbarian_sprite);
     // base_map_->addChild(barbarian_sprite, 2);
 
-    // 创建UI层（固定UI层）
-    ui_layer_ = UIBars::create();
-    if (!ui_layer_) {
-        return false;
-    }
-    // UI层直接添加到场景，不受base_map变换影响
-    this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
 
     // 获取屏幕尺寸
     auto visible_size = Director::getInstance()->getVisibleSize();
@@ -239,6 +232,15 @@ bool MainVillage::init()
 void MainVillage::onEnter()
 {
     AudioEngine::resume(mainhome_bgm_);
+
+    // 创建UI层（固定UI层）
+    ui_layer_ = UIBars::create();
+    if (!ui_layer_) {
+        return ;
+    }
+    // UI层直接添加到场景，不受base_map变换影响
+    this->addChild(ui_layer_, 200);  // 较高的z-order，确保UI显示在最上层且固定
+
     // auto currentScene = Director::getInstance()->getRunningScene();
     // addLoadingLayerToCurrentScene(currentScene, 1.5f);
     if (last_exit_time_ > 0) {
@@ -629,6 +631,7 @@ void MainVillage::onLabButtonClick(Ref* sender)
         price_label->setAnchorPoint(Vec2(0.0f, 0.5f));
         price_label->setPosition(Vec2(x + 100, y - 170));
         price_label->setColor(Color3B::MAGENTA);
+        price_label->setName(Troop::getTroopNameFromEnum(kIt) + "price");
         panel->addChild(price_label);
 
         if (!is_unlocked) {
@@ -705,7 +708,7 @@ void MainVillage::onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, u
         else if (it == Troop::DRAGON)
             p = Dragon::kResearchCosts[l];
 
-        ResourceManager::getInstance()->setElixir(current_elixir - l);
+        ResourceManager::getInstance()->setElixir(current_elixir - p);
         current_elixir = ResourceManager::getInstance()->getElixir();
         auto label = dynamic_cast<Label*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "level_name"));
         label->setString("当前等级：" + std::to_string(l) + "级");
@@ -723,6 +726,9 @@ void MainVillage::onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, u
                 p = Balloon::kResearchCosts[l + 1];
             else if (it == Troop::DRAGON)
                 p = Dragon::kResearchCosts[l + 1];
+
+            auto plabel = dynamic_cast<Label*>(panel->getChildByName(Troop::getTroopNameFromEnum(it) + "price"));
+            plabel->setString("$" + std::to_string(p));
         }
         // 检查是否已达最高级
         if (l == MAX_TROOP_LEVEL || (current_elixir < p)) {
@@ -788,7 +794,7 @@ bool MainVillage::addBuildingByNO(unsigned char no, int price)
     data.y_ = kMapSize / 2;
     data.remaining_upgrade_time_ = 0;
     data.current_hp_ = info.hp_;
-    data.current_capacity_ = info.max_capacity_;  // 资源建筑容量
+    data.current_capacity_ =0;  // 资源建筑容量
 
     // 创建建筑到地图
     auto arch = Arch::create(data, base_map_);

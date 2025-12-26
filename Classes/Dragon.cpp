@@ -5,7 +5,7 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Dragon::kResearchCosts = {0, 0, 1000000, 2000000, 3000000, 3800000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Dragon::kResearchCosts = {0, 0, 10000, 20000, 30000, 38000};
 
 // 升到level级所需时间 单位：小时
 const std::array<float, MAX_TROOP_LEVEL + 1> Dragon::kResearchTimes = {0, 0, 18, 36, 72, 84};

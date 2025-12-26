@@ -627,7 +627,8 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice)
             is_upgrading_ = false;
             // 更新UI显示
             showArchPanel();
-
+            // 移除加速按钮
+            this->removeChildByName("speedUpButton");
             onUpgradeFinished();
         });
 }

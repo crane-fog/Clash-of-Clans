@@ -5,7 +5,7 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> WallBreaker::kResearchCosts = {0, 0, 80000, 200000, 450000, 1000000};
+const std::array<int, MAX_TROOP_LEVEL + 1> WallBreaker::kResearchCosts = {0, 0, 8000, 20000, 45000, 100000};
 
 // 升到level级所需时间 单位：小时
 const std::array<float, MAX_TROOP_LEVEL + 1> WallBreaker::kResearchTimes = {0, 0, 3, 4, 12, 16};

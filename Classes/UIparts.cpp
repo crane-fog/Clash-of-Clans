@@ -98,7 +98,7 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
 
     // 创建背景框
     auto background =
-        LayerColor::create(Color4B(255, 255, 255, 150), (UpperLimit == 0 ? 70.0f : 500.0f), 40.0f);  // 黑色半透明
+        LayerColor::create(Color4B(255, 255, 255, 255), (UpperLimit == 0 ? 70.0f : 500.0f), 40.0f);  // 白色
     background->setPosition(Vec2(x - 100, y - 24.0f));                                               // 设置位置
     this->addChild(background, 0);
     data.background_ = nullptr;  // 由于使用LayerColor，这里设为null

@@ -5,7 +5,7 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Archer::kResearchCosts = {0, 0, 20000, 80000, 200000, 500000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Archer::kResearchCosts = {0, 0, 2000, 8000, 20000, 50000};
 
 // 升到level级所需时间 单位：小时
 const std::array<float, MAX_TROOP_LEVEL + 1> Archer::kResearchTimes = {0, 0, 1, 2, 3, 8};

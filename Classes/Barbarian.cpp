@@ -5,7 +5,7 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Barbarian::kResearchCosts = {0, 0, 10000, 50000, 130000, 300000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Barbarian::kResearchCosts = {0, 0, 1000, 5000, 13000, 30000};
 
 // 升到level级所需时间 单位：小时
 const std::array<float, MAX_TROOP_LEVEL + 1> Barbarian::kResearchTimes = {0, 0, 0.5, 1, 2, 4};

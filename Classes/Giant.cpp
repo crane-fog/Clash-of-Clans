@@ -5,7 +5,7 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Giant::kResearchCosts = {0, 0, 40000, 150000, 400000, 800000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Giant::kResearchCosts = {0, 0, 4000, 15000, 40000, 80000};
 
 // 升到level级所需时间 单位：小时
 const std::array<float, MAX_TROOP_LEVEL + 1> Giant::kResearchTimes = {0, 0, 2, 4, 6, 12};

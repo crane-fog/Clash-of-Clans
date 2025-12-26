@@ -5,7 +5,7 @@
 #include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
-const std::array<int, MAX_TROOP_LEVEL + 1> Balloon::kResearchCosts = {0, 0, 100000, 400000, 720000, 1300000};
+const std::array<int, MAX_TROOP_LEVEL + 1> Balloon::kResearchCosts = {0, 0, 10000, 40000, 72000, 130000};
 
 // 升到level级所需时间 单位：小时
 const std::array<float, MAX_TROOP_LEVEL + 1> Balloon::kResearchTimes = {0, 0, 4, 6, 18, 24};
