@@ -1042,7 +1042,9 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
 
 GoldStorage::GoldStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
 {
-    ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    if (is_mine) {
+        ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
 }
 
 void GoldStorage::showArchPanel()
@@ -1080,7 +1082,9 @@ void GoldStorage::onUpgradeFinished()
 
 ElixirStorage::ElixirStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
 {
-    ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    if (is_mine) {
+        ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
 }
 
 void ElixirStorage::showArchPanel()
