@@ -74,7 +74,6 @@ bool Arch::initWithFile(const std::string& filename)
     return true;
 }
 
-// todo:规范化各类中的init和onEnter
 void Arch::onEnter()
 {
     Sprite::onEnter();
@@ -92,7 +91,6 @@ void Arch::onEnter()
     }
 
     // 添加触摸监听
-    // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
     if (is_mine_) {
         touch_listener_ = EventListenerTouchOneByOne::create();
         touch_listener_->setSwallowTouches(true);
@@ -309,7 +307,6 @@ void Arch::onTouchMove(Touch* touch, Event* event)
         if (new_y > kMapSize - size) new_y = kMapSize - size;
 
         // 更新位置
-        // todo:在上层的[44][44]中更新位置？
         if (new_x != x_ || new_y != y_) {
             x_ = static_cast<unsigned char>(new_x);
             y_ = static_cast<unsigned char>(new_y);
@@ -1440,7 +1437,6 @@ void Bomb::onDeath()
     this->runAction(
         Sequence::create(DelayTime::create(1.0f), CallFunc::create([this]() { Arch::onDeath(); }), nullptr));
 }
-// todo: 建筑攻击音效
 
 void Arch::onDeath()
 {

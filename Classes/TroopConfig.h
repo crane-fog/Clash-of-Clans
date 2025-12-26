@@ -10,7 +10,7 @@ const std::map<unsigned char, unsigned char> kNoHousingSpace = {{Troop::BARBARIA
                                                                 {Troop::GIANT, 5},     {Troop::WALL_BREAKER, 2},
                                                                 {Troop::DRAGON, 20},   {Troop::BALLOON, 5}};
 
-// 主要为了解决顺序和it问题 todo
+// 主要为了解决顺序和it问题
 const std::vector<unsigned char> kTroopTypes = {Troop::BARBARIAN,    Troop::ARCHER,  Troop::GIANT,
                                                 Troop::WALL_BREAKER, Troop::BALLOON, Troop::DRAGON};
 

@@ -39,9 +39,6 @@ bool BaseMap::init()
     this->addChild(lined_map_, -1);
     lined_map_->setVisible(false);  // 默认隐藏线框图
 
-    // 初始化变量
-    is_dragging_ = false;
-
     return true;
 }
 
@@ -69,22 +66,35 @@ void BaseMap::onEnter()
     float y = origin.y + (visible_size.height - final_h) / 2.0f;
     this->setPosition(Vec2(x, y));
 
-    // 创建并绑定鼠标监听器
+    // 创建并绑定触摸监听器
+    touch_listener_ = EventListenerTouchAllAtOnce::create();
+    touch_listener_->onTouchesBegan = CC_CALLBACK_2(BaseMap::onTouchesBegan, this);
+    touch_listener_->onTouchesMoved = CC_CALLBACK_2(BaseMap::onTouchesMoved, this);
+    touch_listener_->onTouchesEnded = CC_CALLBACK_2(BaseMap::onTouchesEnded, this);
+    touch_listener_->onTouchesCancelled = CC_CALLBACK_2(BaseMap::onTouchesCancelled, this);
+    // 将监听器绑定到当前节点
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(touch_listener_, this);
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+    // 创建并绑定鼠标监听器（仅用于滚轮缩放）
     mouse_listener_ = EventListenerMouse::create();
     mouse_listener_->onMouseScroll = CC_CALLBACK_1(BaseMap::onMouseScroll, this);
-    mouse_listener_->onMouseDown = CC_CALLBACK_1(BaseMap::onMouseDown, this);
-    mouse_listener_->onMouseUp = CC_CALLBACK_1(BaseMap::onMouseUp, this);
-    mouse_listener_->onMouseMove = CC_CALLBACK_1(BaseMap::onMouseMove, this);
-    // 将监听器绑定到当前节点
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouse_listener_, this);
+#endif
 }
 
 void BaseMap::onExit()
 {
+    if (touch_listener_) {
+        _eventDispatcher->removeEventListener(touch_listener_);
+        touch_listener_ = nullptr;
+    }
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     if (mouse_listener_) {
         _eventDispatcher->removeEventListener(mouse_listener_);
         mouse_listener_ = nullptr;
     }
+#endif
     Node::onExit();
 }
 
@@ -134,6 +144,77 @@ void BaseMap::checkAndClampPosition()
     this->setPosition(current_pos);
 }
 
+void BaseMap::onTouchesBegan(const std::vector<Touch*>& touches, Event* event)
+{
+    for (auto touch : touches) {
+        current_touches_.push_back(touch);
+    }
+}
+
+void BaseMap::onTouchesMoved(const std::vector<Touch*>& touches, Event* event)
+{
+    if (current_touches_.size() == 1) {
+        // 单指拖动
+        auto touch = current_touches_[0];
+        Vec2 delta = touch->getDelta();
+        this->setPosition(this->getPosition() + delta);
+        checkAndClampPosition();
+    }
+    else if (current_touches_.size() >= 2) {
+        // 双指缩放
+        auto touch1 = current_touches_[0];
+        auto touch2 = current_touches_[1];
+
+        Vec2 curPos1 = touch1->getLocation();
+        Vec2 curPos2 = touch2->getLocation();
+        Vec2 prevPos1 = touch1->getPreviousLocation();
+        Vec2 prevPos2 = touch2->getPreviousLocation();
+
+        float curDist = curPos1.distance(curPos2);
+        float prevDist = prevPos1.distance(prevPos2);
+
+        if (prevDist > 0) {
+            float scale = this->getScale();
+            float newScale = scale * (curDist / prevDist);
+
+            // 动态计算最小缩放
+            auto visible_size = Director::getInstance()->getVisibleSize();
+            Size map_size = unlined_map_->getContentSize();
+            float min_scale = std::max(visible_size.width / map_size.width, visible_size.height / map_size.height);
+
+            newScale = std::max(min_scale, std::min(newScale, 3.0f));
+
+            // 以双指中心为锚点进行缩放
+            Vec2 centerScreen = (curPos1 + curPos2) / 2;
+            Vec2 centerInMap = this->convertToNodeSpace(centerScreen);
+
+            this->setScale(newScale);
+
+            Vec2 newCenterWorld = this->convertToWorldSpace(centerInMap);
+            Vec2 offset = centerScreen - newCenterWorld;
+            this->setPosition(this->getPosition() + offset);
+
+            checkAndClampPosition();
+        }
+    }
+}
+
+void BaseMap::onTouchesEnded(const std::vector<Touch*>& touches, Event* event)
+{
+    for (auto touch : touches) {
+        auto it = std::find(current_touches_.begin(), current_touches_.end(), touch);
+        if (it != current_touches_.end()) {
+            current_touches_.erase(it);
+        }
+    }
+}
+
+void BaseMap::onTouchesCancelled(const std::vector<Touch*>& touches, Event* event)
+{
+    onTouchesEnded(touches, event);
+}
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 void BaseMap::onMouseScroll(Event* event)
 {
     EventMouse* e = (EventMouse*)event;
@@ -167,40 +248,12 @@ void BaseMap::onMouseScroll(Event* event)
 
     checkAndClampPosition();
 }
+#endif
 
-void BaseMap::onMouseDown(Event* event)
-{
-    EventMouse* e = (EventMouse*)event;
-    if (e->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
-        is_dragging_ = true;
-        last_mouse_pos_ = e->getLocation();
-        last_mouse_pos_.y = Director::getInstance()->getWinSize().height - last_mouse_pos_.y;  // 转换Y轴坐标
-    }
-}
-
-void BaseMap::onMouseUp(Event* event)
-{
-    EventMouse* e = (EventMouse*)event;
-    if (e->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
-        is_dragging_ = false;
-    }
-}
-
-void BaseMap::onMouseMove(Event* event)
-{
-    if (!is_dragging_) return;
-
-    EventMouse* e = (EventMouse*)event;
-    Vec2 current_mouse_pos = e->getLocation();
-    current_mouse_pos.y = Director::getInstance()->getWinSize().height - current_mouse_pos.y;  // 转换Y轴坐标
-    Vec2 delta = current_mouse_pos - last_mouse_pos_;
-
-    this->setPosition(this->getPosition() + delta);
-    checkAndClampPosition();
-
-    last_mouse_pos_ = current_mouse_pos;
-}
 void BaseMap::setInputEnabled(bool enabled)
 {
+    if (touch_listener_) touch_listener_->setEnabled(enabled);
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     if (mouse_listener_) mouse_listener_->setEnabled(enabled);
+#endif
 }
