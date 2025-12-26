@@ -226,7 +226,10 @@ bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
 
     // 如果位置有效（不在红色区域），生成士兵
     int index = selected_troop_type_ - 1;
-    if (index < 0) return true;
+    if (index < 0) {
+        showInvalidSpawnMessage("请选择兵种");
+        return true;
+    }
 
     int level = TroopConfig::getInstance()->getTroopLevel(kTroopTypes[index]);
     // 如果生成成功，更新计数
