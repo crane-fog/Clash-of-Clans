@@ -70,18 +70,18 @@ void mapToList(const ArchData source[kMapSize][kMapSize], std::vector<ArchData>&
 void listToMap(const std::vector<ArchData>& source, ArchData target[kMapSize][kMapSize]);
 
 // 读数据文件
-bool readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize]);
-bool readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
+void readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize]);
+void readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
                     unsigned long long& jewel);
-bool readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list);
-bool readReplayData(const std::string& filename, std::vector<ReplayData>& data);
+void readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list);
+void readReplayData(const std::string& filename, std::vector<ReplayData>& data);
 
 // 写数据文件
-bool writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize]);
-bool writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir,
+void writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize]);
+void writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir,
                      const unsigned long long jewel);
-bool writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list);
-bool addReplayData(const std::string& filename, const ReplayData& data);
+void writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list);
+void addReplayData(const std::string& filename, const ReplayData& data);
 }  // namespace DataHelper
 
 #endif  // __COC_UTILITY_H__

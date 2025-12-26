@@ -45,7 +45,10 @@ bool EnemyVillage::myInit(int level)
     time_t current_time =
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     time_t data_time = 0;
-    if (!DataHelper::readArchData(kOfflineDataFile[level], data_time, arch_status_)) {
+    try {
+        DataHelper::readArchData(kOfflineDataFile[level], data_time, arch_status_);
+    } catch (const std::exception& e) {
+        CCLOG("Failed to read arch data in EnemyVillage::myInit(): %s", e.what());
         return false;
     }
 
@@ -161,7 +164,11 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
 
     // 保存回放数据
     if (!is_replay && !current_replay_data_.deployments_.empty()) {
-        DataHelper::addReplayData(kReplayDataFile, current_replay_data_);
+        try {
+            DataHelper::addReplayData(kReplayDataFile, current_replay_data_);
+        } catch (const std::exception& e) {
+            CCLOG("Failed to add replay data in EnemyVillage::onExitButtonClick(): %s", e.what());
+        }
     }
 
     if (is_replay) {

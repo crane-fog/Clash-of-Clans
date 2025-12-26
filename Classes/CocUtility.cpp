@@ -1,6 +1,7 @@
 #include "CocUtility.h"
 
 #include <fstream>
+#include <stdexcept>
 
 #include "ArchInfo.h"
 
@@ -150,14 +151,14 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[
     }
 }
 
-bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize])
+void DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize])
 {
     unsigned char x = 0, y = 0;
     unsigned short num = 0;
     std::vector<ArchData> buffer;
     std::ifstream infile(file_name, std::ios::binary);
     if (!infile) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + file_name);
     }
 
     infile.read(reinterpret_cast<char*>(&time), sizeof(unsigned long long));
@@ -169,16 +170,15 @@ bool DataHelper::readArchData(const std::string& file_name, time_t& time, ArchDa
     listToMap(buffer, target);
 
     infile.close();
-    return true;
 }
 
-bool DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize])
+void DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize])
 {
     unsigned short num = 0;
     std::vector<ArchData> data;
     std::ofstream outfile(file_name, std::ios::binary);
     if (!outfile) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + file_name);
     }
 
     outfile.write(reinterpret_cast<const char*>(&time), sizeof(unsigned long long));
@@ -191,29 +191,26 @@ bool DataHelper::writeArchData(const std::string& file_name, time_t time, const 
     if (num > 0) {
         outfile.write(reinterpret_cast<const char*>(data.data()), sizeof(ArchData) * num);
     }
-
-    return true;
 }
 
-bool DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
+void DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
                                 unsigned long long& jewel)
 {
     std::ifstream infile(file_name, std::ios::binary);
     if (!infile) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + file_name);
     }
     infile.read(reinterpret_cast<char*>(&gold), sizeof(unsigned long long));
     infile.read(reinterpret_cast<char*>(&elixir), sizeof(unsigned long long));
     infile.read(reinterpret_cast<char*>(&jewel), sizeof(unsigned long long));
     infile.close();
-    return true;
 }
 
-bool DataHelper::readReplayData(const std::string& filename, std::vector<ReplayData>& data)
+void DataHelper::readReplayData(const std::string& filename, std::vector<ReplayData>& data)
 {
     std::ifstream infile(filename, std::ios::binary);
     if (!infile) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + filename);
     }
     size_t count = 0;
     infile.read(reinterpret_cast<char*>(&count), sizeof(count));
@@ -229,55 +226,51 @@ bool DataHelper::readReplayData(const std::string& filename, std::vector<ReplayD
         infile.read(reinterpret_cast<char*>(&data[i].timestamp_), sizeof(data[i].timestamp_));
     }
     infile.close();
-    return true;
 }
 
-bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
+void DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
                                  const unsigned long long elixir, const unsigned long long jewel)
 {
     std::ofstream outfile(file_name, std::ios::binary);
     if (!outfile) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + file_name);
     }
     outfile.write(reinterpret_cast<const char*>(&gold), sizeof(unsigned long long));
     outfile.write(reinterpret_cast<const char*>(&elixir), sizeof(unsigned long long));
     outfile.write(reinterpret_cast<const char*>(&jewel), sizeof(unsigned long long));
-    return true;
 }
 
-bool DataHelper::readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list)
+void DataHelper::readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list)
 {
     unsigned short num = 0;
     std::ifstream infile(file_name, std::ios::binary);
     if (!infile) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + file_name);
     }
     infile.read(reinterpret_cast<char*>(&num), sizeof(unsigned short));
     level_info_list.resize(num);
     infile.read(reinterpret_cast<char*>(level_info_list.data()), sizeof(LevelInfo) * num);
     infile.close();
-    return true;
 }
 
-bool DataHelper::writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list)
+void DataHelper::writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list)
 {
     unsigned short num = static_cast<unsigned short>(level_info_list.size());
     std::ofstream outfile(file_name, std::ios::binary);
     if (!outfile) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + file_name);
     }
     outfile.write(reinterpret_cast<const char*>(&num), sizeof(unsigned short));
     if (num > 0) {
         outfile.write(reinterpret_cast<const char*>(level_info_list.data()), sizeof(LevelInfo) * num);
     }
-    return true;
 }
 
-bool DataHelper::addReplayData(const std::string& filename, const ReplayData& data)
+void DataHelper::addReplayData(const std::string& filename, const ReplayData& data)
 {
     std::fstream file(filename, std::ios::binary | std::ios::in | std::ios::out);
     if (!file) {
-        return false;
+        throw std::runtime_error("Failed to open file: " + filename);
     }
     size_t count = 0;
     file.read(reinterpret_cast<char*>(&count), sizeof(count));
@@ -295,5 +288,4 @@ bool DataHelper::addReplayData(const std::string& filename, const ReplayData& da
     file.write(reinterpret_cast<const char*>(&data.timestamp_), sizeof(data.timestamp_));
 
     file.close();
-    return true;
 }

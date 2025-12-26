@@ -27,14 +27,21 @@ bool MainVillage::init()
 
     unsigned long long gold = 0, elixir = 0, jewel = 0;
     // 从数据文件中读取资源数据
-    if (!DataHelper::readSourceData(kSourceDataFile, gold, elixir, jewel)) {
+    try {
+        DataHelper::readSourceData(kSourceDataFile, gold, elixir, jewel);
+    } catch (const std::exception& e) {
+        CCLOG("Failed to read source data in MainVillage::init(): %s", e.what());
         return false;
     }
     ResourceManager::getInstance()->setGold(gold);
     ResourceManager::getInstance()->setElixir(elixir);
     ResourceManager::getInstance()->setJewel(jewel);
+
     // 从数据文件中读取关卡数据
-    if (!DataHelper::readLevelData(kOfflineDataFile[0], CocManager::getInstance()->level_info_list_)) {
+    try {
+        DataHelper::readLevelData(kOfflineDataFile[0], CocManager::getInstance()->level_info_list_);
+    } catch (const std::exception& e) {
+        CCLOG("Failed to read level data in MainVillage::init(): %s", e.what());
         return false;
     }
 
@@ -42,7 +49,10 @@ bool MainVillage::init()
     time_t current_time =
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     time_t data_time = 0;
-    if (!DataHelper::readArchData(kMainVillageDataFile, data_time, this->arch_status_)) {
+    try {
+        DataHelper::readArchData(kMainVillageDataFile, data_time, this->arch_status_);
+    } catch (const std::exception& e) {
+        CCLOG("Failed to read arch data in MainVillage::init(): %s", e.what());
         return false;
     }
 
@@ -295,14 +305,26 @@ void MainVillage::cleanup()
         arch_list.push_back(ArchData(a));
     }
     DataHelper::listToMap(arch_list, arch_status_);
-    DataHelper::writeSourceData(kSourceDataFile, ResourceManager::getInstance()->getGold(),
-                                ResourceManager::getInstance()->getElixir(),
-                                ResourceManager::getInstance()->getJewel());
-    DataHelper::writeArchData(
-        kMainVillageDataFile,
-        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
-        arch_status_);
-    DataHelper::writeLevelData(kOfflineDataFile[0], CocManager::getInstance()->level_info_list_);
+    try {
+        DataHelper::writeSourceData(kSourceDataFile, ResourceManager::getInstance()->getGold(),
+                                    ResourceManager::getInstance()->getElixir(),
+                                    ResourceManager::getInstance()->getJewel());
+    } catch (const std::exception& e) {
+        CCLOG("Failed to write source data in MainVillage::cleanup(): %s", e.what());
+    }
+    try {
+        DataHelper::writeArchData(
+            kMainVillageDataFile,
+            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
+            arch_status_);
+    } catch (const std::exception& e) {
+        CCLOG("Failed to write arch data in MainVillage::cleanup(): %s", e.what());
+    }
+    try {
+        DataHelper::writeLevelData(kOfflineDataFile[0], CocManager::getInstance()->level_info_list_);
+    } catch (const std::exception& e) {
+        CCLOG("Failed to write level data in MainVillage::cleanup(): %s", e.what());
+    }
     Village::cleanup();
 }
 
