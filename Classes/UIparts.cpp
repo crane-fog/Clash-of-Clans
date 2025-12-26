@@ -445,7 +445,12 @@ void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
 
     // 读取回放数据
     std::vector<ReplayData> replays;
-    DataHelper::readReplayData(kReplayDataFile, replays);
+    try {
+        DataHelper::readReplayData(kReplayDataFile, replays);
+    }
+    catch (const std::exception& e) {
+        CCLOG("Failed to read replay data in UICommonHelper::showReplayPanel(): %s", e.what());
+    }
 
     // 创建 ListView
     auto list_view = cocos2d::ui::ListView::create();

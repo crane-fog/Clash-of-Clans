@@ -2,21 +2,22 @@
 #define __SHOP_POPUP_H__
 
 #include <string.h>
+
 #include "Arch.h"
 #include "BaseMap.h"
 #include "CocManager.h"
 #include "TroopTargetManager.h"
 #include "ui/CocosGUI.h"
-//商店物品类别，1为建筑，2为法术，3为抽卡
+// 商店物品类别，1为建筑，2为法术，3为抽卡
 enum ShopType : int { buildingItems = 1, magicItems = 2, gachaItems = 3 };
-//稀有度
+// 稀有度
 enum Rarity : int {
     RARITY_N = 0,   // 普通
     RARITY_R = 1,   // 稀有
     RARITY_SR = 2,  // 超级稀有
     RARITY_SSR = 3  // 特级稀有
 };
-//商店物品结构体
+// 商店物品结构体
 struct ShopItem {
     // 标签
     int id_;
@@ -207,8 +208,6 @@ private:
     std::vector<ShopItem> ten_results_;
 
 public:
-
-
     // 创建函数宏
     CREATE_FUNC(ShopPopup);
 

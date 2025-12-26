@@ -10,19 +10,26 @@ const int kMapSize = 44;
 // 作为整个地图的容器，允许整体缩放和移动
 class BaseMap : public cocos2d::Node {
 private:
-    // 鼠标事件回调
+    // 触摸事件回调
+    void onTouchesBegan(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
+    void onTouchesMoved(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
+    void onTouchesEnded(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
+    void onTouchesCancelled(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event* event);
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+    // 鼠标滚轮回调
     void onMouseScroll(cocos2d::Event* event);
-    void onMouseDown(cocos2d::Event* event);
-    void onMouseUp(cocos2d::Event* event);
-    void onMouseMove(cocos2d::Event* event);
+#endif
 
     // 检查边界并修正位置
     void checkAndClampPosition();
 
-    // 用于鼠标监听相关的变量
-    bool is_dragging_ = false;
-    cocos2d::Vec2 last_mouse_pos_;
+    // 用于触摸监听相关的变量
+    std::vector<cocos2d::Touch*> current_touches_;
+    cocos2d::EventListenerTouchAllAtOnce* touch_listener_ = nullptr;
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     cocos2d::EventListenerMouse* mouse_listener_ = nullptr;
+#endif
 
     // 背景图
     cocos2d::Sprite* lined_map_ = nullptr;

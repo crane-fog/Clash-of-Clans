@@ -74,7 +74,6 @@ bool Arch::initWithFile(const std::string& filename)
     return true;
 }
 
-// todo:规范化各类中的init和onEnter
 void Arch::onEnter()
 {
     Sprite::onEnter();
@@ -92,7 +91,6 @@ void Arch::onEnter()
     }
 
     // 添加触摸监听
-    // todo:BaseMap里使用了鼠标监听，与此处的触摸监听统一化？
     if (is_mine_) {
         touch_listener_ = EventListenerTouchOneByOne::create();
         touch_listener_->setSwallowTouches(true);
@@ -309,7 +307,6 @@ void Arch::onTouchMove(Touch* touch, Event* event)
         if (new_y > kMapSize - size) new_y = kMapSize - size;
 
         // 更新位置
-        // todo:在上层的[44][44]中更新位置？
         if (new_x != x_ || new_y != y_) {
             x_ = static_cast<unsigned char>(new_x);
             y_ = static_cast<unsigned char>(new_y);
@@ -648,7 +645,7 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice)
                         this->unschedule("stop_audio_key");  // 停止检查
                     }
                 },
-                0.1f, "stop_audio_key"); 
+                0.1f, "stop_audio_key");
             // 更新UI显示
             showArchPanel();
             // 移除加速按钮
@@ -865,7 +862,7 @@ void Arch::updateBuildingDisplay()
         icon->setTouchEnabled(true);
         // 点击后将资源转移到总资源
         icon->addClickEventListener([=](Ref*) {
-             unsigned int collected = 0;
+            unsigned int collected = 0;
             const ArchInfo& arch_info = kArchInfo.at(no_)[level_ - 1];
 
             if (arch_info.produce_type_ == GOLD) {
@@ -1042,7 +1039,9 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
 
 GoldStorage::GoldStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
 {
-    ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    if (is_mine) {
+        ResourceManager::getInstance()->setMaxGold(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
 }
 
 void GoldStorage::showArchPanel()
@@ -1080,7 +1079,9 @@ void GoldStorage::onUpgradeFinished()
 
 ElixirStorage::ElixirStorage(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
 {
-    ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    if (is_mine) {
+        ResourceManager::getInstance()->setMaxElixir(kArchInfo.at(no_)[level_ - 1].max_capacity_);
+    }
 }
 
 void ElixirStorage::showArchPanel()
@@ -1308,6 +1309,13 @@ void ArcherTower::showArchPanel()
     label->setString(str);
 }
 
+Bomb::Bomb(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine)
+{
+    if (!is_mine) {
+        setVisible(false);
+    }
+}
+
 void Bomb::showArchPanel()
 {
     if (getChildByName("ARCH_PANEL")) {
@@ -1373,18 +1381,14 @@ void Arch::tryAttack(float dt)
         attack_timer_ = 0;
         // 造成伤害
         current_target_->takeDamage(static_cast<float>(info.damage_));
-        // 播放音效
-        int arch_hit = cocos2d::AudioEngine::play2d("music/arch_hit.mp3", false, 0.7f);
-        // 检查音频的状态，直到播放完成
-        this->schedule(
-            [arch_hit, this](float dt) {
-                if (cocos2d::AudioEngine::getState(arch_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                    // 停止音效播放并释放资源
-                    cocos2d::AudioEngine::uncache("music/arch_hit.mp3");
-                    this->unschedule("stop_audio_key");  // 停止检查
-                }
-            },
-            0.1f, "stop_audio_key");
+
+        // 播放攻击音效
+        if (no_ == CANNON) {
+            cocos2d::AudioEngine::play2d("music/cannon_attack.mp3");
+        }
+        else if (no_ == ARCHER_TOWER) {
+            cocos2d::AudioEngine::play2d("music/archer_tower_attack.mp3");
+        }
     }
 }
 
@@ -1402,25 +1406,23 @@ void Bomb::update(float dt)
     IArchTarget* target = ArchTargetManager::getInstance()->getNearestArchTarget(my_pos, range, info.target_type_);
 
     if (target) {
+        setVisible(true);
         // 发现敌人，爆炸对目标造成伤害（理想情况应该是AOE，未实现）
         target->takeDamage(static_cast<float>(info.damage_));
+        // 播放爆炸音效
+        cocos2d::AudioEngine::play2d("music/bomb_hit.mp3");
         // 自身销毁
         takeDamage(static_cast<float>(current_hp_ + 1));
-        // 播放音效
-        int arch_hit = cocos2d::AudioEngine::play2d("music/arch_hit.mp3", false, 0.7f);
-        // 检查音频的状态，直到播放完成
-        this->schedule(
-            [arch_hit, this](float dt) {
-                if (cocos2d::AudioEngine::getState(arch_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                    // 停止音效播放并释放资源
-                    cocos2d::AudioEngine::uncache("music/arch_hit.mp3");
-                    this->unschedule("stop_audio_key");  // 停止检查
-                }
-            },
-            0.1f, "stop_audio_key");
     }
 }
 
+void Bomb::onDeath()
+{
+    setVisible(true);
+    // 等待1s后执行Arch::onDeath()
+    this->runAction(
+        Sequence::create(DelayTime::create(1.0f), CallFunc::create([this]() { Arch::onDeath(); }), nullptr));
+}
 
 void Arch::onDeath()
 {

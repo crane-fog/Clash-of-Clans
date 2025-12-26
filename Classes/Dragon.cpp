@@ -104,13 +104,13 @@ void Dragon::playFlameEffect()
         CCLOG("无法加载火焰图片");
         return;
     }
-    cocos2d::Vec2 start_position,end_delta;
+    cocos2d::Vec2 start_position, end_delta;
     flame->setAnchorPoint(cocos2d::Vec2(0.0f, 1.0f));
     // 设置火焰起始位置
     if (_flippedX) {
         flame->setFlippedX(true);
-        start_position = cocos2d::Vec2(20.0f,0.0f);
-        end_delta = cocos2d::Vec2(-50.0f,-0.5f);
+        start_position = cocos2d::Vec2(20.0f, 0.0f);
+        end_delta = cocos2d::Vec2(-50.0f, -0.5f);
     }
     else {
         /*start_position = cocos2d::Vec2(70.0f, 0.0f);
@@ -122,10 +122,9 @@ void Dragon::playFlameEffect()
     auto flame_world_position = this->convertToWorldSpace(start_position);
     auto flame_parent_position = parent->convertToNodeSpace(flame_world_position);
 
-    parent->addChild(flame,96);
+    parent->addChild(flame, 96);
     flame->setPosition(flame_parent_position);
     flame->setScale(0.5);
-
 
     // 移动：向右下移动（例如 x+200, y-200），根据需要调整数值
     auto moveAction = cocos2d::MoveBy::create(2.0f, end_delta);

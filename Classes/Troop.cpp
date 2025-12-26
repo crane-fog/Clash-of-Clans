@@ -4,6 +4,8 @@
 #include "CocUtility.h"
 #include "TroopTargetManager.h"
 
+std::map<unsigned char, std::function<Troop*(BaseMap*, unsigned char, cocos2d::Vec2)>> TroopFactory::creaters;
+
 Troop::Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarget preferred_target,
              AttackType attack_type, uchar housing_space, uchar barracks_level_required, float movement_speed,
              float attack_speed, float range, const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
@@ -213,10 +215,10 @@ void Troop::updateMovingState(float dt)
         current_path_direction_.normalize();
 
         // 根据方向调整朝向
-        if (current_path_direction_.y > 0 ) {
+        if (current_path_direction_.y > 0) {
             this->setFlippedX(false);
         }
-        else if ( current_path_direction_.y < 0) {
+        else if (current_path_direction_.y < 0) {
             this->setFlippedX(true);
         }
         cocos2d::Vec2 new_position;
@@ -317,4 +319,13 @@ std::string Troop::getTroopNameFromEnum(uchar troop_no)
 cocos2d::Vec2 Troop::getPixelPosition() const
 {
     return CoordAdaptor::cellToPixel(base_map_, cocos2d::Vec2(position_.x, position_.y));
+}
+
+Troop* TroopFactory::createTroop(BaseMap* base_map, unsigned char type, cocos2d::Vec2 position, unsigned char lvl)
+{
+    auto it = creaters.find(type);
+    if (it != creaters.end()) {
+        return it->second(base_map, lvl, position);
+    }
+    return nullptr;
 }

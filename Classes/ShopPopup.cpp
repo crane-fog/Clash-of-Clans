@@ -59,7 +59,7 @@ bool ShopPopup::init()
     // 面板背景
     auto panel_bg =
         LayerColor::create(Color4B(255, 204, 153, 255), visible_size.width * 0.8f, visible_size.height * 0.6f);
-    panel_bg->setPosition(Vec2(visible_size.width * 0.1f, visible_size.height * 0.2f));
+    panel_bg->setPosition(Vec2(visible_size.width * 0.1f, visible_size.height * 0.15f));
     this->addChild(panel_bg);
 
     // 添加边框
@@ -503,7 +503,7 @@ void ShopPopup::close()
 }
 void ShopPopup::show(Node* parent)
 {
-    parent->addChild(this, 100);
+    parent->addChild(this, 99999);
 
     // 显示动画
     this->setScale(0.1f);

@@ -140,7 +140,7 @@ void Balloon::throwBomb()
 
     // === 垂直下落：直接移动到目标位置 ===
     float distance = kPixelYOffset;
-    float fall_speed = 300.0f;                  // 像素/秒
+    float fall_speed = 300.0f;  // 像素/秒
     float duration = (distance > 0) ? distance / fall_speed : 0.5f;
     duration = std::max(0.1f, std::min(duration, 2.0f));  // 限制合理范围
 
