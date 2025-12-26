@@ -2,6 +2,7 @@
 #define __COCCONTROLLER_H__
 
 #include <vector>
+
 #include "CocUtility.h"
 
 // 控制程序运行流程的单例类（实际上相当于对 Director 又做了一层封装？）

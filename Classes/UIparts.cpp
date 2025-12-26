@@ -4,8 +4,8 @@
 #include <sstream>
 
 #include "cocos/ui/CocosGUI.h"
-#include "MainVillageScene.h"
 #include "EnemyVillageScene.h"
+#include "MainVillageScene.h"
 
 USING_NS_CC;
 using namespace ui;
@@ -46,20 +46,20 @@ bool UIBars::init()
     // 注册金币更新事件监听
     gold_update_listener_ =
         cocos2d::EventListenerCustom::create("update_gold_event", CC_CALLBACK_1(UIBars::onGoldUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(gold_update_listener_,
-                                                                                                   this);
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        gold_update_listener_, this);
 
     // 注册圣水更新事件监听
     elixir_update_listener_ =
         cocos2d::EventListenerCustom::create("update_elixir_event", CC_CALLBACK_1(UIBars::onElixirUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixir_update_listener_,
-                                                                                                   this);
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        elixir_update_listener_, this);
 
     // 注册宝石更新事件监听
     elixir_update_listener_ =
         cocos2d::EventListenerCustom::create("update_jewel_event", CC_CALLBACK_1(UIBars::onJewelUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixir_update_listener_,
-                                                                                                   this);
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        elixir_update_listener_, this);
 
     // 注册最大金币更新事件监听
     max_gold_update_listener_ =
@@ -69,7 +69,7 @@ bool UIBars::init()
 
     // 注册最大圣水更新事件监听
     max_elixir_update_listener_ = cocos2d::EventListenerCustom::create("update_max_elixir_event",
-                                                                   CC_CALLBACK_1(UIBars::onMaxElixirUpdated, this));
+                                                                       CC_CALLBACK_1(UIBars::onMaxElixirUpdated, this));
     cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
         max_elixir_update_listener_, this);
 
@@ -86,7 +86,7 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
     data.icon_ = Sprite::create(iconPath);  // 图标图片
     if (data.icon_) {
         data.icon_->setPosition(Vec2(x + (UpperLimit == 0 ? 20 : 450), y));  // 滑动条右边
-        data.icon_->setScale(1.0f);                 // 调整图标大小
+        data.icon_->setScale(1.0f);                                          // 调整图标大小
         this->addChild(data.icon_);
     }
     // 创建标题
@@ -97,14 +97,15 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
     this->addChild(title_label);
 
     // 创建背景框
-    auto background = LayerColor::create(Color4B(255, 255, 255, 150), (UpperLimit == 0 ? 70.0f : 500.0f), 40.0f);  // 黑色半透明
-    background->setPosition(Vec2(x - 100, y - 24.0f));                           // 设置位置
+    auto background =
+        LayerColor::create(Color4B(255, 255, 255, 150), (UpperLimit == 0 ? 70.0f : 500.0f), 40.0f);  // 黑色半透明
+    background->setPosition(Vec2(x - 100, y - 24.0f));                                               // 设置位置
     this->addChild(background, 0);
     data.background_ = nullptr;  // 由于使用LayerColor，这里设为null
 
     if (UpperLimit > 0) {
         float percent = nowAmount * 100.0f / UpperLimit;
-    
+
         // 创建进度条
         data.loading_bar_ = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
         if (data.loading_bar_) {
@@ -345,7 +346,8 @@ void UICommonHelper::createOptionItem(cocos2d::Node* panel, int index, const std
 
     // 显示进度
     if (progress >= 0) {
-        auto progress_label = cocos2d::Label::createWithSystemFont(StringUtils::format("进度: %d%%", progress), "Arial", 28);
+        auto progress_label =
+            cocos2d::Label::createWithSystemFont(StringUtils::format("进度: %d%%", progress), "Arial", 28);
         progress_label->setPosition(cocos2d::Vec2(button_width / 2, 65));
         progress_label->setColor(cocos2d::Color3B(cocos2d::Color3B::WHITE));
         item_bg->addChild(progress_label, 150);
@@ -456,7 +458,7 @@ void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
     list_bg->setContentSize(list_view->getContentSize());
     list_bg->setPosition(list_view->getPosition());
     panel->addChild(list_bg);
-    
+
     panel->addChild(list_view);
 
     for (auto it = replays.rbegin(); it != replays.rend(); ++it) {
@@ -464,7 +466,7 @@ void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
         auto layout = cocos2d::ui::Layout::create();
         layout->setLayoutType(cocos2d::ui::Layout::Type::RELATIVE);
         layout->setContentSize(cocos2d::Size(list_view->getContentSize().width, 100));
-        
+
         // 背景
         auto bg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 50));
         bg->setContentSize(layout->getContentSize());
@@ -475,16 +477,18 @@ void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
         localtime_s(&time_info, &replay.timestamp_);
         std::stringstream ss;
         ss << std::put_time(&time_info, "%Y-%m-%d %H:%M:%S");
-        
+
         auto time_label = cocos2d::Label::createWithSystemFont(ss.str(), "Arial", 36);
         time_label->setAnchorPoint(cocos2d::Vec2(0, 0.5));
         time_label->setPosition(cocos2d::Vec2(20, layout->getContentSize().height / 2));
         layout->addChild(time_label);
 
         // 关卡
-        auto level_label = cocos2d::Label::createWithSystemFont(StringUtils::format("Level: %d", replay.level_), "Arial", 36);
+        auto level_label =
+            cocos2d::Label::createWithSystemFont(StringUtils::format("Level: %d", replay.level_), "Arial", 36);
         level_label->setAnchorPoint(cocos2d::Vec2(1, 0.5));
-        level_label->setPosition(cocos2d::Vec2(layout->getContentSize().width - 20, layout->getContentSize().height / 2));
+        level_label->setPosition(
+            cocos2d::Vec2(layout->getContentSize().width - 20, layout->getContentSize().height / 2));
         layout->addChild(level_label);
 
         // 添加点击事件

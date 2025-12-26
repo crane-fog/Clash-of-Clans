@@ -1,8 +1,8 @@
 #include "AttackStars.h"
 
 #include "cocos/ui/CocosGUI.h"
-#include "MainVillageScene.h"
 #include "EnemyVillageScene.h"
+#include "MainVillageScene.h"
 #include "UIparts.h"
 USING_NS_CC;
 using namespace ui;
@@ -239,9 +239,7 @@ void AttackStars::showVictoryScreen()
     // 7. 吞噬触摸事件，防止点击到后面的游戏内容
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
-    listener->onTouchBegan = [](Touch* touch, Event* event) {
-        return true;
-    };
+    listener->onTouchBegan = [](Touch* touch, Event* event) { return true; };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, full_screen_mask);
 }
 

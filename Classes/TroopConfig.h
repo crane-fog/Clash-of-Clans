@@ -35,7 +35,7 @@ private:
 
     // 兵种等级
     std::map<unsigned char, int> k_troop_levels_ = {{Troop::BARBARIAN, 1},    {Troop::ARCHER, 1}, {Troop::GIANT, 1},
-                                                 {Troop::WALL_BREAKER, 1}, {Troop::DRAGON, 1}, {Troop::BALLOON, 1}};
+                                                    {Troop::WALL_BREAKER, 1}, {Troop::DRAGON, 1}, {Troop::BALLOON, 1}};
 
 public:
     static TroopConfig* getInstance();

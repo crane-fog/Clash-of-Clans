@@ -5,7 +5,7 @@
 
 class HealthBar : public cocos2d::Sprite {
 private:
-    const float kPadding = 2.0f;            // 前景与背景的内边距（单边）
+    const float kPadding = 2.0f;           // 前景与背景的内边距（单边）
     const float kMaxHeight = 10.0f;        // 血条高度
     const float kScheduleInterval = 5.0f;  // 几秒后隐藏血条
     float max_health_ = 0;

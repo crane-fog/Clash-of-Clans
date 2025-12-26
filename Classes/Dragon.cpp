@@ -1,8 +1,8 @@
 #include "Dragon.h"
 
 #include "AudioEngine.h"
-#include "TroopTargetManager.h"
 #include "CocUtility.h"
+#include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
 const std::array<int, MAX_TROOP_LEVEL + 1> Dragon::kResearchCosts = {0, 0, 1000000, 2000000, 3000000, 3800000};

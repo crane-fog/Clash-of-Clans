@@ -115,7 +115,6 @@ bool EnemyVillage::myInit(int level)
         }
     }
 
-
     has_deployed_troop_ = false;
     current_replay_data_.level_ = level;
     current_replay_data_.timestamp_ = current_time;
@@ -140,7 +139,7 @@ bool EnemyVillage::myInit(int level)
     auto origin = cocos2d::Director::getInstance()->getVisibleOrigin();
 
     auto close_item = cocos2d::MenuItemLabel::create(cocos2d::Label::createWithSystemFont("退出", "Arial", 72),
-                                                    CC_CALLBACK_1(EnemyVillage::onExitButtonClick, this));
+                                                     CC_CALLBACK_1(EnemyVillage::onExitButtonClick, this));
 
     // auto replayItem = cocos2d::MenuItemLabel::create(
     //     cocos2d::Label::createWithSystemFont("回放战斗", "Arial",50),
@@ -193,10 +192,11 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
     }
     TroopTargetManager::getInstance()->clear();
     ArchTargetManager::getInstance()->clear();
-    
+
     if (is_replay) {
         cocos2d::Director::getInstance()->popScene();
-    } else {
+    }
+    else {
         CocManager::getInstance()->changeScene();
     }
 }
@@ -352,7 +352,8 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
 
         float max_size = 180.0f;
         auto item_pic = cocos2d::Sprite::create(kIconPaths.at(kTroopTypes[i]));
-        float scale = std::min(max_size / item_pic->getContentSize().width, max_size / item_pic->getContentSize().height);
+        float scale =
+            std::min(max_size / item_pic->getContentSize().width, max_size / item_pic->getContentSize().height);
         item_pic->setPosition(cocos2d::Vec2(button_width / 2, button_height / 2));
         item_pic->setScale(scale);
 
@@ -407,7 +408,8 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
             removeBorder(selected_item_bg_);
         }
         // 检查是否已达到上限
-        if (index <= 5 && troop_placed_counts_[index] >= TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])) {
+        if (index <= 5 &&
+            troop_placed_counts_[index] >= TroopConfig::getInstance()->getTroopCount(kTroopTypes[index])) {
             showInvalidSpawnMessage(Troop::getTroopNameFromEnum(kTroopTypes[index]) + "已达到上限！");
             return;
         }
@@ -445,22 +447,25 @@ void EnemyVillage::startReplaySequence()
 
     first_deployment_time_ = std::chrono::steady_clock::now();
 
-    this->schedule([this](float dt){
-        if (current_replay_data_.deployments_.empty()) {
-            return;
-        }
-
-        auto now = std::chrono::steady_clock::now();
-        float elapsed = std::chrono::duration<float>(now - first_deployment_time_).count();
-
-        auto it = current_replay_data_.deployments_.begin();
-        while (it != current_replay_data_.deployments_.end()) {
-            if (elapsed >= it->time_) {
-                spawnTroop(it->type_, 1, cocos2d::Vec2(it->x_, it->y_));
-                it = current_replay_data_.deployments_.erase(it);
-            } else {
-                break;
+    this->schedule(
+        [this](float dt) {
+            if (current_replay_data_.deployments_.empty()) {
+                return;
             }
-        }
-    }, 0.1f, "replay_update");
+
+            auto now = std::chrono::steady_clock::now();
+            float elapsed = std::chrono::duration<float>(now - first_deployment_time_).count();
+
+            auto it = current_replay_data_.deployments_.begin();
+            while (it != current_replay_data_.deployments_.end()) {
+                if (elapsed >= it->time_) {
+                    spawnTroop(it->type_, 1, cocos2d::Vec2(it->x_, it->y_));
+                    it = current_replay_data_.deployments_.erase(it);
+                }
+                else {
+                    break;
+                }
+            }
+        },
+        0.1f, "replay_update");
 }

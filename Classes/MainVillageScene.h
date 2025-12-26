@@ -4,8 +4,8 @@
 #include "Arch.h"
 #include "AudioEngine.h"
 #include "cocos2d.h"
-#include "VillageScene.h"
 #include "CocUtility.h"
+#include "VillageScene.h"
 
 // 主村庄场景类
 class MainVillage : public Village {

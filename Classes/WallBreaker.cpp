@@ -1,8 +1,8 @@
 #include "WallBreaker.h"
 
 #include "AudioEngine.h"
-#include "TroopTargetManager.h"
 #include "CocUtility.h"
+#include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
 const std::array<int, MAX_TROOP_LEVEL + 1> WallBreaker::kResearchCosts = {0, 0, 80000, 200000, 450000, 1000000};

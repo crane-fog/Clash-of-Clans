@@ -80,7 +80,6 @@ int CoordAdaptor::calcOrder(const cocos2d::Vec2& middle_pos)
     return static_cast<int>(middle_pos.x - middle_pos.y) + 50;
 }
 
-
 void DataHelper::mapToList(const ArchData source[kMapSize][kMapSize], std::vector<ArchData>& target)
 {
     unsigned char size = 0;

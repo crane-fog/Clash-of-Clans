@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "cocos2d.h"
 #include "ArchInfo.h"
 #include "BaseMap.h"
+#include "cocos2d.h"
 
 const std::string kSourceDataFile = "data/SourceData.dat";
 const std::string kMainVillageDataFile = "data/MainVillageData.dat";
@@ -44,7 +44,7 @@ struct ReplayData {
 namespace CalculateHelper {
 // 计算点到方形的最小距离
 float calculateDistanceToSquare(const cocos2d::Vec2& point, const cocos2d::Vec2& square_center, float square_size);
-};
+};  // namespace CalculateHelper
 
 namespace CoordAdaptor {
 // 格子坐标转像素坐标
@@ -58,7 +58,7 @@ cocos2d::Vec2 pixelToCell(const cocos2d::Node* const kBaseMap, const cocos2d::Ve
 
 // 层级计算
 int calcOrder(const cocos2d::Vec2& middle_pos);
-}
+}  // namespace CoordAdaptor
 
 // 数据文件操作
 namespace DataHelper {
@@ -72,16 +72,16 @@ void listToMap(const std::vector<ArchData>& source, ArchData target[kMapSize][kM
 // 读数据文件
 bool readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize]);
 bool readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
-                           unsigned long long& jewel);
+                    unsigned long long& jewel);
 bool readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list);
 bool readReplayData(const std::string& filename, std::vector<ReplayData>& data);
 
 // 写数据文件
 bool writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize]);
-bool writeSourceData(const std::string& file_name, const unsigned long long gold,
-                            const unsigned long long elixir, const unsigned long long jewel);
+bool writeSourceData(const std::string& file_name, const unsigned long long gold, const unsigned long long elixir,
+                     const unsigned long long jewel);
 bool writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list);
 bool addReplayData(const std::string& filename, const ReplayData& data);
-}
+}  // namespace DataHelper
 
 #endif  // __COC_UTILITY_H__

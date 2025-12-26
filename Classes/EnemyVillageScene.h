@@ -1,13 +1,13 @@
 #ifndef __ENEMY_VILLAGE_SCENE_H__
 #define __ENEMY_VILLAGE_SCENE_H__
 
-#include <vector>
 #include <chrono>
+#include <vector>
 
 #include "AudioEngine.h"
+#include "CocUtility.h"
 #include "Troop.h"
 #include "VillageScene.h"
-#include "CocUtility.h"
 
 // 敌人村庄场景类
 class EnemyVillage : public Village {
