@@ -1381,18 +1381,14 @@ void Arch::tryAttack(float dt)
         attack_timer_ = 0;
         // 造成伤害
         current_target_->takeDamage(static_cast<float>(info.damage_));
-        // 播放音效
-        int arch_hit = cocos2d::AudioEngine::play2d("music/arch_hit.mp3", false, 0.7f);
-        // 检查音频的状态，直到播放完成
-        this->schedule(
-            [arch_hit, this](float dt) {
-                if (cocos2d::AudioEngine::getState(arch_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
-                    // 停止音效播放并释放资源
-                    cocos2d::AudioEngine::uncache("music/arch_hit.mp3");
-                    this->unschedule("stop_audio_key");  // 停止检查
-                }
-            },
-            0.1f, "stop_audio_key");
+
+        // 播放攻击音效
+        if (no_ == CANNON) {
+            cocos2d::AudioEngine::play2d("music/cannon_attack.mp3");
+        }
+        else if (no_ == ARCHER_TOWER) {
+            cocos2d::AudioEngine::play2d("music/archer_tower_attack.mp3");
+        }
     }
 }
 
@@ -1413,6 +1409,8 @@ void Bomb::update(float dt)
         setVisible(true);
         // 发现敌人，爆炸对目标造成伤害（理想情况应该是AOE，未实现）
         target->takeDamage(static_cast<float>(info.damage_));
+        // 播放爆炸音效
+        cocos2d::AudioEngine::play2d("music/bomb_hit.mp3");
         // 自身销毁
         takeDamage(static_cast<float>(current_hp_ + 1));
         // 播放音效
