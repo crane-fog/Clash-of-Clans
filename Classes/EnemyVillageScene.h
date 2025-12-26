@@ -26,6 +26,7 @@ public:
 
     virtual bool myInit(int level);
     static EnemyVillage* create(int level);
+    static EnemyVillage* createReplay(const ReplayData& data);
 
     void onExitButtonClick(cocos2d::Ref* sender);
 
@@ -55,11 +56,8 @@ public:
     std::chrono::steady_clock::time_point first_deployment_time_;
     bool has_deployed_troop_ = false;
 
-public:
     // 回放
-    // bool onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_);
-    // void EnemyVillage::ReplayBegin();
-    // void EnemyVillage::startReplaySequence();
+    void startReplaySequence();
 };
 
 #endif  // __ENEMY_VILLAGE_SCENE_H__

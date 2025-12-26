@@ -1,5 +1,6 @@
 #include "EnemyVillageScene.h"
 
+#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -159,6 +160,7 @@ bool EnemyVillage::myInit(int level)
         cocos2d::LayerColor::create(cocos2d::Color4B(0, 0, 0, 150), visible_size.width, visible_size.height / 4);
     bg_sprite->setAnchorPoint(cocos2d::Vec2(0, 0));
     bg_sprite->setPosition(cocos2d::Vec2(0, 0));
+    bg_sprite->setTag(999);
     this->addChild(bg_sprite, 10);
     // 创建兵种按钮
     createTroopSelectionPanel(bg_sprite);
@@ -175,9 +177,15 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
 {
     cocos2d::AudioEngine::stop(attacking_bgm_);
 
+    bool is_replay = CocManager::getInstance()->isReplay();
+
     // 保存回放数据
-    if (!current_replay_data_.deployments_.empty()) {
+    if (!is_replay && !current_replay_data_.deployments_.empty()) {
         DataHelper::addReplayData(kReplayDataFile, current_replay_data_);
+    }
+
+    if (is_replay) {
+        CocManager::getInstance()->setReplay(false);
     }
 
     for (auto troop : troop_list_) {
@@ -185,7 +193,12 @@ void EnemyVillage::onExitButtonClick(cocos2d::Ref* sender)
     }
     TroopTargetManager::getInstance()->clear();
     ArchTargetManager::getInstance()->clear();
-    CocManager::getInstance()->changeScene();
+    
+    if (is_replay) {
+        cocos2d::Director::getInstance()->popScene();
+    } else {
+        CocManager::getInstance()->changeScene();
+    }
 }
 
 bool EnemyVillage::onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event)
@@ -266,20 +279,22 @@ bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Ve
             ArchTargetManager::getInstance()->registerArchTarget(troop);
 
             // 记录回放数据
-            if (!has_deployed_troop_) {
-                first_deployment_time_ = std::chrono::steady_clock::now();
-                has_deployed_troop_ = true;
+            if (!CocManager::getInstance()->isReplay()) {
+                if (!has_deployed_troop_) {
+                    first_deployment_time_ = std::chrono::steady_clock::now();
+                    has_deployed_troop_ = true;
+                }
+
+                auto now = std::chrono::steady_clock::now();
+                float time_diff = std::chrono::duration<float>(now - first_deployment_time_).count();
+
+                DeploymentInfo info;
+                info.type_ = type;
+                info.time_ = time_diff;
+                info.x_ = position.x;
+                info.y_ = position.y;
+                current_replay_data_.deployments_.push_back(info);
             }
-
-            auto now = std::chrono::steady_clock::now();
-            float time_diff = std::chrono::duration<float>(now - first_deployment_time_).count();
-
-            DeploymentInfo info;
-            info.type_ = type;
-            info.time_ = time_diff;
-            info.x_ = position.x;
-            info.y_ = position.y;
-            current_replay_data_.deployments_.push_back(info);
 
             return true;
         }
@@ -405,96 +420,47 @@ void EnemyVillage::onButtonClick(cocos2d::LayerColor* itemBg, int index)
     }
 }
 
-// bool EnemyVillage::onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_) {
-//     AudioEngine::stopAll();
-//     if (ResourceManager::getInstance()->isReplay)return false;
-//     for (auto troop : troop_list_) {
-//         troop->setDead();
-//     }
-//     TroopTargetManager::getInstance()->clear();
-//     CocManager::getInstance()->changeScene();
-//     CocManager::getInstance()->changeScene(1, gold_, elixir_);
-//     ResourceManager::getInstance()->isReplay = true;
-//     // 在UI层之后添加回放检查
-//     /*if (ResourceManager::getInstance()->isReplay) {
-//         CCLOG("检测到回放模式，准备回放");
-//
-//         // 使用scheduleOnce确保场景完全初始化
-//         this->scheduleOnce([=](float dt) {
-//             this->startReplaySequence();
-//             }, 0.0f, "init_replay");
-//     }*/
-//     return true;
-// }
-// void EnemyVillage::ReplayBegin() {
-//     bool isR = ResourceManager::getInstance()->isReplay;
-//     if (isR) {
-//         int sum = UnitManager::getInstance()->units.size();
-//         int maxSpawnCount = sum; // 设置上限
-//
-//
-//         // 定义一个定时器，每隔1秒执行一次
-//         this->schedule([=](float dt) {
-//             static int currentSpawnCount = 0;
-//             CCLOG("投放士兵");
-//             if (currentSpawnCount < maxSpawnCount) {
-//                 Unit unit = UnitManager::getInstance()->units[currentSpawnCount];
-//                 if (unit.type == 0) {
-//                     spawnBarbarian(unit.position);
-//                 }
-//                 currentSpawnCount++;
-//             }
-//
-//             }, 1.0f, "spawnUnitsWithInterval"); // 每隔1秒调用一次
-//     }
-//     //ResourceManager::getInstance()->isReplay = false;
-// }
-//
-// void EnemyVillage::startReplaySequence() {
-//     CCLOG("启动回放序列");
-//
-//     auto& units = UnitManager::getInstance()->units;
-//     CCLOG("回放单位数量: %zu", units.size());
-//
-//     if (units.empty()) {
-//         CCLOG("没有单位需要回放");
-//         return;
-//     }
-//
-//     // 创建序列动作：逐个生成士兵
-//     Vector<FiniteTimeAction*> actions;
-//
-//     for (size_t i = 0; i < units.size(); ++i) {
-//         // 延迟
-//         auto delay = DelayTime::create(1.0f);
-//
-//         // 生成士兵的动作
-//         auto spawn = CallFunc::create([this, i, &units]() {
-//             Unit unit = units[i];
-//             CCLOG("回放生成士兵 %zu: type=%d", i, unit.type);
-//
-//             switch (unit.type) {
-//                 case 0: spawnBarbarian(unit.position); break;
-//                 case 1: spawnArcher(unit.position); break;
-//                 case 2: spawnGiant(unit.position); break;
-//                 case 3: spawnBomb(unit.position); break;
-//                 case 4: spawnBalloon(unit.position); break;
-//                 case 5: spawnDragon(unit.position); break;
-//             }
-//             });
-//
-//         actions.pushBack(delay);
-//         actions.pushBack(spawn);
-//     }
-//
-//     // 添加完成回调
-//     auto finish = CallFunc::create([this]() {
-//         CCLOG("回放完成");
-//         ResourceManager::getInstance()->isReplay = false;
-//         });
-//     actions.pushBack(finish);
-//
-//     // 运行序列
-//     auto sequence = Sequence::create(actions);
-//     this->runAction(sequence);
-// }
+EnemyVillage* EnemyVillage::createReplay(const ReplayData& data)
+{
+    EnemyVillage* p_ret = new (std::nothrow) EnemyVillage();
+    if (p_ret && p_ret->myInit(data.level_)) {
+        p_ret->current_replay_data_ = data;
+        CocManager::getInstance()->setReplay(true);
+        p_ret->startReplaySequence();
+        p_ret->autorelease();
+        return p_ret;
+    }
+    else {
+        delete p_ret;
+        p_ret = nullptr;
+        return nullptr;
+    }
+}
+
+void EnemyVillage::startReplaySequence()
+{
+    // 隐藏下兵面板
+    auto bg = this->getChildByTag(999);
+    if (bg) bg->setVisible(false);
+
+    first_deployment_time_ = std::chrono::steady_clock::now();
+
+    this->schedule([this](float dt){
+        if (current_replay_data_.deployments_.empty()) {
+            return;
+        }
+
+        auto now = std::chrono::steady_clock::now();
+        float elapsed = std::chrono::duration<float>(now - first_deployment_time_).count();
+
+        auto it = current_replay_data_.deployments_.begin();
+        while (it != current_replay_data_.deployments_.end()) {
+            if (elapsed >= it->time_) {
+                spawnTroop(it->type_, 1, cocos2d::Vec2(it->x_, it->y_));
+                it = current_replay_data_.deployments_.erase(it);
+            } else {
+                break;
+            }
+        }
+    }, 0.1f, "replay_update");
+}

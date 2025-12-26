@@ -5,6 +5,7 @@
 #include "ArchTargetManager.h"
 #include "AudioEngine.h"
 #include "BaseMap.h"
+#include "CocManager.h"
 #include "CocUtility.h"
 #include "MainVillageScene.h"
 #include "ui/CocosGUI.h"
@@ -1327,14 +1328,16 @@ void Arch::takeDamage(float damage)
         float actual_damage = std::min(damage, static_cast<float>(current_hp_));
         float p = actual_damage / kArchInfo.at(no_)[level_ - 1].hp_;
         unsigned long long resource_get = static_cast<unsigned long long>(current_capacity_ * p);
-        if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
-            ResourceManager::getInstance()->setGold(std::min(ResourceManager::getInstance()->getGold() + resource_get,
-                                                             ResourceManager::getInstance()->getMaxGold()));
-        else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
-            ResourceManager::getInstance()->setElixir(
-                std::min(ResourceManager::getInstance()->getElixir() + resource_get,
-                         ResourceManager::getInstance()->getMaxElixir()));
-        ;
+        
+        if (!CocManager::getInstance()->isReplay()) {
+            if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
+                ResourceManager::getInstance()->setGold(std::min(ResourceManager::getInstance()->getGold() + resource_get,
+                                                                ResourceManager::getInstance()->getMaxGold()));
+            else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
+                ResourceManager::getInstance()->setElixir(
+                    std::min(ResourceManager::getInstance()->getElixir() + resource_get,
+                            ResourceManager::getInstance()->getMaxElixir()));
+        }
     }
     health_bar_->takeDamage(damage);
     current_hp_ -= static_cast<UI>(damage);

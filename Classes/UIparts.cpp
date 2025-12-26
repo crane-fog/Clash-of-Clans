@@ -5,6 +5,8 @@
 
 #include "cocos/ui/CocosGUI.h"
 #include "MainVillageScene.h"
+#include "EnemyVillageScene.h"
+
 USING_NS_CC;
 using namespace ui;
 
@@ -484,6 +486,20 @@ void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
         level_label->setAnchorPoint(cocos2d::Vec2(1, 0.5));
         level_label->setPosition(cocos2d::Vec2(layout->getContentSize().width - 20, layout->getContentSize().height / 2));
         layout->addChild(level_label);
+
+        // 添加点击事件
+        layout->setTouchEnabled(true);
+        layout->addTouchEventListener([replay, panel](cocos2d::Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+            if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                // 播放音效
+                cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+
+                panel->removeFromParent();
+
+                auto scene = EnemyVillage::createReplay(replay);
+                cocos2d::Director::getInstance()->pushScene(scene);
+            }
+        });
 
         list_view->pushBackCustomItem(layout);
     }

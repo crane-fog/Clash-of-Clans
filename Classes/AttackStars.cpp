@@ -158,8 +158,10 @@ void AttackStars::showVictoryScreen()
     Vec2 center = Vec2(visible_size.width / 2, visible_size.height / 2);
 
     // 设置进度
-    int level = CocManager::getInstance()->getCurrentScene();
-    CocManager::getInstance()->level_info_list_.at(level - 1).progress_ = 100;
+    if (!CocManager::getInstance()->isReplay()) {
+        int level = CocManager::getInstance()->getCurrentScene();
+        CocManager::getInstance()->level_info_list_.at(level - 1).progress_ = 100;
+    }
 
     // 1. 创建全屏黑色半透明遮盖
     auto full_screen_mask = LayerColor::create(Color4B(0, 0, 0, 200));
