@@ -52,35 +52,9 @@ bool MainVillage::init()
     time_t time_diff = current_time - data_time;
     last_exit_time_ = 0;
 
-    ArchFactory::registerCreater(
-        TOWN_HALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new TownHall(data, map, is_mine); });
-    ArchFactory::registerCreater(
-        WALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Wall(data, map, is_mine); });
-    ArchFactory::registerCreater(GOLD_STORAGE, [](const ArchData& data, BaseMap* map, bool is_mine) {
-        return new GoldStorage(data, map, is_mine);
-    });
-    ArchFactory::registerCreater(ELIXIR_STORAGE, [](const ArchData& data, BaseMap* map, bool is_mine) {
-        return new ElixirStorage(data, map, is_mine);
-    });
-    ArchFactory::registerCreater(
-        GOLD_MINE, [](const ArchData& data, BaseMap* map, bool is_mine) { return new GoldMine(data, map, is_mine); });
-    ArchFactory::registerCreater(ELIXIR_COLLECTOR, [](const ArchData& data, BaseMap* map, bool is_mine) {
-        return new ElixirCollector(data, map, is_mine);
-    });
-    ArchFactory::registerCreater(
-        BARRACKS, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Barracks(data, map, is_mine); });
-    ArchFactory::registerCreater(
-        ARMY_CAMP, [](const ArchData& data, BaseMap* map, bool is_mine) { return new ArmyCamp(data, map, is_mine); });
-    ArchFactory::registerCreater(
-        CANNON, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Cannon(data, map, is_mine); });
-    ArchFactory::registerCreater(ARCHER_TOWER, [](const ArchData& data, BaseMap* map, bool is_mine) {
-        return new ArcherTower(data, map, is_mine);
-    });
-    ArchFactory::registerCreater(
-        BOMB, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Bomb(data, map, is_mine); });
     // 找到兵营的位置
-
     bool foundBarracks = false;
+
     for (auto& arch : arch_list) {
         // 更新剩余升级时间
         if (arch.remaining_upgrade_time_ > 0) {

@@ -44,9 +44,6 @@ public:
 
     void onButtonClick(cocos2d::LayerColor* itemBg, int index);
 
-    // 利用 lambda 实现的轻量级工厂
-    std::map<unsigned char, std::function<Troop*(BaseMap*, unsigned char, cocos2d::Vec2)>> troop_factories_;
-
     std::vector<unsigned int> troop_placed_counts_;    // 已放置数量
     std::vector<cocos2d::LayerColor*> troop_buttons_;  // 按钮
     std::vector<cocos2d::Label*> troop_count_labels_;  // 数量标签

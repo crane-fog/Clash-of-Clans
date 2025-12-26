@@ -60,25 +60,6 @@ bool EnemyVillage::myInit(int level)
         int now_arch = TroopTargetManager::getInstance()->getlivingsum();
         if (arch.no_ != WALL && arch.no_ != BOMB) TroopTargetManager::getInstance()->setlivingsum(now_arch + 1);
     }
-    // todo:把建筑生成也工厂化
-    troop_factories_[Troop::BARBARIAN] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) {
-        return Barbarian::create(map, lvl, pos);
-    };
-    troop_factories_[Troop::ARCHER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) {
-        return Archer::create(map, lvl, pos);
-    };
-    troop_factories_[Troop::GIANT] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) {
-        return Giant::create(map, lvl, pos);
-    };
-    troop_factories_[Troop::WALL_BREAKER] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) {
-        return WallBreaker::create(map, lvl, pos);
-    };
-    troop_factories_[Troop::BALLOON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) {
-        return Balloon::create(map, lvl, pos);
-    };
-    troop_factories_[Troop::DRAGON] = [](BaseMap* map, int lvl, cocos2d::Vec2 pos) {
-        return Dragon::create(map, lvl, pos);
-    };
 
     // 预计算所有建筑的距离场
     TroopTargetManager::getInstance()->precomputeDistanceFields();
@@ -276,33 +257,30 @@ void EnemyVillage::disableTroopButton(unsigned int index)
 
 bool EnemyVillage::spawnTroop(unsigned char type, unsigned char lvl, cocos2d::Vec2 position)
 {
-    auto it = troop_factories_.find(type);
-    if (it != troop_factories_.end()) {
-        Troop* troop = it->second(base_map_, lvl, position);
-        if (troop) {
-            troop_list_.push_back(troop);
-            ArchTargetManager::getInstance()->registerArchTarget(troop);
+    Troop* troop = TroopFactory::createTroop(base_map_, type, position, lvl);
+    if (troop) {
+        troop_list_.push_back(troop);
+        ArchTargetManager::getInstance()->registerArchTarget(troop);
 
-            // 记录回放数据
-            if (!CocManager::getInstance()->isReplay()) {
-                if (!has_deployed_troop_) {
-                    first_deployment_time_ = std::chrono::steady_clock::now();
-                    has_deployed_troop_ = true;
-                }
-
-                auto now = std::chrono::steady_clock::now();
-                float time_diff = std::chrono::duration<float>(now - first_deployment_time_).count();
-
-                DeploymentInfo info;
-                info.type_ = type;
-                info.time_ = time_diff;
-                info.x_ = position.x;
-                info.y_ = position.y;
-                current_replay_data_.deployments_.push_back(info);
+        // 记录回放数据
+        if (!CocManager::getInstance()->isReplay()) {
+            if (!has_deployed_troop_) {
+                first_deployment_time_ = std::chrono::steady_clock::now();
+                has_deployed_troop_ = true;
             }
 
-            return true;
+            auto now = std::chrono::steady_clock::now();
+            float time_diff = std::chrono::duration<float>(now - first_deployment_time_).count();
+
+            DeploymentInfo info;
+            info.type_ = type;
+            info.time_ = time_diff;
+            info.x_ = position.x;
+            info.y_ = position.y;
+            current_replay_data_.deployments_.push_back(info);
         }
+
+        return true;
     }
     return false;
 }

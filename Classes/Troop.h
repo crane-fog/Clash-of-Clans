@@ -181,4 +181,20 @@ public:
     static std::string getTroopNameFromEnum(uchar troop_no);
 };
 
+// 兵种工厂类
+class TroopFactory {
+    using Creater = std::function<Troop*(BaseMap*, unsigned char, cocos2d::Vec2)>;
+
+private:
+    // 存储各类兵种创建函数的映射表
+    static std::map<unsigned char, Creater> creaters;
+
+public:
+    // 注册兵种创建函数，在游戏初始化时每种兵种调用一次
+    static void registerCreater(unsigned char type, const Creater& creater) { creaters[type] = creater; }
+
+    // 创建兵种实例
+    static Troop* createTroop(BaseMap* base_map, unsigned char type, cocos2d::Vec2 position, unsigned char lvl = 1);
+};
+
 #endif  // __TROOP_H__
