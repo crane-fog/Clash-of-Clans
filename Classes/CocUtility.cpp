@@ -276,17 +276,25 @@ bool DataHelper::writeLevelData(const std::string& file_name, const std::vector<
 
 bool DataHelper::addReplayData(const std::string& filename, const ReplayData& data)
 {
-    std::ofstream outfile(filename, std::ios::binary | std::ios::app);
-    if (!outfile.is_open()) {
+    std::fstream file(filename, std::ios::binary | std::ios::in | std::ios::out);
+    if (!file) {
         return false;
     }
+    size_t count = 0;
+    file.read(reinterpret_cast<char*>(&count), sizeof(count));
+    count++;
+    file.seekp(0, std::ios::beg);
+    file.write(reinterpret_cast<const char*>(&count), sizeof(count));
+    file.seekp(0, std::ios::end);
+
     size_t deploy_count = data.deployments_.size();
-    outfile.write(reinterpret_cast<const char*>(&deploy_count), sizeof(deploy_count));
+    file.write(reinterpret_cast<const char*>(&deploy_count), sizeof(deploy_count));
     if (deploy_count > 0) {
-        outfile.write(reinterpret_cast<const char*>(data.deployments_.data()), deploy_count * sizeof(DeploymentInfo));
+        file.write(reinterpret_cast<const char*>(data.deployments_.data()), deploy_count * sizeof(DeploymentInfo));
     }
-    outfile.write(reinterpret_cast<const char*>(&data.level_), sizeof(data.level_));
-    outfile.write(reinterpret_cast<const char*>(&data.timestamp_), sizeof(data.timestamp_));
-    outfile.close();
+    file.write(reinterpret_cast<const char*>(&data.level_), sizeof(data.level_));
+    file.write(reinterpret_cast<const char*>(&data.timestamp_), sizeof(data.timestamp_));
+
+    file.close();
     return true;
 }

@@ -117,6 +117,7 @@ bool EnemyVillage::myInit(int level)
 
     has_deployed_troop_ = false;
     current_replay_data_.level_ = level;
+    current_replay_data_.timestamp_ = current_time;
 
     // 添加触摸监听器来检测玩家点击的位置
     auto touch_listener = cocos2d::EventListenerTouchOneByOne::create();

@@ -96,6 +96,9 @@ public:
     // 显示挑战场景选择面板
     void showChallengeSelectionPanel(cocos2d::Node* parent);
 
+    // 显示回放面板
+    void showReplayPanel(cocos2d::Node* parent);
+
     // 选项点击事件处理
     void onOptionClick(cocos2d::LayerColor* item_bg, int index, cocos2d::ui::Button* confirm_button);
 

@@ -1,5 +1,8 @@
 #include "UIparts.h"
 
+#include <iomanip>
+#include <sstream>
+
 #include "cocos/ui/CocosGUI.h"
 #include "MainVillageScene.h"
 USING_NS_CC;
@@ -396,5 +399,92 @@ void UICommonHelper::onOptionClick(cocos2d::LayerColor* item_bg, int index, coco
         drawBorder(selected_item_bg_);
         confirm_button->setEnabled(true);
         can_confirm_ = index;
+    }
+}
+
+void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
+{
+    // 创建一个覆盖全屏的面板
+    auto visible_size = cocos2d::Director::getInstance()->getVisibleSize();
+    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));  // 黑色背景
+    parent->addChild(panel, 99999);
+
+    // 将 helper 实例添加到 panel 中，确保其生命周期跟随 panel
+    panel->addChild(this);
+
+    // 面板标题
+    auto title_label = cocos2d::Label::createWithSystemFont("回放总览", "Arial", 56);
+    title_label->setPosition(cocos2d::Vec2(visible_size.width / 2, visible_size.height - 50));
+    panel->addChild(title_label, 1);
+
+    // 退出按钮
+    auto exit_button = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exit_button->setPosition(cocos2d::Vec2(120, 100));
+    exit_button->setScale(0.7f);
+    exit_button->addClickEventListener([panel, this](cocos2d::Ref* sender) {
+        // 播放音效
+        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule(
+            [button_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/button.mp3");
+                    this->unschedule("stop_audio_key");  // 停止检查
+                }
+            },
+            0.1f, "stop_audio_key");
+
+        panel->removeFromParent();
+    });
+    panel->addChild(exit_button);
+
+    // 读取回放数据
+    std::vector<ReplayData> replays;
+    DataHelper::readReplayData(kReplayDataFile, replays);
+
+    // 创建 ListView
+    auto list_view = cocos2d::ui::ListView::create();
+    list_view->setDirection(cocos2d::ui::ScrollView::Direction::VERTICAL);
+    list_view->setBounceEnabled(true);
+    list_view->setContentSize(cocos2d::Size(visible_size.width * 0.8f, visible_size.height * 0.7f));
+    list_view->setPosition(cocos2d::Vec2(visible_size.width * 0.1f, visible_size.height * 0.15f));
+
+    auto list_bg = cocos2d::LayerColor::create(cocos2d::Color4B(0, 0, 0, 100));
+    list_bg->setContentSize(list_view->getContentSize());
+    list_bg->setPosition(list_view->getPosition());
+    panel->addChild(list_bg);
+    
+    panel->addChild(list_view);
+
+    for (auto it = replays.rbegin(); it != replays.rend(); ++it) {
+        const auto& replay = *it;
+        auto layout = cocos2d::ui::Layout::create();
+        layout->setLayoutType(cocos2d::ui::Layout::Type::RELATIVE);
+        layout->setContentSize(cocos2d::Size(list_view->getContentSize().width, 100));
+        
+        // 背景
+        auto bg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 50));
+        bg->setContentSize(layout->getContentSize());
+        layout->addChild(bg);
+
+        // 时间
+        struct tm time_info;
+        localtime_s(&time_info, &replay.timestamp_);
+        std::stringstream ss;
+        ss << std::put_time(&time_info, "%Y-%m-%d %H:%M:%S");
+        
+        auto time_label = cocos2d::Label::createWithSystemFont(ss.str(), "Arial", 36);
+        time_label->setAnchorPoint(cocos2d::Vec2(0, 0.5));
+        time_label->setPosition(cocos2d::Vec2(20, layout->getContentSize().height / 2));
+        layout->addChild(time_label);
+
+        // 关卡
+        auto level_label = cocos2d::Label::createWithSystemFont(StringUtils::format("Level: %d", replay.level_), "Arial", 36);
+        level_label->setAnchorPoint(cocos2d::Vec2(1, 0.5));
+        level_label->setPosition(cocos2d::Vec2(layout->getContentSize().width - 20, layout->getContentSize().height / 2));
+        layout->addChild(level_label);
+
+        list_view->pushBackCustomItem(layout);
     }
 }
