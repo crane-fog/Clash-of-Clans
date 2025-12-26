@@ -2,6 +2,7 @@
 #define __COCCONTROLLER_H__
 
 #include <vector>
+
 #include "CocUtility.h"
 
 // 控制程序运行流程的单例类（实际上相当于对 Director 又做了一层封装？）
@@ -12,6 +13,7 @@ private:
 
     // 一个记录当前正在运行的场景的变量，0=MainVillage，n=当前level
     int current_scene_;
+    bool is_replay_ = false;
 
 public:
     // 获取单例实例，第一次调用时创建
@@ -27,6 +29,9 @@ public:
     void changeScene(int level_no = 0);
 
     int getCurrentScene() const { return current_scene_; }
+
+    void setReplay(bool is_replay) { is_replay_ = is_replay; }
+    bool isReplay() const { return is_replay_; }
 
     // 通关数据
     std::vector<LevelInfo> level_info_list_;

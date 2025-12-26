@@ -65,6 +65,7 @@ public:
         RESOURCE = 1,               // 资源
         DEFENSE = 2,                // 防御
         WALLT = 3,                  // 城墙
+        TRAP = 4,                   // 陷阱
         NONE = 255                  // 无
     };
 
@@ -167,7 +168,7 @@ public:
     /*以下为渲染相关*/
     // 获取当前位置-像素坐标，子类需要重写来保证视觉上中心在需要的坐标
     virtual cocos2d::Vec2 getPixelPosition() const;
-    
+
     // 重写setPosition以自动同步ZOrder - 取消，一律在updateMovingState处理
     // virtual void setPosition(const cocos2d::Vec2& pos) override {
     //    Sprite::setPosition(pos);

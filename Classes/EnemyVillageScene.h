@@ -1,9 +1,11 @@
 #ifndef __ENEMY_VILLAGE_SCENE_H__
 #define __ENEMY_VILLAGE_SCENE_H__
 
+#include <chrono>
 #include <vector>
 
 #include "AudioEngine.h"
+#include "CocUtility.h"
 #include "Troop.h"
 #include "VillageScene.h"
 
@@ -24,6 +26,7 @@ public:
 
     virtual bool myInit(int level);
     static EnemyVillage* create(int level);
+    static EnemyVillage* createReplay(const ReplayData& data);
 
     void onExitButtonClick(cocos2d::Ref* sender);
 
@@ -49,11 +52,12 @@ public:
     std::vector<cocos2d::Label*> troop_count_labels_;  // 数量标签
     unsigned char selected_troop_type_;                // 255表示未选择任何兵种
 
-public:
+    ReplayData current_replay_data_;
+    std::chrono::steady_clock::time_point first_deployment_time_;
+    bool has_deployed_troop_ = false;
+
     // 回放
-    // bool onReplayButtonClick(cocos2d::Ref* sender, int gold_, int elixir_);
-    // void EnemyVillage::ReplayBegin();
-    // void EnemyVillage::startReplaySequence();
+    void startReplaySequence();
 };
 
 #endif  // __ENEMY_VILLAGE_SCENE_H__

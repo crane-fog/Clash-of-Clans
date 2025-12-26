@@ -2,12 +2,13 @@
 #define __ARCH_H__
 
 #include <string.h>
+
 #include <algorithm>
 
 #include "ArchInfo.h"
-#include "ResourceManager.h"
 #include "HealthBar.h"
 #include "ITroopTarget.h"
+#include "ResourceManager.h"
 #include "TroopConfig.h"
 #include "TroopTargetManager.h"
 #include "UIparts.h"
@@ -126,7 +127,7 @@ public:
     virtual void createUpgradeComparisonPanel();
     void onUpgradeCancel(Ref* sender);
     void buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
-                                 bool type);
+                          bool type);
     // 资源生产
     void startResourceProduction();
 
@@ -163,6 +164,7 @@ public:
     Wall(const ArchData& data, BaseMap* base_map, bool is_mine) : Arch(data, base_map, is_mine) {}
     virtual void updateWall(Arch* moving_wall = nullptr, bool is_moving = false) override;
     virtual void updateSurroundingWalls(int x, int y, bool is_moving = false) override;
+    virtual void onDeath() override;
 };
 
 class GoldStorage : public Arch {

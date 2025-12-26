@@ -98,7 +98,10 @@ void TroopTargetManager::unregisterTroopTarget(ITroopTarget* target)
     auto it = std::find(container.begin(), container.end(), target);
     if (it != container.end()) {
         // 更新被摧毁的建筑数量
-        dead_arch_++;
+        // 城墙(3)和陷阱(4)不计入摧毁进度
+        if (target_type != Troop::WALLT && target_type != Troop::TRAP) {
+            dead_arch_++;
+        }
         container.erase(it);
 
         // 清理target_map_中对应的格子

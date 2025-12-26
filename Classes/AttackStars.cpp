@@ -1,8 +1,8 @@
 #include "AttackStars.h"
 
 #include "cocos/ui/CocosGUI.h"
-#include "MainVillageScene.h"
 #include "EnemyVillageScene.h"
+#include "MainVillageScene.h"
 #include "UIparts.h"
 USING_NS_CC;
 using namespace ui;
@@ -67,7 +67,7 @@ bool AttackStars::init()
     }
 
     // 启动定时检查
-    this->schedule(CC_CALLBACK_1(AttackStars::checkForUpdates, this), 2.0f, "update_checker");
+    this->schedule(CC_CALLBACK_1(AttackStars::checkForUpdates, this), 0.5f, "update_checker");
 
     return true;
 }
@@ -158,8 +158,10 @@ void AttackStars::showVictoryScreen()
     Vec2 center = Vec2(visible_size.width / 2, visible_size.height / 2);
 
     // 设置进度
-    int level = CocManager::getInstance()->getCurrentScene();
-    CocManager::getInstance()->level_info_list_.at(level - 1).progress_ = 100;
+    if (!CocManager::getInstance()->isReplay()) {
+        int level = CocManager::getInstance()->getCurrentScene();
+        CocManager::getInstance()->level_info_list_.at(level - 1).progress_ = 100;
+    }
 
     // 1. 创建全屏黑色半透明遮盖
     auto full_screen_mask = LayerColor::create(Color4B(0, 0, 0, 200));
@@ -237,9 +239,7 @@ void AttackStars::showVictoryScreen()
     // 7. 吞噬触摸事件，防止点击到后面的游戏内容
     auto listener = EventListenerTouchOneByOne::create();
     listener->setSwallowTouches(true);
-    listener->onTouchBegan = [](Touch* touch, Event* event) {
-        return true;
-    };
+    listener->onTouchBegan = [](Touch* touch, Event* event) { return true; };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, full_screen_mask);
 }
 

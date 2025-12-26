@@ -5,6 +5,7 @@
 #include "ArchTargetManager.h"
 #include "AudioEngine.h"
 #include "BaseMap.h"
+#include "CocManager.h"
 #include "CocUtility.h"
 #include "MainVillageScene.h"
 #include "ui/CocosGUI.h"
@@ -489,8 +490,8 @@ void Arch::showRefusePopup(std::string text_)
     popup_bg->addChild(label);
 
     // 弹窗消失动画
-    auto fade_out = FadeOut::create(1.0f);                                                      // 设置渐隐动画
-    auto remove_popup = RemoveSelf::create();                                                   // 移除弹窗
+    auto fade_out = FadeOut::create(1.0f);                                                       // 设置渐隐动画
+    auto remove_popup = RemoveSelf::create();                                                    // 移除弹窗
     auto sequence = Sequence::create(fade_out, DelayTime::create(4.0f), remove_popup, nullptr);  // 延迟4秒再消失
 
     popup_bg->runAction(sequence);  // 应用到整个弹窗（背景和文字）
@@ -523,10 +524,10 @@ void Arch::createUpgradeComparisonPanel()
                                     "Arial", 24);
     if (kArchInfo.at(no_)[level_].upgrade_cost_type_ == ELIXIR) {
         info_label->setString("当前等级: " + std::to_string(level_) + " -> " + std::to_string(level_ + 1) + "\n" +
-                             "生命值: " + std::to_string(kArchInfo.at(no_)[level_ - 1].hp_) + " -> " +
-                             std::to_string(kArchInfo.at(no_)[level_].hp_) + "\n" + "\n" +
-                             "圣水需求: " + std::to_string(kArchInfo.at(no_)[level_].upgrade_cost_amount_) + "\n" +
-                             "升级用时: " + std::to_string(kArchInfo.at(no_)[level_].upgrade_time_));
+                              "生命值: " + std::to_string(kArchInfo.at(no_)[level_ - 1].hp_) + " -> " +
+                              std::to_string(kArchInfo.at(no_)[level_].hp_) + "\n" + "\n" +
+                              "圣水需求: " + std::to_string(kArchInfo.at(no_)[level_].upgrade_cost_amount_) + "\n" +
+                              "升级用时: " + std::to_string(kArchInfo.at(no_)[level_].upgrade_time_));
     }
     info_label->setPosition(Vec2(popup_bg->getContentSize().width / 2, popup_bg->getContentSize().height / 2));
     info_label->setTextColor(Color4B::BLACK);
@@ -552,8 +553,8 @@ void Arch::createUpgradeComparisonPanel()
     auto confirm_label = Label::createWithSystemFont("确认", "Arial", 30);
     confirm_label->setTextColor(Color4B::GREEN);  // 设置字体颜色为红色
     auto confirm_button =
-        MenuItemLabel::create(confirm_label, CC_CALLBACK_1(Arch::buidingUpgrading, this, this, UPGRADING, cost,
-                                                          current, kArchInfo.at(no_)[level_].upgrade_cost_type_));
+        MenuItemLabel::create(confirm_label, CC_CALLBACK_1(Arch::buidingUpgrading, this, this, UPGRADING, cost, current,
+                                                           kArchInfo.at(no_)[level_].upgrade_cost_type_));
     confirm_button->setPosition(Vec2(popup_bg->getContentSize().width * 2 / 3, 30));
 
     // 将按钮添加到菜单中
@@ -632,7 +633,7 @@ void Arch::startUpgradeAnimation(unsigned int time, const std::string& notice)
 }
 
 void Arch::buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
-                             bool type)
+                            bool type)
 {
     if (cost > currentGold) {
         if (type == GOLD) {
@@ -788,10 +789,10 @@ void Arch::updateBuildingDisplay()
         this->addChild(icon);
 
         // 添加金币动画效果
-        auto scale_up = ScaleTo::create(0.2f, 1.0f);                   // 放大到1.5倍
-        auto scale_down = ScaleTo::create(0.2f, 0.7f);                 // 缩小到1.2倍
+        auto scale_up = ScaleTo::create(0.2f, 1.0f);                    // 放大到1.5倍
+        auto scale_down = ScaleTo::create(0.2f, 0.7f);                  // 缩小到1.2倍
         auto bounce = Sequence::create(scale_up, scale_down, nullptr);  // 往复动画
-        auto repeat_bounce = RepeatForever::create(bounce);            // 无限重复
+        auto repeat_bounce = RepeatForever::create(bounce);             // 无限重复
 
         // 淡入效果
         auto fade_in = FadeIn::create(0.3f);  // 透明度渐变为不透明
@@ -825,7 +826,8 @@ void Arch::updateBuildingDisplay()
                 unsigned long long current_elixir = ResourceManager::getInstance()->getElixir();
                 unsigned long long max_elixir_storage = ResourceManager::getInstance()->getMaxElixir();
 
-                unsigned long long can_add = (max_elixir_storage > current_elixir) ? (max_elixir_storage - current_elixir) : 0;
+                unsigned long long can_add =
+                    (max_elixir_storage > current_elixir) ? (max_elixir_storage - current_elixir) : 0;
                 if (can_add >= current_capacity_) {
                     collected = current_capacity_;
                 }
@@ -855,6 +857,13 @@ void TownHall::onDeath()
     Arch::onDeath();
 }
 
+void Wall::onDeath()
+{
+    updateSurroundingWalls(x_, y_);
+    updateWall();
+    Arch::onDeath();
+}
+
 void Wall::updateSurroundingWalls(int x, int y, bool is_moving)
 {
     for (auto arch : base_map_->archs_) {
@@ -878,6 +887,8 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
     }
     connection_nodes_.clear();
 
+    if (is_destroyed_) return;
+
     if (moving_wall == nullptr && is_moving) return;
 
     // 创建副本避免冲突
@@ -886,6 +897,7 @@ void Wall::updateWall(Arch* moving_wall, bool is_moving)
     for (auto arch : archs_copy) {
         if (arch->getTargetType() != WALLT) continue;
         if (arch == this) continue;
+        if (arch->is_destroyed_) continue;
 
         Wall* other = static_cast<Wall*>(arch);
         int dx = abs(other->x_ - x_);
@@ -1317,14 +1329,17 @@ void Arch::takeDamage(float damage)
         float actual_damage = std::min(damage, static_cast<float>(current_hp_));
         float p = actual_damage / kArchInfo.at(no_)[level_ - 1].hp_;
         unsigned long long resource_get = static_cast<unsigned long long>(current_capacity_ * p);
-        if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
-            ResourceManager::getInstance()->setGold(std::min(ResourceManager::getInstance()->getGold() + resource_get,
-                                                             ResourceManager::getInstance()->getMaxGold()));
-        else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
-            ResourceManager::getInstance()->setElixir(
-                std::min(ResourceManager::getInstance()->getElixir() + resource_get,
-                         ResourceManager::getInstance()->getMaxElixir()));
-        ;
+
+        if (!CocManager::getInstance()->isReplay()) {
+            if (kArchInfo.at(no_)[level_ - 1].produce_type_ == GOLD)
+                ResourceManager::getInstance()->setGold(
+                    std::min(ResourceManager::getInstance()->getGold() + resource_get,
+                             ResourceManager::getInstance()->getMaxGold()));
+            else if (kArchInfo.at(no_)[level_ - 1].produce_type_ == ELIXIR)
+                ResourceManager::getInstance()->setElixir(
+                    std::min(ResourceManager::getInstance()->getElixir() + resource_get,
+                             ResourceManager::getInstance()->getMaxElixir()));
+        }
     }
     health_bar_->takeDamage(damage);
     current_hp_ -= static_cast<UI>(damage);

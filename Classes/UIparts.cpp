@@ -1,7 +1,12 @@
 #include "UIparts.h"
 
+#include <iomanip>
+#include <sstream>
+
 #include "cocos/ui/CocosGUI.h"
+#include "EnemyVillageScene.h"
 #include "MainVillageScene.h"
+
 USING_NS_CC;
 using namespace ui;
 
@@ -41,20 +46,20 @@ bool UIBars::init()
     // 注册金币更新事件监听
     gold_update_listener_ =
         cocos2d::EventListenerCustom::create("update_gold_event", CC_CALLBACK_1(UIBars::onGoldUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(gold_update_listener_,
-                                                                                                   this);
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        gold_update_listener_, this);
 
     // 注册圣水更新事件监听
     elixir_update_listener_ =
         cocos2d::EventListenerCustom::create("update_elixir_event", CC_CALLBACK_1(UIBars::onElixirUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixir_update_listener_,
-                                                                                                   this);
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        elixir_update_listener_, this);
 
     // 注册宝石更新事件监听
     elixir_update_listener_ =
         cocos2d::EventListenerCustom::create("update_jewel_event", CC_CALLBACK_1(UIBars::onJewelUpdated, this));
-    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(elixir_update_listener_,
-                                                                                                   this);
+    cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
+        elixir_update_listener_, this);
 
     // 注册最大金币更新事件监听
     max_gold_update_listener_ =
@@ -64,7 +69,7 @@ bool UIBars::init()
 
     // 注册最大圣水更新事件监听
     max_elixir_update_listener_ = cocos2d::EventListenerCustom::create("update_max_elixir_event",
-                                                                   CC_CALLBACK_1(UIBars::onMaxElixirUpdated, this));
+                                                                       CC_CALLBACK_1(UIBars::onMaxElixirUpdated, this));
     cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(
         max_elixir_update_listener_, this);
 
@@ -81,7 +86,7 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
     data.icon_ = Sprite::create(iconPath);  // 图标图片
     if (data.icon_) {
         data.icon_->setPosition(Vec2(x + (UpperLimit == 0 ? 20 : 450), y));  // 滑动条右边
-        data.icon_->setScale(1.0f);                 // 调整图标大小
+        data.icon_->setScale(1.0f);                                          // 调整图标大小
         this->addChild(data.icon_);
     }
     // 创建标题
@@ -92,14 +97,15 @@ void UIBars::createProgressBarWithBackground(const std::string& title, const coc
     this->addChild(title_label);
 
     // 创建背景框
-    auto background = LayerColor::create(Color4B(255, 255, 255, 150), (UpperLimit == 0 ? 70.0f : 500.0f), 40.0f);  // 黑色半透明
-    background->setPosition(Vec2(x - 100, y - 24.0f));                           // 设置位置
+    auto background =
+        LayerColor::create(Color4B(255, 255, 255, 150), (UpperLimit == 0 ? 70.0f : 500.0f), 40.0f);  // 黑色半透明
+    background->setPosition(Vec2(x - 100, y - 24.0f));                                               // 设置位置
     this->addChild(background, 0);
     data.background_ = nullptr;  // 由于使用LayerColor，这里设为null
 
     if (UpperLimit > 0) {
         float percent = nowAmount * 100.0f / UpperLimit;
-    
+
         // 创建进度条
         data.loading_bar_ = cocos2d::ui::LoadingBar::create("LoadingBarFile.png");
         if (data.loading_bar_) {
@@ -340,7 +346,8 @@ void UICommonHelper::createOptionItem(cocos2d::Node* panel, int index, const std
 
     // 显示进度
     if (progress >= 0) {
-        auto progress_label = cocos2d::Label::createWithSystemFont(StringUtils::format("进度: %d%%", progress), "Arial", 28);
+        auto progress_label =
+            cocos2d::Label::createWithSystemFont(StringUtils::format("进度: %d%%", progress), "Arial", 28);
         progress_label->setPosition(cocos2d::Vec2(button_width / 2, 65));
         progress_label->setColor(cocos2d::Color3B(cocos2d::Color3B::WHITE));
         item_bg->addChild(progress_label, 150);
@@ -396,5 +403,108 @@ void UICommonHelper::onOptionClick(cocos2d::LayerColor* item_bg, int index, coco
         drawBorder(selected_item_bg_);
         confirm_button->setEnabled(true);
         can_confirm_ = index;
+    }
+}
+
+void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
+{
+    // 创建一个覆盖全屏的面板
+    auto visible_size = cocos2d::Director::getInstance()->getVisibleSize();
+    auto panel = cocos2d::LayerColor::create(cocos2d::Color4B(130, 130, 190, 255));  // 黑色背景
+    parent->addChild(panel, 99999);
+
+    // 将 helper 实例添加到 panel 中，确保其生命周期跟随 panel
+    panel->addChild(this);
+
+    // 面板标题
+    auto title_label = cocos2d::Label::createWithSystemFont("回放总览", "Arial", 56);
+    title_label->setPosition(cocos2d::Vec2(visible_size.width / 2, visible_size.height - 50));
+    panel->addChild(title_label, 1);
+
+    // 退出按钮
+    auto exit_button = cocos2d::ui::Button::create("attack_scene/exit.png");
+    exit_button->setPosition(cocos2d::Vec2(120, 100));
+    exit_button->setScale(0.7f);
+    exit_button->addClickEventListener([panel, this](cocos2d::Ref* sender) {
+        // 播放音效
+        int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+        // 检查音频的状态，直到播放完成
+        this->schedule(
+            [button_hit, this](float dt) {
+                if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                    // 停止音效播放并释放资源
+                    cocos2d::AudioEngine::uncache("music/button.mp3");
+                    this->unschedule("stop_audio_key");  // 停止检查
+                }
+            },
+            0.1f, "stop_audio_key");
+
+        panel->removeFromParent();
+    });
+    panel->addChild(exit_button);
+
+    // 读取回放数据
+    std::vector<ReplayData> replays;
+    DataHelper::readReplayData(kReplayDataFile, replays);
+
+    // 创建 ListView
+    auto list_view = cocos2d::ui::ListView::create();
+    list_view->setDirection(cocos2d::ui::ScrollView::Direction::VERTICAL);
+    list_view->setBounceEnabled(true);
+    list_view->setContentSize(cocos2d::Size(visible_size.width * 0.8f, visible_size.height * 0.7f));
+    list_view->setPosition(cocos2d::Vec2(visible_size.width * 0.1f, visible_size.height * 0.15f));
+
+    auto list_bg = cocos2d::LayerColor::create(cocos2d::Color4B(0, 0, 0, 100));
+    list_bg->setContentSize(list_view->getContentSize());
+    list_bg->setPosition(list_view->getPosition());
+    panel->addChild(list_bg);
+
+    panel->addChild(list_view);
+
+    for (auto it = replays.rbegin(); it != replays.rend(); ++it) {
+        const auto& replay = *it;
+        auto layout = cocos2d::ui::Layout::create();
+        layout->setLayoutType(cocos2d::ui::Layout::Type::RELATIVE);
+        layout->setContentSize(cocos2d::Size(list_view->getContentSize().width, 100));
+
+        // 背景
+        auto bg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 50));
+        bg->setContentSize(layout->getContentSize());
+        layout->addChild(bg);
+
+        // 时间
+        struct tm time_info;
+        localtime_s(&time_info, &replay.timestamp_);
+        std::stringstream ss;
+        ss << std::put_time(&time_info, "%Y-%m-%d %H:%M:%S");
+
+        auto time_label = cocos2d::Label::createWithSystemFont(ss.str(), "Arial", 36);
+        time_label->setAnchorPoint(cocos2d::Vec2(0, 0.5));
+        time_label->setPosition(cocos2d::Vec2(20, layout->getContentSize().height / 2));
+        layout->addChild(time_label);
+
+        // 关卡
+        auto level_label =
+            cocos2d::Label::createWithSystemFont(StringUtils::format("Level: %d", replay.level_), "Arial", 36);
+        level_label->setAnchorPoint(cocos2d::Vec2(1, 0.5));
+        level_label->setPosition(
+            cocos2d::Vec2(layout->getContentSize().width - 20, layout->getContentSize().height / 2));
+        layout->addChild(level_label);
+
+        // 添加点击事件
+        layout->setTouchEnabled(true);
+        layout->addTouchEventListener([replay, panel](cocos2d::Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+            if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+                // 播放音效
+                cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+
+                panel->removeFromParent();
+
+                auto scene = EnemyVillage::createReplay(replay);
+                cocos2d::Director::getInstance()->pushScene(scene);
+            }
+        });
+
+        list_view->pushBackCustomItem(layout);
     }
 }

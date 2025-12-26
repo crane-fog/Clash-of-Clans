@@ -37,7 +37,7 @@ bool HealthBar::init(float max_hp, float max_width, bool is_troop)
     bar_bg_->setOpacity(128);             // 半透明
     bar_bg_->setAnchorPoint(Vec2(0.5f, 0.5f));
     bar_bg_->setPosition(Vec2(max_width_ / 2, kMaxHeight / 2));  // 相对于 HealthBar 自身
-    this->addChild(bar_bg_, 10);                                  // zOrder 较高确保在上层
+    this->addChild(bar_bg_, 10);                                 // zOrder 较高确保在上层
 
     // 创建前景（从左到右填充，颜色根据血量变化）
     bar_fg_ = ui::Scale9Sprite::create("LoadingBarFile.png");
@@ -45,8 +45,8 @@ bool HealthBar::init(float max_hp, float max_width, bool is_troop)
     if (is_troop_)
         bar_fg_->setColor(Color3B::GREEN);  // 士兵血条初始为绿色
     else
-        bar_fg_->setColor(Color3B(216, 73, 197));              // 建筑血条初始为紫色
-    bar_fg_->setAnchorPoint(Vec2(0.0f, 0.5f));                 // 左中对齐
+        bar_fg_->setColor(Color3B(216, 73, 197));             // 建筑血条初始为紫色
+    bar_fg_->setAnchorPoint(Vec2(0.0f, 0.5f));                // 左中对齐
     bar_fg_->setPosition(Vec2(kPadding, kMaxHeight / 2.0f));  // 相对于 HealthBar 自身
     this->addChild(bar_fg_, 11);
 
@@ -115,7 +115,7 @@ void HealthBar::updateDisplay()
         }
     }
 
-    float fg_height = kMaxHeight - 2 * kPadding;          // 高度也缩小
+    float fg_height = kMaxHeight - 2 * kPadding;           // 高度也缩小
     float fg_width = (max_width_ - 2 * kPadding) * ratio;  // 宽度基于可填充区域
 
     // 设置前景尺寸（比背景小一圈）

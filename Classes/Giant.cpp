@@ -1,8 +1,8 @@
 #include "Giant.h"
 
 #include "AudioEngine.h"
-#include "TroopTargetManager.h"
 #include "CocUtility.h"
+#include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
 const std::array<int, MAX_TROOP_LEVEL + 1> Giant::kResearchCosts = {0, 0, 40000, 150000, 400000, 800000};

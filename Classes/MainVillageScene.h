@@ -4,8 +4,8 @@
 #include "Arch.h"
 #include "AudioEngine.h"
 #include "cocos2d.h"
-#include "VillageScene.h"
 #include "CocUtility.h"
+#include "VillageScene.h"
 
 // 主村庄场景类
 class MainVillage : public Village {
@@ -58,6 +58,7 @@ public:
     void onAttackButtonClick(Ref* sender);
     void onTroopButtonClick(Ref* sender);
     void onLabButtonClick(Ref* sender);
+    void onMessageButtonClick(Ref* sender);
     void onTroopUpradeClick(Ref* sender, Widget::TouchEventType type, unsigned char& it, cocos2d::LayerColor* panel);
 
     // 获取大本营等级

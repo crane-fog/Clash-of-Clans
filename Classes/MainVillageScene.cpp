@@ -52,21 +52,32 @@ bool MainVillage::init()
     time_t time_diff = current_time - data_time;
     last_exit_time_ = 0;
 
-    ArchFactory::registerCreater(TOWN_HALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new TownHall(data, map, is_mine); });
-    ArchFactory::registerCreater(WALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Wall(data, map, is_mine); });
-    ArchFactory::registerCreater(GOLD_STORAGE,
-                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new GoldStorage(data, map, is_mine); });
-    ArchFactory::registerCreater(ELIXIR_STORAGE,
-                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new ElixirStorage(data, map, is_mine); });
-    ArchFactory::registerCreater(GOLD_MINE, [](const ArchData& data, BaseMap* map, bool is_mine) { return new GoldMine(data, map, is_mine); });
-    ArchFactory::registerCreater(ELIXIR_COLLECTOR,
-                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new ElixirCollector(data, map, is_mine); });
-    ArchFactory::registerCreater(BARRACKS, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Barracks(data, map, is_mine); });
-    ArchFactory::registerCreater(ARMY_CAMP, [](const ArchData& data, BaseMap* map, bool is_mine) { return new ArmyCamp(data, map, is_mine); });
-    ArchFactory::registerCreater(CANNON, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Cannon(data, map, is_mine); });
-    ArchFactory::registerCreater(ARCHER_TOWER,
-                                 [](const ArchData& data, BaseMap* map, bool is_mine) { return new ArcherTower(data, map, is_mine); });
-    ArchFactory::registerCreater(BOMB, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Bomb(data, map, is_mine); });
+    ArchFactory::registerCreater(
+        TOWN_HALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new TownHall(data, map, is_mine); });
+    ArchFactory::registerCreater(
+        WALL, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Wall(data, map, is_mine); });
+    ArchFactory::registerCreater(GOLD_STORAGE, [](const ArchData& data, BaseMap* map, bool is_mine) {
+        return new GoldStorage(data, map, is_mine);
+    });
+    ArchFactory::registerCreater(ELIXIR_STORAGE, [](const ArchData& data, BaseMap* map, bool is_mine) {
+        return new ElixirStorage(data, map, is_mine);
+    });
+    ArchFactory::registerCreater(
+        GOLD_MINE, [](const ArchData& data, BaseMap* map, bool is_mine) { return new GoldMine(data, map, is_mine); });
+    ArchFactory::registerCreater(ELIXIR_COLLECTOR, [](const ArchData& data, BaseMap* map, bool is_mine) {
+        return new ElixirCollector(data, map, is_mine);
+    });
+    ArchFactory::registerCreater(
+        BARRACKS, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Barracks(data, map, is_mine); });
+    ArchFactory::registerCreater(
+        ARMY_CAMP, [](const ArchData& data, BaseMap* map, bool is_mine) { return new ArmyCamp(data, map, is_mine); });
+    ArchFactory::registerCreater(
+        CANNON, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Cannon(data, map, is_mine); });
+    ArchFactory::registerCreater(ARCHER_TOWER, [](const ArchData& data, BaseMap* map, bool is_mine) {
+        return new ArcherTower(data, map, is_mine);
+    });
+    ArchFactory::registerCreater(
+        BOMB, [](const ArchData& data, BaseMap* map, bool is_mine) { return new Bomb(data, map, is_mine); });
 
     for (auto& arch : arch_list) {
         // 更新剩余升级时间
@@ -201,6 +212,21 @@ bool MainVillage::init()
     });
     this->addChild(troop_config_button, 200);
 
+    // 消息/回放图标
+    auto message_button = cocos2d::ui::Button::create("Message.png");
+    message_button->setPosition(Vec2(80, 330));
+    message_button->setScale(0.9f);
+    message_button->setContentSize(Size(300, 300));
+    message_button->setTouchEnabled(true);
+    message_button->setEnabled(true);
+
+    message_button->addTouchEventListener([this](Ref* sender, cocos2d::ui::Widget::TouchEventType type) {
+        if (type == cocos2d::ui::Widget::TouchEventType::ENDED) {
+            this->onMessageButtonClick(sender);
+        }
+    });
+    this->addChild(message_button, 200);
+
     /*auto replayItem = cocos2d::MenuItemLabel::create(
         cocos2d::Label::createWithSystemFont("回放战斗", "Arial", 72),
         CC_CALLBACK_1(MainVillage::onReplayButtonClick, this));
@@ -270,7 +296,8 @@ void MainVillage::cleanup()
     }
     DataHelper::listToMap(arch_list, arch_status_);
     DataHelper::writeSourceData(kSourceDataFile, ResourceManager::getInstance()->getGold(),
-                                ResourceManager::getInstance()->getElixir(), ResourceManager::getInstance()->getJewel());
+                                ResourceManager::getInstance()->getElixir(),
+                                ResourceManager::getInstance()->getJewel());
     DataHelper::writeArchData(
         kMainVillageDataFile,
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(),
@@ -792,7 +819,7 @@ void MainVillage::createCancelButton(Arch* pendingArch_)
 
     // 创建一个纯色背景
     auto button_bg = LayerColor::create(Color4B(200, 50, 50, 200));  // 纯红色背景，透明度255
-    button_bg->setContentSize(cancel_button->getContentSize());       // 设置背景大小与按钮大小一致
+    button_bg->setContentSize(cancel_button->getContentSize());      // 设置背景大小与按钮大小一致
     button_bg->setPosition(Vec2(0, 0));                              // 背景位置设置为按钮的位置
     button_bg->setName("CANCEL_BUTTONBG");
 
@@ -822,7 +849,7 @@ void MainVillage::createConfirmButton(Arch* pendingArch_, int price, bool type_)
     confirm_button->setContentSize(Size(300, 200));
     // 创建一个纯色背景
     auto button_bg = LayerColor::create(Color4B(50, 200, 50, 200));  // 纯红色背景，透明度255
-    button_bg->setContentSize(confirm_button->getContentSize());      // 设置背景大小与按钮大小一致
+    button_bg->setContentSize(confirm_button->getContentSize());     // 设置背景大小与按钮大小一致
     button_bg->setPosition(Vec2(0, 0));                              // 背景位置设置为按钮的位置
     button_bg->setName("CONFIRML_BUTTONBG");
     // 将背景添加到按钮
@@ -950,6 +977,24 @@ unsigned char MainVillage::getTownHallLevel()
     }
     assert(false && "主村庄中无大本营");
     return 1;  // 这里不应该被触发
+}
+
+void MainVillage::onMessageButtonClick(Ref* sender)
+{
+    // 播放音效
+    int button_hit = cocos2d::AudioEngine::play2d("music/button.mp3", false, 0.7f);
+    // 检查音频的状态，直到播放完成
+    this->schedule(
+        [button_hit, this](float dt) {
+            if (cocos2d::AudioEngine::getState(button_hit) == cocos2d::AudioEngine::AudioState::PAUSED) {
+                // 停止音效播放并释放资源
+                cocos2d::AudioEngine::uncache("music/button.mp3");
+                this->unschedule("stop_audio_key");  // 停止检查
+            }
+        },
+        0.1f, "stop_audio_key");
+    auto u = UICommonHelper::create();
+    u->showReplayPanel(this);
 }
 
 int MainVillage::getBuildingCount(unsigned char archNo)

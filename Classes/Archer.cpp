@@ -1,8 +1,8 @@
 #include "Archer.h"
 
 #include "AudioEngine.h"
-#include "TroopTargetManager.h"
 #include "CocUtility.h"
+#include "TroopTargetManager.h"
 
 // 升到level级所需资源花费
 const std::array<int, MAX_TROOP_LEVEL + 1> Archer::kResearchCosts = {0, 0, 20000, 80000, 200000, 500000};

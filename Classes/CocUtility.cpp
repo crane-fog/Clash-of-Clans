@@ -80,7 +80,6 @@ int CoordAdaptor::calcOrder(const cocos2d::Vec2& middle_pos)
     return static_cast<int>(middle_pos.x - middle_pos.y) + 50;
 }
 
-
 void DataHelper::mapToList(const ArchData source[kMapSize][kMapSize], std::vector<ArchData>& target)
 {
     unsigned char size = 0;
@@ -210,6 +209,29 @@ bool DataHelper::readSourceData(const std::string& file_name, unsigned long long
     return true;
 }
 
+bool DataHelper::readReplayData(const std::string& filename, std::vector<ReplayData>& data)
+{
+    std::ifstream infile(filename, std::ios::binary);
+    if (!infile) {
+        return false;
+    }
+    size_t count = 0;
+    infile.read(reinterpret_cast<char*>(&count), sizeof(count));
+    data.resize(count);
+    for (size_t i = 0; i < count; ++i) {
+        size_t deploy_count = 0;
+        infile.read(reinterpret_cast<char*>(&deploy_count), sizeof(deploy_count));
+        data[i].deployments_.resize(deploy_count);
+        if (deploy_count > 0) {
+            infile.read(reinterpret_cast<char*>(data[i].deployments_.data()), deploy_count * sizeof(DeploymentInfo));
+        }
+        infile.read(reinterpret_cast<char*>(&data[i].level_), sizeof(data[i].level_));
+        infile.read(reinterpret_cast<char*>(&data[i].timestamp_), sizeof(data[i].timestamp_));
+    }
+    infile.close();
+    return true;
+}
+
 bool DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
                                  const unsigned long long elixir, const unsigned long long jewel)
 {
@@ -248,5 +270,30 @@ bool DataHelper::writeLevelData(const std::string& file_name, const std::vector<
     if (num > 0) {
         outfile.write(reinterpret_cast<const char*>(level_info_list.data()), sizeof(LevelInfo) * num);
     }
+    return true;
+}
+
+bool DataHelper::addReplayData(const std::string& filename, const ReplayData& data)
+{
+    std::fstream file(filename, std::ios::binary | std::ios::in | std::ios::out);
+    if (!file) {
+        return false;
+    }
+    size_t count = 0;
+    file.read(reinterpret_cast<char*>(&count), sizeof(count));
+    count++;
+    file.seekp(0, std::ios::beg);
+    file.write(reinterpret_cast<const char*>(&count), sizeof(count));
+    file.seekp(0, std::ios::end);
+
+    size_t deploy_count = data.deployments_.size();
+    file.write(reinterpret_cast<const char*>(&deploy_count), sizeof(deploy_count));
+    if (deploy_count > 0) {
+        file.write(reinterpret_cast<const char*>(data.deployments_.data()), deploy_count * sizeof(DeploymentInfo));
+    }
+    file.write(reinterpret_cast<const char*>(&data.level_), sizeof(data.level_));
+    file.write(reinterpret_cast<const char*>(&data.timestamp_), sizeof(data.timestamp_));
+
+    file.close();
     return true;
 }

@@ -23,12 +23,12 @@ struct ProgressBarData {
 // UI部分基类
 class UIBars : public cocos2d::Node {
 private:
-    std::vector<ProgressBarData> progress_bars_;             // 存储多个进度条
-    cocos2d::EventListenerCustom* gold_update_listener_;       // 存储监听器
-    cocos2d::EventListenerCustom* elixir_update_listener_;     // 存储监听器
+    std::vector<ProgressBarData> progress_bars_;                // 存储多个进度条
+    cocos2d::EventListenerCustom* gold_update_listener_;        // 存储监听器
+    cocos2d::EventListenerCustom* elixir_update_listener_;      // 存储监听器
     cocos2d::EventListenerCustom* max_gold_update_listener_;    // 存储监听器
     cocos2d::EventListenerCustom* max_elixir_update_listener_;  // 存储监听器
-    cocos2d::EventListenerCustom* jewel_update_listener_;      // 存储监听器
+    cocos2d::EventListenerCustom* jewel_update_listener_;       // 存储监听器
     cocos2d::EventListenerCustom* max_jewel_update_listener_;   // 存储监听器
 
 public:
@@ -43,7 +43,8 @@ public:
                                          unsigned long long UpperLimit);
 
     // 创建仅显示数字的资源标签（用于宝石）
-    void createResourceLabel(const std::string& title, const std::string& iconPath, unsigned long long nowAmount, float x, float y);
+    void createResourceLabel(const std::string& title, const std::string& iconPath, unsigned long long nowAmount,
+                             float x, float y);
 
     // 更新指定进度条
     void updateProgressBar(const std::string& title, unsigned long long nowAmount, unsigned long long maxAmount);
@@ -95,6 +96,9 @@ public:
 
     // 显示挑战场景选择面板
     void showChallengeSelectionPanel(cocos2d::Node* parent);
+
+    // 显示回放面板
+    void showReplayPanel(cocos2d::Node* parent);
 
     // 选项点击事件处理
     void onOptionClick(cocos2d::LayerColor* item_bg, int index, cocos2d::ui::Button* confirm_button);
