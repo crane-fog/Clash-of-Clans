@@ -65,7 +65,7 @@ public:
 
 
     // 背景音乐
-    int mainhome_bgm_ = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
+    int mainhome_bgm_ = -1;
 };
 
 

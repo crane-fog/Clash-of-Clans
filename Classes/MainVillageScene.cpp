@@ -239,7 +239,9 @@ bool MainVillage::init()
 
 void MainVillage::onEnter()
 {
-    AudioEngine::resume(mainhome_bgm_);
+    if (mainhome_bgm_ == -1) {
+        mainhome_bgm_ = cocos2d::AudioEngine::play2d("music/mainhome.mp3", true);
+    }
 
     // 创建UI层（固定UI层）
     ui_layer_ = UIBars::create();
@@ -970,6 +972,10 @@ void MainVillage::playBuildingDropEffect(Arch* arch)
 
 void MainVillage::onExit()
 {
+    if (mainhome_bgm_ != -1) {
+        cocos2d::AudioEngine::stop(mainhome_bgm_);
+        mainhome_bgm_ = -1;
+    }
     last_exit_time_ =
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     Village::onExit();
