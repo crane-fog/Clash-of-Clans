@@ -12,6 +12,7 @@ const std::vector<std::string> kPicsBalloon = {
 
 class Balloon : public Troop {
 private:
+    const float kPixelYOffset = 30.0f;       // 像素坐标Y轴偏移（视觉中心调整）
     const float kAreaSplashRadius = 1.2f;    // 普攻伤害半径
     const float kDeathDamageRadius = 1.2f;   // 死亡伤害半径
     const float kDeathDamageDelay = 0.146f;  // 死亡伤害延时
@@ -51,6 +52,8 @@ public:
     virtual void onDeath() override;
 
     void triggerDeathDamage();
+
+    void throwBomb();
 };
 
 #endif  // __BALLOON_H__
