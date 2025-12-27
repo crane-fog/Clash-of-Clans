@@ -11,6 +11,13 @@ const std::vector<std::string> kPicsArcher = {
 };
 
 class Archer : public Troop {
+private:
+    // 初始化
+    virtual bool initWithFile(const std::string& filename) override;
+
+    // 执行攻击
+    virtual void performAttack() override;
+
 public:
     // 升到level级所需资源花费
     static const std::array<int, MAX_TROOP_LEVEL + 1> kResearchCosts;
@@ -26,12 +33,6 @@ public:
 
     // 静态创建函数
     static Archer* create(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
-
-    // 初始化
-    virtual bool initWithFile(const std::string& filename) override;
-
-    // 执行攻击
-    virtual void performAttack() override;
 
     // 获取士兵类型（地面兵种）
     virtual ArchTargetType getTargetType() const override { return GROUND; };

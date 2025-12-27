@@ -14,7 +14,7 @@ const std::array<float, MAX_TROOP_LEVEL + 1> Balloon::kResearchTimes = {0, 0, 4,
 const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Balloon::kLaboratoryLevelRequireds = {0, 1, 2, 4, 5, 6};
 
 Balloon::Balloon(BaseMap* base_map, int level, cocos2d::Vec2 position)
-    : Troop(base_map, level, position, DEFENSE, RANGED_AOE_GROUND, 5, 6, 1.3f, 3.0f, 0.0f,
+    : Troop(base_map, level, position, DEFENSE, RANGED_AOE_GROUND, 1.3f, 3.0f, 0.0f,
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 75, 96, 144, 216, 324}),
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 150, 180, 216, 280, 390}))
 {

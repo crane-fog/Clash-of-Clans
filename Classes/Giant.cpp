@@ -14,7 +14,7 @@ const std::array<float, MAX_TROOP_LEVEL + 1> Giant::kResearchTimes = {0, 0, 2, 4
 const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Giant::kLaboratoryLevelRequireds = {0, 0, 2, 4, 5, 6};
 
 Giant::Giant(BaseMap* base_map, int level, cocos2d::Vec2 position)
-    : Troop(base_map, level, position, DEFENSE, MELEE_SINGLE_GROUND, 5, 3, 1.5f, 2.0f, 1.0f,
+    : Troop(base_map, level, position, DEFENSE, MELEE_SINGLE_GROUND, 1.5f, 2.0f, 1.0f,
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 24, 30, 40, 48, 62}),
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 400, 500, 600, 700, 900}))
 {}

@@ -14,6 +14,17 @@ class Dragon : public Troop {
 private:
     const float kAreaSplashRadius = 0.3f;  // 普攻伤害半径
 
+    // 初始化
+    virtual bool initWithFile(const std::string& filename) override;
+
+    // 执行攻击
+    virtual void performAttack() override;
+
+    // 死亡时触发
+    void onDeath() override;
+
+    // 喷火动画
+    void playFlameEffect();
 public:
     // 升到level级所需资源花费
     static const std::array<int, MAX_TROOP_LEVEL + 1> kResearchCosts;
@@ -30,12 +41,6 @@ public:
     // 静态创建函数
     static Dragon* create(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
 
-    // 初始化
-    virtual bool initWithFile(const std::string& filename) override;
-
-    // 执行攻击
-    virtual void performAttack() override;
-
     // 获取士兵类型（空中兵种）
     virtual ArchTargetType getTargetType() const override { return AIR; }
 
@@ -44,11 +49,6 @@ public:
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return DRAGON; }
-
-    void onDeath() override;
-
-    // 喷火动画
-    void playFlameEffect();
 };
 
 #endif  // __DRAGON_H__

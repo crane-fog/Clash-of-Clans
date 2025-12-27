@@ -14,7 +14,7 @@ const std::array<float, MAX_TROOP_LEVEL + 1> Dragon::kResearchTimes = {0, 0, 18,
 const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Dragon::kLaboratoryLevelRequireds = {0, 1, 5, 6, 7, 8};
 
 Dragon::Dragon(BaseMap* base_map, int level, cocos2d::Vec2 position)
-    : Troop(base_map, level, position, NONE, RANGED_AOE_AIR_GROUND, 20, 9, 2.0f, 1.25f, 0.3f,
+    : Troop(base_map, level, position, NONE, RANGED_AOE_AIR_GROUND, 2.0f, 1.25f, 0.3f,
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 175, 200, 225, 262.5, 300}),
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 1900, 2100, 2300, 2700, 3100}))
 {}

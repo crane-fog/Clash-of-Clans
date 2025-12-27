@@ -17,7 +17,21 @@ private:
     const float kDeathDamageRadius = 1.2f;   // 死亡伤害半径
     const float kDeathDamageDelay = 0.146f;  // 死亡伤害延时
     const std::array<float, MAX_TROOP_LEVEL + 1> kDamagesUponDeath = {0, 25, 32, 48, 72, 108};
+    
+    // 初始化
+    virtual bool initWithFile(const std::string& filename) override;
 
+    // 执行攻击
+    virtual void performAttack() override;
+
+    // 死亡时触发
+    virtual void onDeath() override;
+
+    // 触发死亡伤害
+    void triggerDeathDamage();
+
+    // 投掷炸弹(动画)
+    void throwBomb();
 public:
     // 升到level级所需资源花费
     static const std::array<int, MAX_TROOP_LEVEL + 1> kResearchCosts;
@@ -34,12 +48,6 @@ public:
     // 静态创建函数
     static Balloon* create(BaseMap* base_map, int level = 1, cocos2d::Vec2 position = cocos2d::Vec2::ZERO);
 
-    // 初始化
-    virtual bool initWithFile(const std::string& filename) override;
-
-    // 执行攻击
-    virtual void performAttack() override;
-
     // 获取士兵类型（空中兵种）
     virtual ArchTargetType getTargetType() const override { return AIR; }
 
@@ -48,12 +56,6 @@ public:
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const override { return BALLOON; }
-
-    virtual void onDeath() override;
-
-    void triggerDeathDamage();
-
-    void throwBomb();
 };
 
 #endif  // __BALLOON_H__
