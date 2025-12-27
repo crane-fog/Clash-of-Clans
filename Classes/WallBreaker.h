@@ -14,7 +14,7 @@ class WallBreaker : public Troop {
 private:
     const float kAreaSplashRadius = 0.8f;   // 普攻伤害半径
     const float kDeathDamageRadius = 1.5f;  // 死亡伤害半径
-    std::array<float, MAX_TROOP_LEVEL + 1> damages_upon_death_ = {0, 6, 9, 13, 16, 23};
+    const std::array<float, MAX_TROOP_LEVEL + 1> kDamagesUponDeath = {0, 6, 9, 13, 16, 23};
 
 public:
     // 升到level级所需资源花费

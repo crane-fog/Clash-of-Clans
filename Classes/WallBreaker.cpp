@@ -109,7 +109,7 @@ void WallBreaker::performAttack()
 void WallBreaker::onDeath()
 {
     if (status_ == DEAD) return;
-    float damage = damages_upon_death_[level_];
+    float damage = kDamagePerAttacks[level_];
     std::vector<ITroopTarget*> targets =
         TroopTargetManager::getInstance()->getTargetsInRange(getCellPosition(), kDeathDamageRadius);
     for (auto target : targets) {
