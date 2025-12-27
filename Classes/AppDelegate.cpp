@@ -90,26 +90,23 @@ bool AppDelegate::applicationDidFinishLaunching()
 
     // Set the design resolution
     glview->setDesignResolutionSize(design_resolution_size.width, design_resolution_size.height,
-                                    ResolutionPolicy::NO_BORDER);
-    // auto frameSize = glview->getFrameSize();
+                                    ResolutionPolicy::FIXED_HEIGHT);
+    //auto frameSize = glview->getFrameSize();
     //// if the frame's height is larger than the height of medium size.
-    // if (frameSize.height > mediumResolutionSize.height)
-    //{
-    //     director->setContentScaleFactor(MIN(largeResolutionSize.height/designResolutionSize.height,
-    //     largeResolutionSize.width/designResolutionSize.width));
-    // }
+    //if (frameSize.height > medium_resolution_size.height) {
+    //    director->setContentScaleFactor(MIN(large_resolution_size.height / design_resolution_size.height,
+    //                                        large_resolution_size.width / design_resolution_size.width));
+    //}
     //// if the frame's height is larger than the height of small size.
-    // else if (frameSize.height > smallResolutionSize.height)
-    //{
-    //     director->setContentScaleFactor(MIN(mediumResolutionSize.height/designResolutionSize.height,
-    //     mediumResolutionSize.width/designResolutionSize.width));
-    // }
+    //else if (frameSize.height > small_resolution_size.height) {
+    //    director->setContentScaleFactor(MIN(medium_resolution_size.height / design_resolution_size.height,
+    //                                        medium_resolution_size.width / design_resolution_size.width));
+    //}
     //// if the frame's height is smaller than the height of medium size.
-    // else
-    //{
-    //     director->setContentScaleFactor(MIN(smallResolutionSize.height/designResolutionSize.height,
-    //     smallResolutionSize.width/designResolutionSize.width));
-    // }
+    //else {
+    //    director->setContentScaleFactor(MIN(small_resolution_size.height / design_resolution_size.height,
+    //                                        small_resolution_size.width / design_resolution_size.width));
+    //}
 
     registerAllPackages();
 

@@ -162,6 +162,8 @@ void Troop::update(float dt)
         case TARGET_LOST:
             updateTargetLostState(dt);
             break;
+        default:
+            break;
     }
 }
 

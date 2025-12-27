@@ -50,17 +50,17 @@ public:
 
     bool addBuildingByNO(unsigned char no, int price);
 
-    void MainVillage::createCancelButton(Arch* pendingArch_);
+    void createCancelButton(Arch* pendingArch_);
 
-    void MainVillage::createConfirmButton(Arch* pendingArch_, int price, bool type_);
+    void createConfirmButton(Arch* pendingArch_, int price, bool type_);
 
-    void MainVillage::cancelBuildingPlacement(Arch* pendingArch_);
+    void cancelBuildingPlacement(Arch* pendingArch_);
 
-    void MainVillage::confirmBuildingPlacement(Arch* pendingArch_);
+    void confirmBuildingPlacement(Arch* pendingArch_);
 
-    void MainVillage::removeCancelAndConfirmButtons(Arch* pendingArch_);
+    void removeCancelAndConfirmButtons(Arch* pendingArch_);
 
-    void MainVillage::playBuildingDropEffect(Arch* arch);
+    void playBuildingDropEffect(Arch* arch);
 
     // 背景音乐
     int mainhome_bgm_ = -1;
