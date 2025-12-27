@@ -176,7 +176,7 @@ public:
     //}
 
     // 每帧更新
-    void update(float dt);
+    virtual void update(float dt) override;
     // 获取兵种字符串名
     static std::string getTroopNameFromEnum(uchar troop_no);
 };

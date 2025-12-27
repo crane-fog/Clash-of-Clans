@@ -344,6 +344,10 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
     float button_height = 200;
     float padding = 60;
 
+    auto visible_size = cocos2d::Director::getInstance()->getVisibleSize();
+    float total_width = TROOP_TYPE_NUM * button_width + (TROOP_TYPE_NUM - 1) * padding;
+    float start_x = (visible_size.width - total_width) / 2;
+
     // 清空之前的按钮数组
     troop_buttons_.clear();
     troop_count_labels_.clear();
@@ -351,7 +355,7 @@ void EnemyVillage::createTroopSelectionPanel(cocos2d::LayerColor* bg)
     for (size_t i = 0; i < TROOP_TYPE_NUM; ++i) {
         // 商品背景
         auto item_bg = cocos2d::LayerColor::create(cocos2d::Color4B(140, 150, 200, 255), button_width, button_height);
-        item_bg->setPosition(cocos2d::Vec2((button_width + padding) * i + 200, 30));
+        item_bg->setPosition(cocos2d::Vec2((button_width + padding) * i + start_x, 30));
 
         // 保存按钮引用
         troop_buttons_.push_back(item_bg);

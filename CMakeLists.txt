@@ -28,7 +28,9 @@ cmake_minimum_required(VERSION 3.6)
 set(APP_NAME Clash-of-Clans)
 
 project(${APP_NAME})
-add_compile_options(/utf-8)
+if (WIN32 AND NOT ANDROID)
+    add_compile_options(/utf-8)
+endif()
 if(XCODE)
     if(NOT DEFINED CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET)
         SET (CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 8.0)
@@ -204,13 +206,6 @@ if(LINUX OR WINDOWS)
     cocos_get_resource_path(APP_RES_DIR ${APP_NAME})
     cocos_copy_target_res(${APP_NAME} LINK_TO ${APP_RES_DIR} FOLDERS ${GAME_RES_FOLDER})
 endif()
-
-# 复制数据文件
-add_custom_command(TARGET ${APP_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/data
-            $<TARGET_FILE_DIR:${APP_NAME}>/data
-)
 
 set_target_properties(${APP_NAME} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${APP_NAME}>"

@@ -116,21 +116,10 @@ bool MainVillage::init()
     randomRadius); if (barbarian2) setupBarbarianPatrol(barbarian2, posi_, static_cast<PatrolType>((randomPatrolType+1)
     % 4), randomRadius); if (barbarian3) setupBarbarianPatrol(barbarian3, posi_,
     static_cast<PatrolType>((randomPatrolType + 2) % 4), randomRadius); if (barbarian4) setupBarbarianPatrol(barbarian4,
-    posi_, static_cast<PatrolType>((randomPatrolType + 3) % 4), randomRadius);
+    posi_, static_cast<PatrolType>((randomPatrolType + 3) % 4), randomRadius);*/
     //
     // 添加到精灵列表
     //base_map_->sprites_.push_back(barbarian2);
-
-    /*auto archer = Archer::create(base_map_, 1, Vec2(22, 22));
-    if (!archer)return false;
-    archer->takeDamage(20);
-    base_map_->sprites_.push_back(archer);*/
-
-    /*auto giant = Giant::create(base_map_, 1, Vec2(22, 22));
-    if (!giant)return false;
-    giant->setDead();
-    giant->takeDamage(200);
-    base_map_->sprites_.push_back(giant);*/
 
     //// 创建一个角色 Sprite
     // auto barbarian_sprite = Sprite::create("Barbarian.png");
@@ -146,6 +135,7 @@ bool MainVillage::init()
 
     // 获取屏幕尺寸
     auto visible_size = Director::getInstance()->getVisibleSize();
+    CCLOG("Visible size: width=%f, height=%f", visible_size.width, visible_size.height);
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
     auto shop_button = cocos2d::ui::Button::create("shop.png", "shopSelected.png", "shopDisabled.png");
     // 商店标签
@@ -231,12 +221,6 @@ bool MainVillage::init()
     });
     this->addChild(message_button, 200);
 
-    /*auto replayItem = cocos2d::MenuItemLabel::create(
-        cocos2d::Label::createWithSystemFont("回放战斗", "Arial", 72),
-        CC_CALLBACK_1(MainVillage::onReplayButtonClick, this));
-    replayItem->setPosition(cocos2d::Vec2(80,300));
-    this->addChild(replayItem,200);
-    */
     return true;
 }
 

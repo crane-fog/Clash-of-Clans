@@ -35,7 +35,7 @@ bool AttackStars::init()
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     // 创建进度标签
-    auto prog_label = Label::createWithSystemFont(StringUtils::format("摧毁进度：%d%%", progress_), "Arial", 30);
+    auto prog_label = Label::createWithSystemFont(StringUtils::format("摧毁进度：%d%%", static_cast<int>(progress_)), "Arial", 30);
     prog_label->setPosition(Vec2(230, visible_size.height - 30));
     prog_label->setName("destoyed_label");
     this->addChild(prog_label);

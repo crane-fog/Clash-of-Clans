@@ -10,6 +10,12 @@
 
 #include "CocUtility.h"
 
+// Android(Clang) 要求类静态成员常量必须有显式定义（内存分配）
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+const int TroopTargetManager::kMapWidth;
+const int TroopTargetManager::kMapHeight;
+#endif
+
 int TroopTargetManager::posToIndex(const cocos2d::Vec2& pos) const
 {
     return static_cast<int>(pos.y) * kMapWidth + static_cast<int>(pos.x);

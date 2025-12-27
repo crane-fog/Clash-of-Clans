@@ -303,6 +303,11 @@ void UICommonHelper::showChallengeSelectionPanel(cocos2d::Node* parent)
     const std::array<std::string, 4> kSceneImages = {"attack_scene/Scenery1.webp", "attack_scene/Scenery2.webp",
                                                      "attack_scene/Scenery3.webp", "attack_scene/Scenery4.webp"};
 
+    float button_width = 350;
+    float padding = 130;
+    float total_width = kSceneNames.size() * button_width + (kSceneNames.size() - 1) * padding;
+    float start_x = (visible_size.width - total_width) / 2;
+
     for (unsigned int i = 0; i < kSceneNames.size(); i++) {
         int progress = 0;
         // 查找对应关卡的进度 (Level ID 1-based)
@@ -312,12 +317,12 @@ void UICommonHelper::showChallengeSelectionPanel(cocos2d::Node* parent)
                 break;
             }
         }
-        createOptionItem(panel, i, kSceneNames[i], kSceneImages[i], confirm_button, progress);
+        createOptionItem(panel, i, kSceneNames[i], kSceneImages[i], confirm_button, start_x, progress);
     }
 }
 
 void UICommonHelper::createOptionItem(cocos2d::Node* panel, int index, const std::string& name,
-                                      const std::string& image_path, cocos2d::ui::Button* confirm_button, int progress)
+                                      const std::string& image_path, cocos2d::ui::Button* confirm_button, float start_x, int progress)
 {
     float button_width = 350;
     float button_height = 400;
@@ -325,7 +330,7 @@ void UICommonHelper::createOptionItem(cocos2d::Node* panel, int index, const std
 
     // 选项背景
     auto item_bg = cocos2d::LayerColor::create(cocos2d::Color4B(255, 255, 255, 255), button_width, button_height);
-    item_bg->setPosition(cocos2d::Vec2((button_width + padding) * index + 50, 350));
+    item_bg->setPosition(cocos2d::Vec2((button_width + padding) * index + start_x, 350));
     item_bg->setTag(index);
 
     // 选项图片
@@ -479,7 +484,11 @@ void UICommonHelper::showReplayPanel(cocos2d::Node* parent)
 
         // 时间
         struct tm time_info;
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
         localtime_s(&time_info, &replay.timestamp_);
+#else
+        localtime_r(&replay.timestamp_, &time_info);
+#endif
         std::stringstream ss;
         ss << std::put_time(&time_info, "%Y-%m-%d %H:%M:%S");
 

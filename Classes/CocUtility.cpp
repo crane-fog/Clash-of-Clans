@@ -1,6 +1,5 @@
 #include "CocUtility.h"
 
-#include <fstream>
 #include <stdexcept>
 
 #include "ArchInfo.h"
@@ -81,6 +80,29 @@ int CoordAdaptor::calcOrder(const cocos2d::Vec2& middle_pos)
     return static_cast<int>(middle_pos.x - middle_pos.y) + 50;
 }
 
+static std::string getSaveFilePath(const std::string& original_path)
+{
+    std::string filename;
+    size_t pos = original_path.find_last_of("/\\");
+    if (pos != std::string::npos) {
+        filename = original_path.substr(pos + 1);
+    }
+    else {
+        filename = original_path;
+    }
+    return cocos2d::FileUtils::getInstance()->getWritablePath() + filename;
+}
+
+static cocos2d::Data readFileData(const std::string& original_path)
+{
+    std::string savePath = getSaveFilePath(original_path);
+    auto fileUtils = cocos2d::FileUtils::getInstance();
+    if (fileUtils->isFileExist(savePath)) {
+        return fileUtils->getDataFromFile(savePath);
+    }
+    return fileUtils->getDataFromFile(original_path);
+}
+
 void DataHelper::mapToList(const ArchData source[kMapSize][kMapSize], std::vector<ArchData>& target)
 {
     unsigned char size = 0;
@@ -153,139 +175,224 @@ void DataHelper::listToMap(const std::vector<ArchData>& source, ArchData target[
 
 void DataHelper::readArchData(const std::string& file_name, time_t& time, ArchData target[kMapSize][kMapSize])
 {
-    unsigned char x = 0, y = 0;
-    unsigned short num = 0;
-    std::vector<ArchData> buffer;
-    std::ifstream infile(file_name, std::ios::binary);
-    if (!infile) {
+    cocos2d::Data data = readFileData(file_name);
+    if (data.isNull()) {
         throw std::runtime_error("Failed to open file: " + file_name);
     }
 
-    infile.read(reinterpret_cast<char*>(&time), sizeof(unsigned long long));
-    infile.read(reinterpret_cast<char*>(&num), sizeof(unsigned short));
+    const unsigned char* bytes = data.getBytes();
+    size_t size = data.getSize();
+    size_t offset = 0;
 
-    buffer.resize(num);
-    infile.read(reinterpret_cast<char*>(buffer.data()), sizeof(ArchData) * num);
+    unsigned long long time_val;
+    memcpy(&time_val, bytes + offset, sizeof(unsigned long long));
+    time = (time_t)time_val;
+    offset += sizeof(unsigned long long);
+
+    unsigned short num;
+    memcpy(&num, bytes + offset, sizeof(unsigned short));
+    offset += sizeof(unsigned short);
+
+    std::vector<ArchData> buffer(num);
+    if (num > 0) {
+        memcpy(buffer.data(), bytes + offset, sizeof(ArchData) * num);
+    }
 
     listToMap(buffer, target);
-
-    infile.close();
 }
 
 void DataHelper::writeArchData(const std::string& file_name, time_t time, const ArchData source[kMapSize][kMapSize])
 {
-    unsigned short num = 0;
     std::vector<ArchData> data;
-    std::ofstream outfile(file_name, std::ios::binary);
-    if (!outfile) {
-        throw std::runtime_error("Failed to open file: " + file_name);
-    }
-
-    outfile.write(reinterpret_cast<const char*>(&time), sizeof(unsigned long long));
-
     mapToList(source, data);
+    unsigned short num = static_cast<unsigned short>(data.size());
 
-    num = static_cast<unsigned short>(data.size());
-    outfile.write(reinterpret_cast<const char*>(&num), sizeof(unsigned short));
+    size_t totalSize = sizeof(unsigned long long) + sizeof(unsigned short) + sizeof(ArchData) * num;
+
+    cocos2d::Data fileData;
+    unsigned char* buffer = (unsigned char*)malloc(totalSize);
+    size_t offset = 0;
+
+    unsigned long long time_val = (unsigned long long)time;
+    memcpy(buffer + offset, &time_val, sizeof(unsigned long long));
+    offset += sizeof(unsigned long long);
+
+    memcpy(buffer + offset, &num, sizeof(unsigned short));
+    offset += sizeof(unsigned short);
 
     if (num > 0) {
-        outfile.write(reinterpret_cast<const char*>(data.data()), sizeof(ArchData) * num);
+        memcpy(buffer + offset, data.data(), sizeof(ArchData) * num);
+    }
+
+    fileData.fastSet(buffer, totalSize);
+
+    std::string savePath = getSaveFilePath(file_name);
+    if (!cocos2d::FileUtils::getInstance()->writeDataToFile(fileData, savePath)) {
+        throw std::runtime_error("Failed to write file: " + savePath);
     }
 }
 
 void DataHelper::readSourceData(const std::string& file_name, unsigned long long& gold, unsigned long long& elixir,
                                 unsigned long long& jewel)
 {
-    std::ifstream infile(file_name, std::ios::binary);
-    if (!infile) {
+    cocos2d::Data data = readFileData(file_name);
+    if (data.isNull()) {
         throw std::runtime_error("Failed to open file: " + file_name);
     }
-    infile.read(reinterpret_cast<char*>(&gold), sizeof(unsigned long long));
-    infile.read(reinterpret_cast<char*>(&elixir), sizeof(unsigned long long));
-    infile.read(reinterpret_cast<char*>(&jewel), sizeof(unsigned long long));
-    infile.close();
+
+    const unsigned char* bytes = data.getBytes();
+    size_t size = data.getSize();
+    size_t offset = 0;
+
+    memcpy(&gold, bytes + offset, sizeof(unsigned long long));
+    offset += sizeof(unsigned long long);
+    memcpy(&elixir, bytes + offset, sizeof(unsigned long long));
+    offset += sizeof(unsigned long long);
+    memcpy(&jewel, bytes + offset, sizeof(unsigned long long));
 }
 
 void DataHelper::readReplayData(const std::string& filename, std::vector<ReplayData>& data)
 {
-    std::ifstream infile(filename, std::ios::binary);
-    if (!infile) {
+    cocos2d::Data fileData = readFileData(filename);
+    if (fileData.isNull()) {
         throw std::runtime_error("Failed to open file: " + filename);
     }
+
+    const unsigned char* bytes = fileData.getBytes();
+    size_t size = fileData.getSize();
+    size_t offset = 0;
+
     size_t count = 0;
-    infile.read(reinterpret_cast<char*>(&count), sizeof(count));
+    memcpy(&count, bytes + offset, sizeof(count));
+    offset += sizeof(count);
+
     data.resize(count);
     for (size_t i = 0; i < count; ++i) {
         size_t deploy_count = 0;
-        infile.read(reinterpret_cast<char*>(&deploy_count), sizeof(deploy_count));
+        memcpy(&deploy_count, bytes + offset, sizeof(deploy_count));
+        offset += sizeof(deploy_count);
+
         data[i].deployments_.resize(deploy_count);
         if (deploy_count > 0) {
-            infile.read(reinterpret_cast<char*>(data[i].deployments_.data()), deploy_count * sizeof(DeploymentInfo));
+            size_t deploySize = deploy_count * sizeof(DeploymentInfo);
+            memcpy(data[i].deployments_.data(), bytes + offset, deploySize);
+            offset += deploySize;
         }
-        infile.read(reinterpret_cast<char*>(&data[i].level_), sizeof(data[i].level_));
-        infile.read(reinterpret_cast<char*>(&data[i].timestamp_), sizeof(data[i].timestamp_));
+
+        memcpy(&data[i].level_, bytes + offset, sizeof(data[i].level_));
+        offset += sizeof(data[i].level_);
+        memcpy(&data[i].timestamp_, bytes + offset, sizeof(data[i].timestamp_));
+        offset += sizeof(data[i].timestamp_);
     }
-    infile.close();
 }
 
 void DataHelper::writeSourceData(const std::string& file_name, const unsigned long long gold,
                                  const unsigned long long elixir, const unsigned long long jewel)
 {
-    std::ofstream outfile(file_name, std::ios::binary);
-    if (!outfile) {
-        throw std::runtime_error("Failed to open file: " + file_name);
+    size_t totalSize = sizeof(unsigned long long) * 3;
+    cocos2d::Data fileData;
+    unsigned char* buffer = (unsigned char*)malloc(totalSize);
+    size_t offset = 0;
+
+    memcpy(buffer + offset, &gold, sizeof(unsigned long long));
+    offset += sizeof(unsigned long long);
+    memcpy(buffer + offset, &elixir, sizeof(unsigned long long));
+    offset += sizeof(unsigned long long);
+    memcpy(buffer + offset, &jewel, sizeof(unsigned long long));
+
+    fileData.fastSet(buffer, totalSize);
+
+    std::string savePath = getSaveFilePath(file_name);
+    if (!cocos2d::FileUtils::getInstance()->writeDataToFile(fileData, savePath)) {
+        throw std::runtime_error("Failed to write file: " + savePath);
     }
-    outfile.write(reinterpret_cast<const char*>(&gold), sizeof(unsigned long long));
-    outfile.write(reinterpret_cast<const char*>(&elixir), sizeof(unsigned long long));
-    outfile.write(reinterpret_cast<const char*>(&jewel), sizeof(unsigned long long));
 }
 
 void DataHelper::readLevelData(const std::string& file_name, std::vector<LevelInfo>& level_info_list)
 {
-    unsigned short num = 0;
-    std::ifstream infile(file_name, std::ios::binary);
-    if (!infile) {
+    cocos2d::Data data = readFileData(file_name);
+    if (data.isNull()) {
         throw std::runtime_error("Failed to open file: " + file_name);
     }
-    infile.read(reinterpret_cast<char*>(&num), sizeof(unsigned short));
+
+    const unsigned char* bytes = data.getBytes();
+    size_t size = data.getSize();
+    size_t offset = 0;
+
+    unsigned short num;
+    memcpy(&num, bytes + offset, sizeof(unsigned short));
+    offset += sizeof(unsigned short);
+
     level_info_list.resize(num);
-    infile.read(reinterpret_cast<char*>(level_info_list.data()), sizeof(LevelInfo) * num);
-    infile.close();
+    if (num > 0) {
+        memcpy(level_info_list.data(), bytes + offset, sizeof(LevelInfo) * num);
+    }
 }
 
 void DataHelper::writeLevelData(const std::string& file_name, const std::vector<LevelInfo>& level_info_list)
 {
     unsigned short num = static_cast<unsigned short>(level_info_list.size());
-    std::ofstream outfile(file_name, std::ios::binary);
-    if (!outfile) {
-        throw std::runtime_error("Failed to open file: " + file_name);
-    }
-    outfile.write(reinterpret_cast<const char*>(&num), sizeof(unsigned short));
+    size_t totalSize = sizeof(unsigned short) + sizeof(LevelInfo) * num;
+
+    cocos2d::Data fileData;
+    unsigned char* buffer = (unsigned char*)malloc(totalSize);
+    size_t offset = 0;
+
+    memcpy(buffer + offset, &num, sizeof(unsigned short));
+    offset += sizeof(unsigned short);
+
     if (num > 0) {
-        outfile.write(reinterpret_cast<const char*>(level_info_list.data()), sizeof(LevelInfo) * num);
+        memcpy(buffer + offset, level_info_list.data(), sizeof(LevelInfo) * num);
+    }
+
+    fileData.fastSet(buffer, totalSize);
+
+    std::string savePath = getSaveFilePath(file_name);
+    if (!cocos2d::FileUtils::getInstance()->writeDataToFile(fileData, savePath)) {
+        throw std::runtime_error("Failed to write file: " + savePath);
     }
 }
 
 void DataHelper::addReplayData(const std::string& filename, const ReplayData& data)
 {
-    std::fstream file(filename, std::ios::binary | std::ios::in | std::ios::out);
-    if (!file) {
+    cocos2d::Data fileData = readFileData(filename);
+    if (fileData.isNull()) {
         throw std::runtime_error("Failed to open file: " + filename);
     }
-    size_t count = 0;
-    file.read(reinterpret_cast<char*>(&count), sizeof(count));
+
+    const unsigned char* bytes = fileData.getBytes();
+    size_t size = fileData.getSize();
+
+    size_t count;
+    memcpy(&count, bytes, sizeof(size_t));
     count++;
-    file.seekp(0, std::ios::beg);
-    file.write(reinterpret_cast<const char*>(&count), sizeof(count));
-    file.seekp(0, std::ios::end);
 
     size_t deploy_count = data.deployments_.size();
-    file.write(reinterpret_cast<const char*>(&deploy_count), sizeof(deploy_count));
-    if (deploy_count > 0) {
-        file.write(reinterpret_cast<const char*>(data.deployments_.data()), deploy_count * sizeof(DeploymentInfo));
-    }
-    file.write(reinterpret_cast<const char*>(&data.level_), sizeof(data.level_));
-    file.write(reinterpret_cast<const char*>(&data.timestamp_), sizeof(data.timestamp_));
+    size_t newDataSize = sizeof(size_t) + deploy_count * sizeof(DeploymentInfo) + sizeof(int) + sizeof(time_t);
+    size_t totalSize = size + newDataSize;
 
-    file.close();
+    cocos2d::Data newFileData;
+    unsigned char* buffer = (unsigned char*)malloc(totalSize);
+
+    memcpy(buffer, bytes, size);
+    memcpy(buffer, &count, sizeof(size_t));
+    size_t offset = size;
+    memcpy(buffer + offset, &deploy_count, sizeof(size_t));
+    offset += sizeof(size_t);
+
+    if (deploy_count > 0) {
+        memcpy(buffer + offset, data.deployments_.data(), deploy_count * sizeof(DeploymentInfo));
+        offset += deploy_count * sizeof(DeploymentInfo);
+    }
+
+    memcpy(buffer + offset, &data.level_, sizeof(int));
+    offset += sizeof(int);
+    memcpy(buffer + offset, &data.timestamp_, sizeof(time_t));
+
+    newFileData.fastSet(buffer, totalSize);
+
+    std::string savePath = getSaveFilePath(filename);
+    if (!cocos2d::FileUtils::getInstance()->writeDataToFile(newFileData, savePath)) {
+        throw std::runtime_error("Failed to write file: " + savePath);
+    }
 }
