@@ -12,6 +12,12 @@
 #define TROOP_TYPE_NUM 6   // 兵种种类数量
 
 class Troop : public cocos2d::Sprite, public IArchTarget {
+private:
+    // 状态更新方法
+    void updateIdleState(float dt);
+    void updateMovingState(float dt);
+    void updateAttackingState(float dt);
+    void updateTargetLostState(float dt);
 protected:
     typedef unsigned char uchar;
 
@@ -50,12 +56,34 @@ protected:
     // 攻击计时器
     float attack_timer_;
 
+    /*以下为升级时不改变的属性，初始化时直接赋值*/
+    // 移动速度 格/秒
+    const float kMovementSpeed;
+    // 攻击速度 秒/次
+    const float kAttackSpeed;
+    // 攻击距离 格
+    const float kRange;
+
     /*以下为升级时要改变的属性的每级数值，初始化时直接赋值*/
     // 每次伤害
     const std::array<float, MAX_TROOP_LEVEL + 1> kDamagePerAttacks;
     // 生命值
     const std::array<float, MAX_TROOP_LEVEL + 1> kHitpoints;
 
+    // 执行攻击（由子类实现具体逻辑）
+    virtual void performAttack() = 0;
+
+    // 检查是否可以攻击
+    virtual bool canAttack() const;
+
+    // 查找新目标（这里提供基础，如有需要子类重写）
+    virtual void findNewTarget();
+
+    // 死亡处理（这里提供基础如墓碑显示，如有需要子类重写如死亡溅射伤害等等）
+    virtual void onDeath();
+
+    // 每帧更新
+    void update(float dt);
 public:
     enum TroopType : uchar { BARBARIAN = 0, ARCHER = 1, GIANT = 2, WALL_BREAKER = 3, DRAGON = 4, BALLOON = 5 };
 
@@ -85,21 +113,10 @@ public:
 
     // 伤害类型(近战或远程,单体或范围,仅地面目标或地面和空中目标etc)
     const AttackType kAttackType;
-    // 占据人口
-    const uchar kHousingSpace;
-    // 所需训练营等级
-    const uchar kBarracksLevelRequired;
-
-    // 移动速度 格/秒
-    const float kMovementSpeed;
-    // 攻击速度 秒/次
-    const float kAttackSpeed;
-    // 攻击距离 格
-    const float kRange;
 
     // 构造函数相关
     Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarget preferred_target,
-          AttackType attack_type, uchar housing_space, uchar barracks_level_required, float movement_speed,
+          AttackType attack_type,  float movement_speed,
           float attack_speed, float range, const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
           const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints);
     virtual ~Troop() = default;
@@ -107,25 +124,9 @@ public:
     // 初始化方法，当对象被创建时被自动调用，由于Troop没有实现create，仅由子类调用。
     virtual bool initWithFile(const std::string& filename) override;  // virtual bool init();
 
-    // 执行攻击（由子类实现具体逻辑）
-    virtual void performAttack() = 0;
-
-    // 检查是否可以攻击
-    virtual bool canAttack() const;
-
     // 状态机相关方法
     void changeStatus(Status new_status);
     void setDead() { status_ = DEAD; }
-    virtual void findNewTarget();
-
-    // 状态更新方法
-    void updateIdleState(float dt);
-    void updateMovingState(float dt);
-    void updateAttackingState(float dt);
-    void updateTargetLostState(float dt);
-
-    // 死亡处理（这里提供基础如墓碑显示，如有需要子类重写如死亡溅射伤害等等）
-    virtual void onDeath();
 
     // 获取士兵类型索引（用于区分不同子类类型）
     virtual TroopType getTroopTypeIndex() const = 0;
@@ -175,8 +176,6 @@ public:
     //    this->setLocalZOrder(CoordAdaptor::calcOrder(CoordAdaptor::pixelToCell(base_map_,pos))); // 自动同步
     //}
 
-    // 每帧更新
-    virtual void update(float dt) override;
     // 获取兵种字符串名
     static std::string getTroopNameFromEnum(uchar troop_no);
 };

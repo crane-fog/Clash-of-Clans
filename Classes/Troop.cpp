@@ -7,7 +7,7 @@
 std::map<unsigned char, std::function<Troop*(BaseMap*, unsigned char, cocos2d::Vec2)>> TroopFactory::creaters;
 
 Troop::Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarget preferred_target,
-             AttackType attack_type, uchar housing_space, uchar barracks_level_required, float movement_speed,
+             AttackType attack_type,  float movement_speed,
              float attack_speed, float range, const std::array<float, MAX_TROOP_LEVEL + 1>& damage_per_attacks,
              const std::array<float, MAX_TROOP_LEVEL + 1>& hitpoints)
     : base_map_(base_map),
@@ -16,8 +16,6 @@ Troop::Troop(BaseMap* base_map, int level, cocos2d::Vec2 position, PreferredTarg
       current_hitpoints_(0),
       kPreferredTarget(preferred_target),
       kAttackType(attack_type),
-      kHousingSpace(housing_space),
-      kBarracksLevelRequired(barracks_level_required),
       kMovementSpeed(movement_speed),
       kAttackSpeed(attack_speed),
       kRange(range),

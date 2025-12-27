@@ -14,7 +14,7 @@ const std::array<float, MAX_TROOP_LEVEL + 1> WallBreaker::kResearchTimes = {0, 0
 const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> WallBreaker::kLaboratoryLevelRequireds = {0, 1, 2, 4, 5, 6};
 
 WallBreaker::WallBreaker(BaseMap* base_map, int level, cocos2d::Vec2 position)
-    : Troop(base_map, level, position, WALLT, MELEE_AOE_GROUND, 2, 5, 3.0f, 0.0f, 0.5f,
+    : Troop(base_map, level, position, WALLT, MELEE_AOE_GROUND, 3.0f, 0.0f, 0.5f,
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 10, 20, 25, 30, 43}),
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 20, 24, 29, 35, 53}))
 {}

@@ -14,7 +14,7 @@ const std::array<float, MAX_TROOP_LEVEL + 1> Archer::kResearchTimes = {0, 0, 1, 
 const std::array<Troop::uchar, MAX_TROOP_LEVEL + 1> Archer::kLaboratoryLevelRequireds = {0, 1, 1, 3, 5, 6};
 
 Archer::Archer(BaseMap* base_map, int level, cocos2d::Vec2 position)
-    : Troop(base_map, level, position, NONE, RANGED_SINGLE_AIR_GROUND, 1, 2, 3.0f, 1.0f, 3.5f,
+    : Troop(base_map, level, position, NONE, RANGED_SINGLE_AIR_GROUND, 3.0f, 1.0f, 3.5f,
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 8, 10, 13, 16, 20}),
             std::array<float, MAX_TROOP_LEVEL + 1>({0, 22, 26, 29, 33, 40}))
 {}
