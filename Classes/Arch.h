@@ -134,13 +134,13 @@ public:
     // 升级完成回调
     virtual void onUpgradeFinished() {}
 
-    // 更新建筑的信息面板
-    void updateBuildingDisplay();
 
     /* 杂项 */
     // 资源生产
     void startResourceProduction();
-
+    // 更新建筑资源的显示
+    void updateBuildingDisplay();
+    
     // 建筑是否被摧毁
     bool is_destroyed_ = false;
 

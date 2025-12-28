@@ -1,3 +1,4 @@
 build/
 proj.win32/*.aps
 .vs/
+docs/
