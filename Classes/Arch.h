@@ -73,8 +73,6 @@ private:
     void startUpgradeAnimation(unsigned int time, const std::string& notice);
     // 升级完成回调
     virtual void onUpgradeFinished() {}
-    // 更新建筑的信息面板
-    void updateBuildingDisplay();
 
 
 
@@ -137,12 +135,13 @@ public:
     // 检查升级资源并显示升级效果
     void buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
                           bool type);
+    // 更新建筑资源的显示
+    void updateBuildingDisplay();
 
     /* 杂项 */
     // 资源生产
     void startResourceProduction();
-    // 更新建筑资源的显示
-    void updateBuildingDisplay();
+
     
     // 建筑是否被摧毁
     bool is_destroyed_ = false;
