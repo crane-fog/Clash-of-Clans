@@ -21,10 +21,7 @@ private:
     // 当前选中的按钮背景
     cocos2d::LayerColor* selected_item_bg_ = nullptr;
 
-public:
-    virtual bool myInit(int level);
-    static EnemyVillage* create(int level);
-
+    
     /* 士兵部署相关 */
     std::vector<unsigned int> troop_placed_counts_;    // 已放置数量
     std::vector<cocos2d::LayerColor*> troop_buttons_;  // 按钮
@@ -45,8 +42,6 @@ public:
 
     bool onTouchBegan(cocos2d::Touch* touch, cocos2d::Event* event);
 
-    /* 回放相关 */
-    static EnemyVillage* createReplay(const ReplayData& data);
 
     void startReplaySequence();
 
@@ -58,14 +53,20 @@ public:
     // 背景音乐
     int attacking_bgm_ = cocos2d::AudioEngine::play2d("music/attacking.mp3");
 
-    // 退出按钮回调
-    void onExitButtonClick(cocos2d::Ref* sender);
-
     // 游戏结束标志
     bool is_game_over_ = false;
 
     // 每帧更新
     virtual void update(float dt) override;
+
+public:
+    virtual bool myInit(int level);
+    static EnemyVillage* create(int level);
+    /* 回放相关 */
+    static EnemyVillage* createReplay(const ReplayData& data);
+
+        // 退出按钮回调
+    void onExitButtonClick(cocos2d::Ref* sender);
 };
 
 #endif  // __ENEMY_VILLAGE_SCENE_H__

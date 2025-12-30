@@ -35,7 +35,6 @@ private:
     // 建筑死亡更新事件监听器
     cocos2d::EventListenerCustom* dead_arch_update_listener_;
 
-public:
     // 大本营死亡事件监听器
     cocos2d::EventListenerCustom* town_hall_death_listener_;
 
@@ -47,18 +46,6 @@ public:
 
     // 防止胜利画面重复显示的标志
     bool is_showing_victory_ = false;
-
-    // 构造函数，初始化进度为0
-    AttackStars() : progress_(0) {}
-
-    // 析构函数
-    ~AttackStars();
-
-    // 创建函数宏
-    CREATE_FUNC(AttackStars);
-
-    // 初始化函数
-    virtual bool init() override;
 
     // 设置进度值
     void setProgress(float progress);
@@ -77,6 +64,21 @@ public:
 
     // 显示胜利画面
     void showVictoryScreen();
+
+public:
+
+    // 构造函数，初始化进度为0
+    AttackStars() : progress_(0) {}
+
+    // 析构函数
+    ~AttackStars();
+
+    // 创建函数宏
+    CREATE_FUNC(AttackStars);
+
+    // 初始化函数
+    virtual bool init() override;
+
 };
 
 #endif  // __ATTACKSTARS_H__
