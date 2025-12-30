@@ -16,10 +16,6 @@ const int TroopTargetManager::kMapWidth;
 const int TroopTargetManager::kMapHeight;
 #endif
 
-int TroopTargetManager::posToIndex(const cocos2d::Vec2& pos) const
-{
-    return static_cast<int>(pos.y) * kMapWidth + static_cast<int>(pos.x);
-}
 
 bool TroopTargetManager::isValidPosition(const cocos2d::Vec2& pos) const
 {

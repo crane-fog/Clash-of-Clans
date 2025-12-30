@@ -26,19 +26,24 @@ private:
     // 初始化优先队列距离场
     void pqInit(DistancePQ& pq, std::vector<std::vector<float>>& distance_field, ITroopTarget* target);
 
+    // 预计算墙代价地图（只计算一次）
+    void precomputeWallCostMap();
+
     // 为单个目标计算距离场
     void computeDistanceField(ITroopTarget* target);
-
-    // 将网格坐标转换为距离场数组索引
-    int posToIndex(const cocos2d::Vec2& pos) const;
 
     // 检查坐标是否有效
     bool isValidPosition(const cocos2d::Vec2& pos) const;
 
+    // 获取指定目标的距离场
+    const std::vector<std::vector<float>>& getDistanceField(ITroopTarget* target);
+
+    // 当建筑被摧毁时清理相关的距离场数据
+    void onTargetDestroyed(ITroopTarget* target);
+
     int living_arch_ = 0;
     int dead_arch_ = 0;
 
-protected:
     /*  OTHER = 0, // 其它
         RESOURCE = 1, // 资源
         DEFENSE = 2, // 防御
@@ -77,9 +82,6 @@ public:
     // 建筑把自己从目标列表移除
     void unregisterTroopTarget(ITroopTarget* target);
 
-    // 当建筑被摧毁时清理相关的距离场数据
-    void onTargetDestroyed(ITroopTarget* target);
-
     // 士兵查找position附近的攻击目标 返回distance最小距离
     ITroopTarget* getNearestTroopTarget(const cocos2d::Vec2& position, float& min_distance,
                                         bool is_wall_included = false,
@@ -91,14 +93,8 @@ public:
     // 判断指定坐标格子是否为墙
     bool isCellWall(const cocos2d::Vec2& position);
 
-    // 预计算墙代价地图（只计算一次）
-    void precomputeWallCostMap();
-
     // 预计算所有目标的距离场
     void precomputeDistanceFields();
-
-    // 获取指定目标的距离场
-    const std::vector<std::vector<float>>& getDistanceField(ITroopTarget* target);
 
     // 根据距离场获取下一步移动方向 (返回相对于当前位置的偏移)
     cocos2d::Vec2 getNextMoveDirection(const cocos2d::Vec2& current_pos, ITroopTarget* target, float attack_range,
