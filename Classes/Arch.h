@@ -59,6 +59,25 @@ protected:
     // 生命条指针
     HealthBar* health_bar_;
 
+private:
+    /* 建筑面板及升级相关 */
+    void closeArchPanel();
+    void showRefusePopup(std::string text_);
+    static std::string getArchNameFromEnum(unsigned char archNo);
+    bool is_upgrading_ = false;
+    // 检查是否可以升级
+    void archUpgrade();
+    // 取消升级
+    void onUpgradeCancel(Ref* sender);
+    // 开始升级动画
+    void startUpgradeAnimation(unsigned int time, const std::string& notice);
+    // 升级完成回调
+    virtual void onUpgradeFinished() {}
+    // 更新建筑的信息面板
+    void updateBuildingDisplay();
+
+
+
 public:
     Arch(const ArchData& data, BaseMap* base_map, bool is_mine)
         : no_(data.no_),
@@ -109,31 +128,15 @@ public:
     virtual UC getTargetType() const override { return kArchInfo.at(no_)[level_ - 1].type_; }
 
     /* 建筑面板及升级相关 */
+    //展示建筑信息面板
     virtual void showArchPanel();
-    void closeArchPanel();
-    void showRefusePopup(std::string text_);
-    static std::string getArchNameFromEnum(unsigned char archNo);
-
-    bool is_upgrading_ = false;
-
-    // 检查是否可以升级
-    void archUpgrade();
     // 显示升级信息对比面板
     virtual void createUpgradeComparisonPanel();
-    // 取消升级
-    void onUpgradeCancel(Ref* sender);
+    // 更新剩余升级时间
+    void updateUpgradeTime(long long elapsed);
     // 检查升级资源并显示升级效果
     void buidingUpgrading(Ref* sender, Arch* arch, bool a, unsigned int cost, unsigned long long currentGold,
                           bool type);
-    // 开始升级动画
-    void startUpgradeAnimation(unsigned int time, const std::string& notice);
-
-    // 更新剩余升级时间
-    void updateUpgradeTime(long long elapsed);
-
-    // 升级完成回调
-    virtual void onUpgradeFinished() {}
-
 
     /* 杂项 */
     // 资源生产

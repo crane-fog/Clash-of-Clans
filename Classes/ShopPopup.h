@@ -207,16 +207,23 @@ private:
     // 十连抽结果缓存
     std::vector<ShopItem> ten_results_;
 
-public:
-    // 创建函数宏
-    CREATE_FUNC(ShopPopup);
+    // 开始十连抽
+    void startTenGacha();
 
-    // 初始化函数
-    virtual bool init();
+    // 执行十连抽中的下一次抽卡
+    void runNextTenGacha();
 
-    // 显示商店面板
-    // @param parent 父节点，商店将显示在该节点上
-    void show(cocos2d::Node* parent);
+    // 执行单次抽卡
+    // @param onFinished 抽卡完成后的回调函数
+    void performSingleGacha(const std::function<void(ShopItem)>& onFinished);
+
+    // 显示不可用提示气泡
+    // @param item 不可用的商品
+    // @param targetNode 目标节点，提示将显示在该节点附近
+    // @param scrollView 滚动视图容器
+    // @param reason 不可用的原因描述
+    void showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode,
+                               cocos2d::ui::ScrollView* scrollView, std::string reason);
 
     // 关闭商店面板
     void close();
@@ -227,22 +234,18 @@ public:
     // 设置背景遮罩
     void setupBackground();
 
-    // 显示不可用提示气泡
-    // @param item 不可用的商品
-    // @param targetNode 目标节点，提示将显示在该节点附近
-    // @param scrollView 滚动视图容器
-    // @param reason 不可用的原因描述
-    void showUnavailableBubble(const ShopItem& item, cocos2d::LayerColor* targetNode,
-                               cocos2d::ui::ScrollView* scrollView, std::string reason);
+public:
+    // 创建函数宏  
+    CREATE_FUNC(ShopPopup);
 
-    // 开始十连抽
-    void startTenGacha();
+    // 初始化函数
+    virtual bool init();
 
-    // 执行十连抽中的下一次抽卡
-    void runNextTenGacha();
+    // 显示商店面板
+    // @param parent 父节点，商店将显示在该节点上
+    void show(cocos2d::Node* parent);
 
-    // 执行单次抽卡
-    // @param onFinished 抽卡完成后的回调函数
-    void performSingleGacha(const std::function<void(ShopItem)>& onFinished);
+
+
 };
 #endif  // __SHOP_POPUP_H__#pragma once
